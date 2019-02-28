@@ -30,7 +30,12 @@ bool NotecardInitSerial(HardwareSerial *selectedSerialPort) {
 }
 
 // Initialize for I2C I/O
-bool NotecardInitI2C(uint32_t i2caddress, uint32_t i2cmax) {
+bool NotecardInitI2C() {
+    NotecardSetFnI2C(0, 0, i2cReset, i2cMasterTransmit, i2cMasterReceive);
+}
+
+// Initialize for I2C I/O with extended details
+bool NotecardInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
     NotecardSetFnI2C(i2caddress, i2cmax, i2cReset, i2cMasterTransmit, i2cMasterReceive);
 }
 
