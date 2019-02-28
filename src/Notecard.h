@@ -1,0 +1,11 @@
+// Copyright 2019 Blues Inc.  All rights reserved.
+// Use of this source code is governed by licenses granted by the
+// copyright holder including that found in the LICENSE file.
+
+#pragma once
+
+#include <note-c/notecard.h>
+
+bool NotecardInitSerial(void *serial);
+bool NotecardInitI2C(uint32_t i2cAddress, uint32_t i2cMax);
+
