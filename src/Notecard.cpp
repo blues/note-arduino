@@ -21,11 +21,11 @@ extern "C" {
 #define I2C_DATA_TRACE          false
 
 // Arduino serial port
-static HardwareSerial *ioSerial = NULL;
+static HardwareSerial *hwSerial = NULL;
 
 // Initialize for serial I/O
 bool NotecardInitSerial(HardwareSerial *selectedSerialPort) {
-    ioSerial = selectedSerialPort;
+    hwSerial = selectedSerialPort;
     NotecardSetFnSerial(serialReset, serialWriteLine, serialWrite, serialAvailable, serialRead);
 }
 
@@ -41,29 +41,29 @@ bool NotecardInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
 
 // Serial port reset
 void serialReset() {
-    ioSerial->end();
-    NotecardInitSerial(ioSerial);
+    hwSerial->end();
+    NotecardInitSerial(hwSerial);
 }
 
 // Serial write \n-terminated line and flush function
 void serialWriteLn(char *text) {
-    ioSerial->println(text);
-    ioSerial->flush();
+    hwSerial->println(text);
+    hwSerial->flush();
 }
 
 // Serial write function
 void serialWrite(char *text) {
-    ioSerial->write(text);
+    hwSerial->write(text);
 }
 
 // Serial "is anything available" function
 bool serialAvailable() {
-    return (ioSerial->available() > 0);
+    return (hwSerial->available() > 0);
 }
 
 // Serial read a byte function
 char serialRead() {
-    return ioSerial->read();
+    return hwSerial->read();
 }
 
 // I2C port reset
