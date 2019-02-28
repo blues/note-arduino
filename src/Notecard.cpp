@@ -2,9 +2,8 @@
 // Use of this source code is governed by licenses granted by the
 // copyright holder including that found in the LICENSE file.
 
-#include <Arduino.h>
-#include <Wire.h>
 #include <Notecard.h>
+#include <Wire.h>
 
 // Forward references to C-callable functions defined below
 extern "C" {
@@ -25,8 +24,8 @@ extern "C" {
 static HardwareSerial *ioSerial = NULL;
 
 // Initialize for serial I/O
-bool NotecardInitSerial(void *selectedSerialPort) {
-    ioSerial = (HardwareSerial *) selectedSerialPort;
+bool NotecardInitSerial(HardwareSerial *selectedSerialPort) {
+    ioSerial = selectedSerialPort;
     NotecardSetFnSerial(serialReset, serialWriteLine, serialWrite, serialAvailable, serialRead);
 }
 
