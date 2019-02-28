@@ -4,8 +4,11 @@
 
 #pragma once
 
-#include <note-c/notecard.h>
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include <note-c/note.h>
 
-bool NotecardInitSerial(void *serial);
-bool NotecardInitI2C(uint32_t i2cAddress, uint32_t i2cMax);
-
+void NoteInitI2C(void);
+void NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
+void NoteInitSerial(HardwareSerial *serial);
+void NoteSetDebugOutputPort(HardwareSerial *dbgserial);
