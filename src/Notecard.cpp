@@ -13,8 +13,8 @@ extern "C" {
     bool serialAvailable(void);
     char serialRead(void);
     void i2cReset(void);
-    char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t TimeoutMs);
-    char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t TimeoutMs);
+    char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+    char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 }
 
 // Debugging
@@ -77,16 +77,25 @@ void i2cReset() {
 // is the actual address; the caller should have shifted it right so that the
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
-char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t TimeoutMs) {
+char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
+    NotecardFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
-    NotecardFnDebug("i2c transmit: %d\n  ", Size);
+    NotecardFnDebug("i2c transmit len: \n", Size);
+    for (int i=0; i<Size; i++)
+        NotecardFnDebug("%c", pBuffer[i]);
+    NotecardFnDebug("  ");
     for (int i=0; i<Size; i++)
         NotecardFnDebug("%02x", pBuffer[i]);
     NotecardFnDebug("\n");
 #endif
+    if (Size > NotecardFnI2CMax() || Size > 255)
+        return "i2c: write too large";
+    int writelen = sizeof(uint8_t) + Size;
     NotecardFnLockI2C();
     Wire.beginTransmission((int) DevAddress);
-    bool success = (Wire.write(pBuffer, Size) == Size);
+    uint8_t reg = Size;
+    bool success = (Wire.write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
+    if (success) success = (Wire.write(pBuffer, Size) == Size);
     if (Wire.endTransmission() != 0)
         success = false;
     NotecardFnUnlockI2C();
@@ -97,53 +106,64 @@ char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, ui
     return NULL;
 }
 
-// Receives in master mode an amount of data in blocking mode.  The address
-// is the actual address; the caller should have shifted it right so that the
-// low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
-// An error message is returned, else NULL for success
-char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t TimeoutMs) {
-    if (Size == 0)
-        return NULL;
-    if (TimeoutMs == 0)
-        TimeoutMs = 5000;
+// Receives in master mode an amount of data in blocking mode.
+char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
+    NotecardFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
+    if (Size > NotecardFnI2CMax() || Size > 255)
+        return "i2c: read too large";
 #if I2C_DATA_TRACE
     uint8_t *original = pBuffer;
-    NotecardFnDebug("i2c receive: %d\n  ", Size);
+    if (Size)
+        NotecardFnDebug("i2c receive: %d\n  ", Size);
 #endif
     NotecardFnLockI2C();
-    int startMs = NotecardFnGetMs();
-    int len = Wire.requestFrom((int) DevAddress, Size);
-    if (!Wire.available()) {
-        NotecardFnUnlockI2C();
-        i2cReset();
+    char *errstr = NULL;
+    uint8_t goodbyte = 0;
+    uint8_t availbyte = 0;
+
+    Wire.beginTransmission((int) DevAddress);
+    Wire.write(0);
+    Wire.write((uint8_t)Size);
+    Wire.endTransmission();
+
+    int readlen = Size + (sizeof(uint8_t)*2);
+    int len = Wire.requestFrom((int) DevAddress, readlen);
+    if (len == 0) {
+        errstr = "i2c: no response";
+    } else if (len != readlen) {
 #if I2C_DATA_TRACE
-        NotecardFnDebug("i2c no response\n");
+        NotecardFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
 #endif
-        return "i2c: no response";
-    }
-    if (len != Size) {
-        NotecardFnUnlockI2C();
-        i2cReset();
-#if I2C_DATA_TRACE
-        NotecardFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", Size, len);
-#endif
-        if (len == 0)
-            return "i2c: no data received";
-        return "i2c: incorrect amount of data received";
-    }
-    // This must be a wire-speed loop.  We've observed that on ESP32, even a call to NotecardFnGetMs()
-    // will cause serious I2C data loss issues.
-    while (Size) {
-        while (Size && Wire.available()) {
-            *pBuffer++ = Wire.read();
-            Size--;
+        errstr = "i2c: incorrect amount of data received";
+    } else {
+        availbyte = Wire.read();
+        goodbyte = Wire.read();
+        if (goodbyte != Size) {
+            NotecardFnDebug("%d < %d, received:\n", goodbyte, Size);
+            for (int i=0; i<Size; i++)
+                NotecardFnDebug("%c", Wire.read());
+            NotecardFnDebug("\n");
+            errstr = "i2c: less data was available than requested";
+        } else {
+            for (int i=0; i<Size; i++)
+                *pBuffer++ = Wire.read();
         }
-    }            
+    }
+
     NotecardFnUnlockI2C();
+    if (errstr != NULL) {
+        NotecardFnDebug("%s\n", errstr);
+        return errstr;
+    }
 #if I2C_DATA_TRACE
-    for (int i=0; i<len; i++)
-        NotecardFnDebug("%02x", original[i]);
-    NotecardFnDebug("\n");
+    if (Size) {
+        for (int i=0; i<Size; i++)
+            NotecardFnDebug("%02x", original[i]);
+        NotecardFnDebug("\n", availbyte);
+    }
+    if (availbyte)
+        NotecardFnDebug("%d available\n", availbyte);
 #endif
+    *available = availbyte;
     return NULL;
 }
