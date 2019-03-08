@@ -46,7 +46,7 @@ void serialReset() {
 }
 
 // Serial write \n-terminated line and flush function
-void serialWriteLn(char *text) {
+void serialWriteLine(char *text) {
     hwSerial->println(text);
     hwSerial->flush();
 }
