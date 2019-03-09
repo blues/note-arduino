@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <HardwareSerial.h>
 #include <note-c/notecard.h>
 
 bool NotecardInitI2C(void);
