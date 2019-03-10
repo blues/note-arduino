@@ -8,6 +8,6 @@
 #include <HardwareSerial.h>
 #include <note-c/notecard.h>
 
-bool NotecardInitI2C(void);
-bool NotecardInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
-bool NotecardInitSerial(HardwareSerial *serial);
+bool NoteInitI2C(void);
+bool NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
+bool NoteInitSerial(HardwareSerial *serial);

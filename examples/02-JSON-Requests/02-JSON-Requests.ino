@@ -13,19 +13,19 @@ void setup() {
     // Initialize the physical I/O channel to the Notecard
 #ifdef serial
     serial.begin(9600);
-    notecardInitSerial(&serial);
+    NoteInitSerial(&serial);
 #else
-    notecardInitI2C();
+    NoteInitI2C();
 #endif
 
     // Tell the Notecard how and how often to access the service.  "RequestBegin()" initializes 
     // the J json package and allocates "req", a JSON object for the request.  Then, "Request()" 
     // sends the JSON request to the Notecard and allocates "rsp", a JSON object for the response.
     // Finally, RequestEnd() deallocates the JSON objects associated with the request and response.
-    J *req = NotecardNewRequest("service.set");
+    J *req = NoteNewRequest("service.set");
     JAddStringToObject(req, "product", "ray@ozzie.net");
     JAddNumberToObject(req, "minutes", 15);
-    J *rsp = notecardTransaction(req);
+    J *rsp = NoteTransaction(req);
     JDelete(req);
     JDelete(rsp);
 
@@ -40,13 +40,13 @@ void loop() {
     int humidity = random(30, 60);
 
     // Enqueue the simulated measurement to the Notecard.  
-    J *req = NotecardNewRequest("note.add");
+    J *req = NoteNewRequest("note.add");
     JAddStringToObject(req, "file", "air.qo");
     J *body = JCreateObject();
     JAddNumberToObject(body, "temp", temperature);
     JAddNumberToObject(body, "humid", humidity);
     JAddItemToObject(req, "body", body);
-    J *rsp = notecardTransaction(req);
+    J *rsp = NoteTransaction(req);
     JDelete(req);
     JDelete(rsp);
 

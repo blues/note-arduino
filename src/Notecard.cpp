@@ -24,25 +24,25 @@ extern "C" {
 static HardwareSerial *hwSerial = NULL;
 
 // Initialize for serial I/O
-bool NotecardInitSerial(HardwareSerial *selectedSerialPort) {
+bool NoteInitSerial(HardwareSerial *selectedSerialPort) {
     hwSerial = selectedSerialPort;
-    NotecardSetFnSerial(serialReset, serialWriteLine, serialWrite, serialAvailable, serialRead);
+    NoteSetFnSerial(serialReset, serialWriteLine, serialWrite, serialAvailable, serialRead);
 }
 
 // Initialize for I2C I/O
-bool NotecardInitI2C() {
-    NotecardSetFnI2C(0, 0, i2cReset, i2cMasterTransmit, i2cMasterReceive);
+bool NoteInitI2C() {
+    NoteSetFnI2C(0, 0, i2cReset, i2cMasterTransmit, i2cMasterReceive);
 }
 
 // Initialize for I2C I/O with extended details
-bool NotecardInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
-    NotecardSetFnI2C(i2caddress, i2cmax, i2cReset, i2cMasterTransmit, i2cMasterReceive);
+bool NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
+    NoteSetFnI2C(i2caddress, i2cmax, i2cReset, i2cMasterTransmit, i2cMasterReceive);
 }
 
 // Serial port reset
 void serialReset() {
     hwSerial->end();
-    NotecardInitSerial(hwSerial);
+    NoteInitSerial(hwSerial);
 }
 
 // Serial write \n-terminated line and flush function
@@ -68,9 +68,9 @@ char serialRead() {
 
 // I2C port reset
 void i2cReset() {
-    NotecardFnLockI2C();
+    NoteFnLockI2C();
     Wire.begin();
-    NotecardFnUnlockI2C();
+    NoteFnUnlockI2C();
 }
 
 // Transmits in master mode an amount of data in blocking mode.  The address
@@ -78,27 +78,27 @@ void i2cReset() {
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
 char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
-    NotecardFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
+    NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
-    NotecardFnDebug("i2c transmit len: \n", Size);
+    NoteFnDebug("i2c transmit len: \n", Size);
     for (int i=0; i<Size; i++)
-        NotecardFnDebug("%c", pBuffer[i]);
-    NotecardFnDebug("  ");
+        NoteFnDebug("%c", pBuffer[i]);
+    NoteFnDebug("  ");
     for (int i=0; i<Size; i++)
-        NotecardFnDebug("%02x", pBuffer[i]);
-    NotecardFnDebug("\n");
+        NoteFnDebug("%02x", pBuffer[i]);
+    NoteFnDebug("\n");
 #endif
-    if (Size > NotecardFnI2CMax() || Size > 255)
+    if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: write too large";
     int writelen = sizeof(uint8_t) + Size;
-    NotecardFnLockI2C();
+    NoteFnLockI2C();
     Wire.beginTransmission((int) DevAddress);
     uint8_t reg = Size;
     bool success = (Wire.write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
     if (success) success = (Wire.write(pBuffer, Size) == Size);
     if (Wire.endTransmission() != 0)
         success = false;
-    NotecardFnUnlockI2C();
+    NoteFnUnlockI2C();
     if (!success) {
         i2cReset();
         return "i2c: write error";
@@ -108,15 +108,15 @@ char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
 
 // Receives in master mode an amount of data in blocking mode.
 char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
-    NotecardFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
-    if (Size > NotecardFnI2CMax() || Size > 255)
+    NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
+    if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: read too large";
 #if I2C_DATA_TRACE
     uint8_t *original = pBuffer;
     if (Size)
-        NotecardFnDebug("i2c receive: %d\n  ", Size);
+        NoteFnDebug("i2c receive: %d\n  ", Size);
 #endif
-    NotecardFnLockI2C();
+    NoteFnLockI2C();
     char *errstr = NULL;
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
@@ -132,17 +132,17 @@ char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uin
         errstr = "i2c: no response";
     } else if (len != readlen) {
 #if I2C_DATA_TRACE
-        NotecardFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
+        NoteFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
 #endif
         errstr = "i2c: incorrect amount of data received";
     } else {
         availbyte = Wire.read();
         goodbyte = Wire.read();
         if (goodbyte != Size) {
-            NotecardFnDebug("%d < %d, received:\n", goodbyte, Size);
+            NoteFnDebug("%d < %d, received:\n", goodbyte, Size);
             for (int i=0; i<Size; i++)
-                NotecardFnDebug("%c", Wire.read());
-            NotecardFnDebug("\n");
+                NoteFnDebug("%c", Wire.read());
+            NoteFnDebug("\n");
             errstr = "i2c: less data was available than requested";
         } else {
             for (int i=0; i<Size; i++)
@@ -150,19 +150,19 @@ char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uin
         }
     }
 
-    NotecardFnUnlockI2C();
+    NoteFnUnlockI2C();
     if (errstr != NULL) {
-        NotecardFnDebug("%s\n", errstr);
+        NoteFnDebug("%s\n", errstr);
         return errstr;
     }
 #if I2C_DATA_TRACE
     if (Size) {
         for (int i=0; i<Size; i++)
-            NotecardFnDebug("%02x", original[i]);
-        NotecardFnDebug("\n", availbyte);
+            NoteFnDebug("%02x", original[i]);
+        NoteFnDebug("\n", availbyte);
     }
     if (availbyte)
-        NotecardFnDebug("%d available\n", availbyte);
+        NoteFnDebug("%d available\n", availbyte);
 #endif
     *available = availbyte;
     return NULL;
