@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 #include <HardwareSerial.h>
-#include <note-c/notecard.h>
+#include <note-c/note.h>
 
 bool NoteInitI2C(void);
 bool NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
