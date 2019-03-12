@@ -7,14 +7,14 @@
 
 // Forward references to C-callable functions defined below
 extern "C" {
-    void serialReset(void);
-    void serialWriteLine(char *text);
-    void serialWrite(char *text);
-    bool serialAvailable(void);
-    char serialRead(void);
-    void i2cReset(void);
-    char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-    char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+    void noteSerialReset(void);
+    void noteSerialWriteLine(char *text);
+    void noteSerialWrite(char *text);
+    bool noteSerialAvailable(void);
+    char noteSerialRead(void);
+    void noteI2CReset(void);
+    char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+    char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 }
 
 // Debugging
@@ -26,48 +26,48 @@ static HardwareSerial *hwSerial = NULL;
 // Initialize for serial I/O
 bool NoteInitSerial(HardwareSerial *selectedSerialPort) {
     hwSerial = selectedSerialPort;
-    NoteSetFnSerial(serialReset, serialWriteLine, serialWrite, serialAvailable, serialRead);
+    NoteSetFnSerial(noteSerialReset, noteSerialWriteLine, noteSerialWrite, noteSerialAvailable, noteSerialRead);
 }
 
 // Initialize for I2C I/O
 bool NoteInitI2C() {
-    NoteSetFnI2C(0, 0, i2cReset, i2cMasterTransmit, i2cMasterReceive);
+    NoteSetFnI2C(0, 0, noteI2CReset, noteI2CTransmit, noteI2CReceive);
 }
 
 // Initialize for I2C I/O with extended details
 bool NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
-    NoteSetFnI2C(i2caddress, i2cmax, i2cReset, i2cMasterTransmit, i2cMasterReceive);
+    NoteSetFnI2C(i2caddress, i2cmax, noteI2CReset, noteI2CTransmit, noteI2CReceive);
 }
 
 // Serial port reset
-void serialReset() {
+void noteSerialReset() {
     hwSerial->end();
     NoteInitSerial(hwSerial);
 }
 
 // Serial write \n-terminated line and flush function
-void serialWriteLine(char *text) {
+void noteSerialWriteLine(char *text) {
     hwSerial->println(text);
     hwSerial->flush();
 }
 
 // Serial write function
-void serialWrite(char *text) {
+void noteSerialWrite(char *text) {
     hwSerial->write(text);
 }
 
 // Serial "is anything available" function
-bool serialAvailable() {
+bool noteSerialAvailable() {
     return (hwSerial->available() > 0);
 }
 
 // Serial read a byte function
-char serialRead() {
+char noteSerialRead() {
     return hwSerial->read();
 }
 
 // I2C port reset
-void i2cReset() {
+void noteI2CReset() {
     NoteFnLockI2C();
     Wire.begin();
     NoteFnUnlockI2C();
@@ -77,7 +77,7 @@ void i2cReset() {
 // is the actual address; the caller should have shifted it right so that the
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
-char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
+char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
     NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
     NoteFnDebug("i2c transmit len: \n", Size);
@@ -100,14 +100,14 @@ char *i2cMasterTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
         success = false;
     NoteFnUnlockI2C();
     if (!success) {
-        i2cReset();
+        noteI2CReset();
         return "i2c: write error";
     }
     return NULL;
 }
 
 // Receives in master mode an amount of data in blocking mode.
-char *i2cMasterReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
+char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
     NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
     if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: read too large";
