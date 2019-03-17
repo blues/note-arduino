@@ -27,16 +27,19 @@ static HardwareSerial *hwSerial = NULL;
 bool NoteInitSerial(HardwareSerial *selectedSerialPort) {
     hwSerial = selectedSerialPort;
     NoteSetFnSerial(noteSerialReset, noteSerialWriteLine, noteSerialWrite, noteSerialAvailable, noteSerialRead);
+    return true;
 }
 
 // Initialize for I2C I/O
 bool NoteInitI2C() {
     NoteSetFnI2C(0, 0, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+    return true;
 }
 
 // Initialize for I2C I/O with extended details
 bool NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
     NoteSetFnI2C(i2caddress, i2cmax, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+    return true;
 }
 
 // Serial port reset
