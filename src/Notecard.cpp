@@ -9,7 +9,7 @@
 extern "C" {
     void noteSerialReset(void);
     void noteSerialWriteLine(char *text);
-    void noteSerialWrite(char *text);
+    void noteSerialWrite(uint8_t *text, size_t len);
     bool noteSerialAvailable(void);
     char noteSerialRead(void);
     void noteI2CReset(void);
@@ -55,8 +55,8 @@ void noteSerialWriteLine(char *text) {
 }
 
 // Serial write function
-void noteSerialWrite(char *text) {
-    hwSerial->write(text);
+void noteSerialWrite(uint8_t *text, size_t len) {
+    hwSerial->write(text, len);
 }
 
 // Serial "is anything available" function
