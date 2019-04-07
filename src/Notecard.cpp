@@ -142,11 +142,11 @@ char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint3
         availbyte = Wire.read();
         goodbyte = Wire.read();
         if (goodbyte != Size) {
-            NoteFnDebug("%d < %d, received:\n", goodbyte, Size);
+            NoteFnDebug("%d != %d, received:\n", goodbyte, Size);
             for (int i=0; i<Size; i++)
                 NoteFnDebug("%c", Wire.read());
             NoteFnDebug("\n");
-            errstr = "i2c: less data was available than requested";
+            errstr = "i2c: incorrect amount of data";
         } else {
             for (int i=0; i<Size; i++)
                 *pBuffer++ = Wire.read();
