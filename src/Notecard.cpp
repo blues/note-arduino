@@ -5,16 +5,19 @@
 #include <Notecard.h>
 #include <Wire.h>
 
+#define DEBUG_READ_TOO_LONG     false       // If ST bug present, immediate notecard crash
+#define DEBUG_READ_TOO_SHORT    false
+
 // Forward references to C-callable functions defined below
 extern "C" {
     void noteSerialReset(void);
-    void noteSerialWriteLine(char *text);
+    void noteSerialWriteLine(const char *text);
     void noteSerialWrite(uint8_t *text, size_t len);
     bool noteSerialAvailable(void);
     char noteSerialRead(void);
     void noteI2CReset(void);
-    char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-    char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+    const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+    const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 }
 
 // Debugging
@@ -49,7 +52,7 @@ void noteSerialReset() {
 }
 
 // Serial write \n-terminated line and flush function
-void noteSerialWriteLine(char *text) {
+void noteSerialWriteLine(const char *text) {
     hwSerial->println(text);
     hwSerial->flush();
 }
@@ -80,7 +83,7 @@ void noteI2CReset() {
 // is the actual address; the caller should have shifted it right so that the
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
-char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
+const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
     NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
     NoteFnDebug("i2c transmit len: \n", Size);
@@ -110,7 +113,7 @@ char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
 }
 
 // Receives in master mode an amount of data in blocking mode.
-char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
+const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
     NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
     if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: read too large";
@@ -120,36 +123,60 @@ char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint3
         NoteFnDebug("i2c receive: %d\n  ", Size);
 #endif
     NoteFnLockI2C();
-    char *errstr = NULL;
+    const char *errstr = NULL;
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
 
     Wire.beginTransmission((int) DevAddress);
     Wire.write(0);
     Wire.write((uint8_t)Size);
-    Wire.endTransmission();
+    uint8_t result = Wire.endTransmission();
+    switch (result) {
+    case 1:
+        errstr = "data too long to fit in transmit buffer";
+        break;
+    case 2:
+        errstr = "received NACK on transmit of address";
+        break;
+    case 3:
+        errstr = "received NACK on transmit of data";
+        break;
+    case 4:
+        errstr = "unknown error on endTransmission";
+        break;
+    }
 
-    int readlen = Size + (sizeof(uint8_t)*2);
-    int len = Wire.requestFrom((int) DevAddress, readlen);
-    if (len == 0) {
-        errstr = "i2c: no response";
-    } else if (len != readlen) {
-#if I2C_DATA_TRACE
-        NoteFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
+    // Only receive if we successfully began transmission
+    if (errstr == NULL) {
+
+        int readlen = Size + (sizeof(uint8_t)*2);
+#if DEBUG_READ_TOO_LONG
+        int len = Wire.requestFrom((int) DevAddress, readlen+10);
+#elif DEBUG_READ_TOO_SHORT
+        int len = Wire.requestFrom((int) DevAddress, readlen-1);
+#else
+        int len = Wire.requestFrom((int) DevAddress, readlen);
 #endif
-        errstr = "i2c: incorrect amount of data received";
-    } else {
-        availbyte = Wire.read();
-        goodbyte = Wire.read();
-        if (goodbyte != Size) {
-            NoteFnDebug("%d != %d, received:\n", goodbyte, Size);
-            for (int i=0; i<Size; i++)
-                NoteFnDebug("%c", Wire.read());
-            NoteFnDebug("\n");
-            errstr = "i2c: incorrect amount of data";
+        if (len == 0) {
+            errstr = "i2c: no response";
+        } else if (len != readlen) {
+#if I2C_DATA_TRACE
+            NoteFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
+#endif
+            errstr = "i2c: incorrect amount of data received";
         } else {
-            for (int i=0; i<Size; i++)
-                *pBuffer++ = Wire.read();
+            availbyte = Wire.read();
+            goodbyte = Wire.read();
+            if (goodbyte != Size) {
+                NoteFnDebug("%d != %d, received:\n", goodbyte, Size);
+                for (int i=0; i<Size; i++)
+                    NoteFnDebug("%c", Wire.read());
+                NoteFnDebug("\n");
+                errstr = "i2c: incorrect amount of data";
+            } else {
+                for (int i=0; i<Size; i++)
+                    *pBuffer++ = Wire.read();
+            }
         }
     }
 
