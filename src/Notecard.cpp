@@ -8,6 +8,10 @@
 #define DEBUG_READ_TOO_LONG     false       // If ST bug present, immediate notecard crash
 #define DEBUG_READ_TOO_SHORT    false
 
+// We've observed sloppy hardware designs - specifically with regard to capacitance on the
+// I2C pullups - that behaved more robustly if we inserted a delay between transactions.
+#define CONSERVATIVE_DELAY_MS   5
+
 // Forward references to C-callable functions defined below
 extern "C" {
     void noteSerialReset(void);
@@ -98,6 +102,7 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
         return "i2c: write too large";
     int writelen = sizeof(uint8_t) + Size;
     NoteFnLockI2C();
+    NoteFnDelayMs(CONSERVATIVE_DELAY_MS);
     Wire.beginTransmission((int) DevAddress);
     uint8_t reg = Size;
     bool success = (Wire.write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
@@ -114,7 +119,6 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 
 // Receives in master mode an amount of data in blocking mode.
 const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
-    NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
     if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: read too large";
 #if I2C_DATA_TRACE
@@ -123,6 +127,7 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
         NoteFnDebug("i2c receive: %d\n  ", Size);
 #endif
     NoteFnLockI2C();
+    NoteFnDelayMs(CONSERVATIVE_DELAY_MS);
     const char *errstr = NULL;
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
@@ -144,6 +149,29 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
     case 4:
         errstr = "unknown error on endTransmission";
         break;
+    }
+
+    // If error, retry once for robustness, simply because it's harmless to do so
+    if (errstr != NULL) {
+        errstr = NULL;
+        Wire.beginTransmission((int) DevAddress);
+        Wire.write(0);
+        Wire.write((uint8_t)Size);
+        uint8_t result = Wire.endTransmission();
+        switch (result) {
+        case 1:
+            errstr = "data too long to fit in transmit buffer";
+            break;
+        case 2:
+            errstr = "received NACK on transmit of address";
+            break;
+        case 3:
+            errstr = "received NACK on transmit of data";
+            break;
+        case 4:
+            errstr = "unknown error on endTransmission";
+            break;
+        }
     }
 
     // Only receive if we successfully began transmission
