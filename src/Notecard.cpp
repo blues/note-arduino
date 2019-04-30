@@ -138,6 +138,8 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
     uint8_t result = Wire.endTransmission();
     switch (result) {
     case 1:
+        // Interestingly, this is the error that is returned when
+        // some random device on the I2C bus is holding SCL low
         errstr = "data too long to fit in transmit buffer";
         break;
     case 2:
