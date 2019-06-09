@@ -31,22 +31,19 @@ extern "C" {
 static HardwareSerial *hwSerial = NULL;
 
 // Initialize for serial I/O
-bool NoteInitSerial(HardwareSerial *selectedSerialPort) {
+void NoteInitSerial(HardwareSerial *selectedSerialPort) {
     hwSerial = selectedSerialPort;
     NoteSetFnSerial(noteSerialReset, noteSerialWriteLine, noteSerialWrite, noteSerialAvailable, noteSerialRead);
-    return true;
 }
 
 // Initialize for I2C I/O
-bool NoteInitI2C() {
+void NoteInitI2C() {
     NoteSetFnI2C(0, 0, noteI2CReset, noteI2CTransmit, noteI2CReceive);
-    return true;
 }
 
 // Initialize for I2C I/O with extended details
-bool NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
+void NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
     NoteSetFnI2C(i2caddress, i2cmax, noteI2CReset, noteI2CTransmit, noteI2CReceive);
-    return true;
 }
 
 // Serial port reset
@@ -100,7 +97,6 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 #endif
     if (Size > NoteFnI2CMax() || Size > 255)
         return "i2c: write too large";
-    int writelen = sizeof(uint8_t) + Size;
     NoteFnLockI2C();
     NoteFnDelayMs(CONSERVATIVE_DELAY_MS);
     Wire.beginTransmission((int) DevAddress);
