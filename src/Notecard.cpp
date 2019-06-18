@@ -22,7 +22,11 @@ extern "C" {
     void noteI2CReset(void);
     const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
     const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+	size_t debugSerialOutput(const char *message);
 }
+
+// For serial debug output
+HardwareSerial *debugSerial = NULL;
 
 // Debugging
 #define I2C_DATA_TRACE          false
@@ -32,18 +36,33 @@ static HardwareSerial *hwSerial = NULL;
 
 // Initialize for serial I/O
 void NoteInitSerial(HardwareSerial *selectedSerialPort) {
+    NoteSetFnDefault(malloc, free, delay, millis);
     hwSerial = selectedSerialPort;
     NoteSetFnSerial(noteSerialReset, noteSerialWriteLine, noteSerialWrite, noteSerialAvailable, noteSerialRead);
 }
 
 // Initialize for I2C I/O
 void NoteInitI2C() {
+    NoteSetFnDefault(malloc, free, delay, millis);
     NoteSetFnI2C(0, 0, noteI2CReset, noteI2CTransmit, noteI2CReceive);
 }
 
 // Initialize for I2C I/O with extended details
 void NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
+    NoteSetFnDefault(malloc, free, delay, millis);
     NoteSetFnI2C(i2caddress, i2cmax, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+}
+
+// Serial output method
+size_t debugSerialOutput(const char *message) {
+	if (debugSerial == NULL)
+		return 0;
+	return(debugSerial->print(message));
+}
+
+void NoteSetDebugOutputPort(HardwareSerial *dbgserial) {
+	debugSerial = dbgserial;
+	NoteSetFnDebugOutput(debugSerialOutput);
 }
 
 // Serial port reset
@@ -85,7 +104,7 @@ void noteI2CReset() {
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
 const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
-    NoteFnDelayMs(1);   // Don't do transactions more frequently than every 1mS
+    NoteFnDelayMs(1);  // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
     NoteFnDebug("i2c transmit len: \n", Size);
     for (int i=0; i<Size; i++)
@@ -128,36 +147,20 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
 
-    Wire.beginTransmission((int) DevAddress);
-    Wire.write(0);
-    Wire.write((uint8_t)Size);
-    uint8_t result = Wire.endTransmission();
-    switch (result) {
-    case 1:
-        // Interestingly, this is the error that is returned when
-        // some random device on the I2C bus is holding SCL low
-        errstr = "data too long to fit in transmit buffer";
-        break;
-    case 2:
-        errstr = "received NACK on transmit of address";
-        break;
-    case 3:
-        errstr = "received NACK on transmit of data";
-        break;
-    case 4:
-        errstr = "unknown error on endTransmission";
-        break;
-    }
-
-    // If error, retry once for robustness, simply because it's harmless to do so
-    if (errstr != NULL) {
-        errstr = NULL;
+	// Retry errors, because it's harmless to do so
+    for (int i=0; i<3; i++) {
         Wire.beginTransmission((int) DevAddress);
         Wire.write(0);
         Wire.write((uint8_t)Size);
         uint8_t result = Wire.endTransmission();
+		if (result == 0) {
+			errstr = NULL;
+			break;
+		}
         switch (result) {
         case 1:
+            // Interestingly, this is the error that is returned when
+            // some random device on the I2C bus is holding SCL low
             errstr = "data too long to fit in transmit buffer";
             break;
         case 2:

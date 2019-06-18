@@ -11,3 +11,4 @@
 void NoteInitI2C(void);
 void NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
 void NoteInitSerial(HardwareSerial *serial);
+void NoteSetDebugOutputPort(HardwareSerial *dbgserial);
