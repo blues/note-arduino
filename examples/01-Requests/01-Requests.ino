@@ -61,7 +61,7 @@ void loop() {
     JAddNumberToObject(body, "count", ++messagesSent);
 	NoteSend("sensors.qo", body, true);
 
-    // Dlay between measurements
+    // Delay between measurements
     delay(15000);
 
 }
