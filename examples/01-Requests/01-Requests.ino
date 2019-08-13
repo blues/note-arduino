@@ -29,7 +29,7 @@ void setup() {
     J *req = NoteNewRequest("service.set");
 
 	// This argument causes the data to be delivered to the Personal Project in our notehub.io account.
-    JAddStringToObject(req, "product", "ray@ozzie.net");
+    JAddStringToObject(req, "product", "YOUR_EMAIL_REGISTERED_WITH_NOTEHUB.IO");
 
 	// This argument causes the modem to power on and connect continuously to the notehub.io service
     JAddStringToObject(req, "mode", "continuous");
