@@ -22,7 +22,7 @@ extern "C" {
     void noteI2CReset(void);
     const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
     const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
-	size_t debugSerialOutput(const char *message);
+    size_t debugSerialOutput(const char *message);
 }
 
 // For serial debug output
@@ -55,14 +55,14 @@ void NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
 
 // Serial output method
 size_t debugSerialOutput(const char *message) {
-	if (debugSerial == NULL)
-		return 0;
-	return(debugSerial->print(message));
+    if (debugSerial == NULL)
+        return 0;
+    return(debugSerial->print(message));
 }
 
 void NoteSetDebugOutputPort(HardwareSerial *dbgserial) {
-	debugSerial = dbgserial;
-	NoteSetFnDebugOutput(debugSerialOutput);
+    debugSerial = dbgserial;
+    NoteSetFnDebugOutput(debugSerialOutput);
 }
 
 // Serial port reset
@@ -147,16 +147,16 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
 
-	// Retry errors, because it's harmless to do so
+    // Retry errors, because it's harmless to do so
     for (int i=0; i<3; i++) {
         Wire.beginTransmission((int) DevAddress);
         Wire.write(0);
         Wire.write((uint8_t)Size);
         uint8_t result = Wire.endTransmission();
-		if (result == 0) {
-			errstr = NULL;
-			break;
-		}
+        if (result == 0) {
+            errstr = NULL;
+            break;
+        }
         switch (result) {
         case 1:
             // Interestingly, this is the error that is returned when
