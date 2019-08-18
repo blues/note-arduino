@@ -5,7 +5,7 @@ The note-arduino Arduino library for communicating with Blues Wireless Notecard 
 This library allows you to control a Notecard by writing an Arduino sketch in C or C++.
 Your sketch may programmatically configure Notecard and send Notes to [Notehub.io][notehub].
 
-This library is a wrapper around the [note-c library][note-c] library, which it includes as a git submodule.
+This library is a wrapper around the [note-c library][note-c], which it includes as a git submodule.
 
 ## Installation
 
