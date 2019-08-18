@@ -7,6 +7,19 @@ Your sketch may programmatically configure Notecard and send Notes to [Notehub.i
 
 This library is a wrapper around the [note-c library][note-c] library, which it includes as a git submodule.
 
+## Installation
+
+1. Clone this library and its submodule from github into your Arduino libraries folder:
+   ```
+   git clone --recursive git@github.com:blues/note-arduino.git [PATH_TO_YOUR_ARDUINO_HOME_FOLDER]/libraries/note-arduino`
+   ```
+2. Start the Arduino IDE
+3. Verify that the following items are available:
+   ```
+   File -> Examples -> Examples from Custom Libraries -> Blues Wireless Notecard -> 01-Requests
+   Sketch -> Include library -> Contributed Libraries -> Blues Wireless Notecard
+   ```
+
 [blues]: https://blues.com
 [notehub]: https://notehub.io
 [note-c]: https://github.com/blues/note-c
