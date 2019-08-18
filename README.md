@@ -7,6 +7,8 @@ Your sketch may programmatically configure Notecard and send Notes to [Notehub.i
 
 This library is a wrapper around the [note-c library][note-c], which it includes as a git submodule.
 
+This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which requires it to be installed per the instructions below.
+
 ## Installation
 
 1. Clone this library and its submodule from github into your Arduino libraries folder:
@@ -23,3 +25,4 @@ This library is a wrapper around the [note-c library][note-c], which it includes
 [blues]: https://blues.com
 [notehub]: https://notehub.io
 [note-c]: https://github.com/blues/note-c
+[m5stack]: https://github.com/blues/m5stack
