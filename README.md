@@ -11,18 +11,17 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
 
 ## Installation
 
-1. Clone this library and its submodule from github into your Arduino libraries folder:
-   ```
-   git clone --recursive git@github.com:blues/note-arduino.git [PATH_TO_YOUR_ARDUINO_HOME_FOLDER]/libraries/note-arduino`
-   ```
+1. Download the library as a zip from the latest release
+   [here](https://github.com/blues/note-arduino/releases)
 2. Start the Arduino IDE
-3. Verify that the following items are available:
+3. Import the library:
    ```
-   File -> Examples -> Examples from Custom Libraries -> Blues Wireless Notecard -> 01-Requests
-   Sketch -> Include library -> Contributed Libraries -> Blues Wireless Notecard
+   Sketch -> Include library -> Add ZIP Library
    ```
+And select the previously downloaded zip file.
 
 [blues]: https://blues.com
 [notehub]: https://notehub.io
 [note-c]: https://github.com/blues/note-c
 [m5stack]: https://github.com/blues/m5stack
+
