@@ -5,20 +5,15 @@
 #include <Notecard.h>
 #include <Wire.h>
 
-#define DEBUG_READ_TOO_LONG		false		// If ST bug present, immediate notecard crash
-#define DEBUG_READ_TOO_SHORT	false
-
-// We've observed sloppy hardware designs - specifically with regard to capacitance on the
-// I2C pullups - that behaved more robustly if we inserted a delay between transactions.
-#define CONSERVATIVE_DELAY_MS	5
+#define DEBUG_READ_TOO_LONG  false // If ST bug present, immediate notecard crash
+#define DEBUG_READ_TOO_SHORT false
 
 // Forward references to C-callable functions defined below
 extern "C" {
 	void noteSerialReset(void);
-	void noteSerialWriteLine(const char *text);
-	void noteSerialWrite(uint8_t *text, size_t len);
+	void noteSerialTransmit(uint8_t *text, size_t len, bool flush);
 	bool noteSerialAvailable(void);
-	char noteSerialRead(void);
+	char noteSerialReceive(void);
 	void noteI2CReset(void);
 	const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
 	const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
@@ -30,7 +25,7 @@ static bool debugSerialInitialized;
 static Stream *debugSerial;
 
 // Debugging
-#define I2C_DATA_TRACE			false
+#define I2C_DATA_TRACE false
 
 // Arduino serial port
 static bool hwSerialInitialized;
@@ -42,14 +37,14 @@ void NoteInitSerial(HardwareSerial &selectedSerialPort, int selectedSpeed) {
 	NoteSetFnDefault(malloc, free, delay, millis);
 	hwSerial = &selectedSerialPort;
 	hwSerialSpeed = selectedSpeed;
-	NoteSetFnSerial(noteSerialReset, noteSerialWriteLine, noteSerialWrite, noteSerialAvailable, noteSerialRead);
+	NoteSetFnSerial(noteSerialReset, noteSerialTransmit, noteSerialAvailable, noteSerialReceive);
 	hwSerial->begin(hwSerialSpeed);
 }
 
 // Initialize for I2C I/O
 void NoteInitI2C() {
 	NoteSetFnDefault(malloc, free, delay, millis);
-	NoteSetFnI2C(0, 0, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+	NoteSetFnI2C(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, noteI2CReset, noteI2CTransmit, noteI2CReceive);
 }
 
 // Initialize for I2C I/O with extended details
@@ -77,15 +72,11 @@ void noteSerialReset() {
 	hwSerial->begin(hwSerialSpeed);
 }
 
-// Serial write \n-terminated line and flush function
-void noteSerialWriteLine(const char *text) {
-	hwSerial->println(text);
-	hwSerial->flush();
-}
-
-// Serial write function
-void noteSerialWrite(uint8_t *text, size_t len) {
+// Serial transmit function
+void noteSerialTransmit(uint8_t *text, size_t len, bool flush) {
 	hwSerial->write(text, len);
+	if (flush)
+		hwSerial->flush();
 }
 
 // Serial "is anything available" function
@@ -93,16 +84,14 @@ bool noteSerialAvailable() {
 	return (hwSerial->available() > 0);
 }
 
-// Serial read a byte function
-char noteSerialRead() {
+// Serial read a byte function, guaranteed only ever to be called if there is data Available()
+char noteSerialReceive() {
 	return hwSerial->read();
 }
 
 // I2C port reset
 void noteI2CReset() {
-	NoteFnLockI2C();
 	Wire.begin();
-	NoteFnUnlockI2C();
 }
 
 // Transmits in master mode an amount of data in blocking mode.	 The address
@@ -110,7 +99,6 @@ void noteI2CReset() {
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
 const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
-	NoteFnDelayMs(1);  // Don't do transactions more frequently than every 1mS
 #if I2C_DATA_TRACE
 	NoteFnDebug("i2c transmit len: \n", Size);
 	for (int i=0; i<Size; i++)
@@ -120,35 +108,24 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 		NoteFnDebug("%02x", pBuffer[i]);
 	NoteFnDebug("\n");
 #endif
-	if (Size > NoteFnI2CMax() || Size > 255)
-		return "i2c: write too large";
-	NoteFnLockI2C();
-	NoteFnDelayMs(CONSERVATIVE_DELAY_MS);
 	Wire.beginTransmission((int) DevAddress);
 	uint8_t reg = Size;
 	bool success = (Wire.write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
 	if (success) success = (Wire.write(pBuffer, Size) == Size);
 	if (Wire.endTransmission() != 0)
 		success = false;
-	NoteFnUnlockI2C();
-	if (!success) {
-		noteI2CReset();
+	if (!success)
 		return "i2c: write error";
-	}
 	return NULL;
 }
 
 // Receives in master mode an amount of data in blocking mode.
 const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
-	if (Size > NoteFnI2CMax() || Size > 255)
-		return "i2c: read too large";
 #if I2C_DATA_TRACE
 	uint8_t *original = pBuffer;
 	if (Size)
 		NoteFnDebug("i2c receive: %d\n	", Size);
 #endif
-	NoteFnLockI2C();
-	NoteFnDelayMs(CONSERVATIVE_DELAY_MS);
 	const char *errstr = NULL;
 	uint8_t goodbyte = 0;
 	uint8_t availbyte = 0;
@@ -215,7 +192,6 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 		}
 	}
 
-	NoteFnUnlockI2C();
 	if (errstr != NULL) {
 		NoteFnDebug("%s\n", errstr);
 		return errstr;
