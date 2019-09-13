@@ -11,8 +11,9 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
 
 ## Installation
 
-1. Download the library as a zip from the latest release
-   [here](https://github.com/blues/note-arduino/releases)
+1. Download the library as a zip from 
+   [here](https://github.com/blues/note-arduino/archive/master.zip)
+or use the UI `Clone or Download` -> `Download ZIP`
 2. Start the Arduino IDE
 3. Import the library:
    ```
