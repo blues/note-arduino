@@ -11,9 +11,8 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
 
 ## Installation
 
-1. Download the library as a zip from 
-   [here](https://github.com/blues/note-arduino/archive/master.zip)
-or use the UI `Clone or Download` -> `Download ZIP`
+1. Download the library as a zip from [here][archive] or use the
+UI `Clone or Download` -> `Download ZIP`
 2. Start the Arduino IDE
 3. Import the library:
    ```
@@ -21,8 +20,20 @@ or use the UI `Clone or Download` -> `Download ZIP`
    ```
 And select the previously downloaded zip file.
 
+## Keeping up to date with note-c repo
+
+This library depends on the blues [note-c repo][note-c] and utilizes
+git subtrees to include those files in the src/note-c folder. To
+update this repo with the latest from note-c:
+
+```
+git subtree pull --prefix subtree src/note-c https://github.com/blues/note-c.git master --squash
+```
+
 [blues]: https://blues.com
 [notehub]: https://notehub.io
 [note-c]: https://github.com/blues/note-c
 [m5stack]: https://github.com/blues/m5stack
+[archive]: https://github.com/blues/note-arduino/archive/master.zip
+
 
