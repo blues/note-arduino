@@ -69,7 +69,7 @@ void setup() {
 	// Issue the request, telling the Notecard how and how often to access the service.
 	// This results in a JSON message to Notecard formatted like:
 	//	   { "req"	   : "service.set",
-	//		 "product" : "yourname@email.tld",
+	//		 "product" : myProductID,
 	//		 "mode"	   : "continuous"
 	//	   }
 	// Note that NoteRequest() always uses free() to release the request data structure, and it
