@@ -15,7 +15,7 @@
 // 3. While looking at the "Devices" view, look at the address bar and locate the AppUID of
 //    your project, a unique string that looks like "app:00000000-0000-0000-0000-000000000000"
 // 4. At the command line of your PC, send an HTTP message to the service such as:
-//    curl -L 'http://api.notefile.net/req?app:00000000-0000-0000-0000-000000000000&device="imei:000000000000000"' -d '{"req":"note.add","file":"my-inbound.qi","body":{"my-request-type":"my-request"}}'
+//    curl -L 'http://api.notefile.net/req?project="app:00000000-0000-0000-0000-000000000000"&device="imei:000000000000000"' -d '{"req":"note.add","file":"my-inbound.qi","body":{"my-request-type":"my-request"}}'
 //
 
 #include <Notecard.h>
