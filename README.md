@@ -27,7 +27,7 @@ git subtrees to include those files in the src/note-c folder. To
 update this repo with the latest from note-c:
 
 ```
-git subtree pull --prefix subtree src/note-c https://github.com/blues/note-c.git master --squash
+git subtree pull --prefix src/note-c https://github.com/blues/note-c.git master --squash
 ```
 
 [blues]: https://blues.com
