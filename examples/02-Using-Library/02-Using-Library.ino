@@ -33,6 +33,7 @@
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
 
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
+#define myLiveDemo  true
 
 // One-time Arduino initialization
 void setup() {
@@ -61,10 +62,16 @@ void setup() {
 	// this Product ID.  (see above)
 	JAddStringToObject(req, "product", myProductID);
 
-	// This command (optional) command causes the Notecard to immediately establish a session with
-	// the service at notehub.io, and to keep it active continuously.  By default, without this, the
-	// Notecard will connect periodically (hourly) with the service if any data is pending to be uploaded.
+	// This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
+    // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
+    // Because of the power requirements of a continuous connection, a battery powered device would instead
+    // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
+#if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
+#else
+	JAddStringToObject(req, "mode", "periodic");
+	JAddNumberToObject(req, "minutes", 60);
+#endif
 
 	// Issue the request, telling the Notecard how and how often to access the service.
 	// This results in a JSON message to Notecard formatted like:
@@ -125,6 +132,10 @@ void loop() {
 	}
 
 	// Delay between measurements
-	delay(15000);
+#if myLiveDemo
+	delay(15*1000);     // 15 seconds
+#else
+	delay(15*60*1000);  // 15 minutes
+#endif
 
 }

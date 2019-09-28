@@ -31,6 +31,7 @@
 // This is the unique Product Identifier for your device.
 
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
+#define myLiveDemo  true
 
 // One-time Arduino initialization
 void setup() {
@@ -56,7 +57,12 @@ void setup() {
 	// Configure the productUID, and instruct the Notecard to stay connected to the service
 	req = NoteNewRequest("service.set");
 	JAddStringToObject(req, "product", myProductID);
+#if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
+#else
+	JAddStringToObject(req, "mode", "periodic");
+	JAddNumberToObject(req, "minutes", 60);
+#endif
 	NoteRequest(req);
 
 }
