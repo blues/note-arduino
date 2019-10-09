@@ -120,7 +120,9 @@ void loop() {
     J *req = NoteNewRequest("note.add");
 	if (req != NULL) {
 	    JAddStringToObject(req, "file", "sensors.qo");
+#if myLiveDemo
 	    JAddBoolToObject(req, "start", true);
+#endif
 		J *body = JCreateObject();
 		if (body != NULL) {
 			JAddNumberToObject(body, "temp", temperature);
