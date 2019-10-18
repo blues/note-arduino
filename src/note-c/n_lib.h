@@ -52,7 +52,6 @@ const char *NoteFnTransaction(char *json, char **jsonResponse);
 #define _I2CReceive NoteFnI2CReceive
 #define _NoteReset NoteFnNoteReset
 #define _Transaction NoteFnTransaction
-#define _Debug NoteFnDebug
 #define _Malloc NoteFnMalloc
 #define _Free NoteFnFree
 #define _GetMs NoteFnGetMs
@@ -61,6 +60,11 @@ const char *NoteFnTransaction(char *json, char **jsonResponse);
 #define _UnlockI2C NoteFnUnlockI2C
 #define _I2CAddress NoteFnI2CAddress
 #define _I2CMax NoteFnI2CMax
+#ifdef NOTE_NODEBUG
+#define _Debug(x)
+#else
+#define _Debug(x) NoteFnDebugMsg(x)
+#endif
 
 // End of C-callable functions
 #ifdef __cplusplus

@@ -6,62 +6,6 @@
 #include <time.h>
 #include "n_lib.h"
 
-// Types used for safely looking at the inside of numbers
-struct inside {
-    union inside_float {
-        float number;
-        uint32_t as_uint32;
-    } float_union;
-    union inside_double {
-        float number;
-        uint64_t as_uint64;
-    } double_union;
-};
-
-// Return true if a float is valid
-bool JIsNumberFloat(float number) {
-    struct inside v;
-    v.float_union.number = number;
-    // Positive infinity
-    if (v.float_union.as_uint32 == 0x7F800000UL)
-        return false;
-    // Negativ.float_union.as_uint32e infinity
-    if (v.float_union.as_uint32 == 0xFF800000UL)
-        return false;
-    // Signalling NaN (NANS)
-    if ((v.float_union.as_uint32 >= 0x7F800001UL && v.float_union.as_uint32 <= 0x7FBFFFFFUL)
-        || (v.float_union.as_uint32 >= 0xFF800001UL && v.float_union.as_uint32 <= 0xFFBFFFFFUL))
-        return false;
-    // Quiet NaN (NANQ)
-    if ((v.float_union.as_uint32 >= 0x7FC00000UL && v.float_union.as_uint32 <= 0x7FFFFFFFUL)
-        || (v.float_union.as_uint32 >= 0xFFC00000UL && v.float_union.as_uint32 <= 0xFFFFFFFFUL))
-        return false;
-    // Valid
-    return true;
-}
-
-// Return true if a double is valid
-bool JIsNumberDouble(double number) {
-    struct inside v;
-    v.double_union.number = number;
-    // Positive infinity
-    if (v.double_union.as_uint64 == 0x7FF0000000000000ULL)
-        return false;
-    // Negative infinity
-    if (v.double_union.as_uint64 == 0xFFF0000000000000ULL)
-        return false;
-    // Signalling NaN (NANS)
-    if ((v.double_union.as_uint64 >= 0x7FF0000000000001ULL && v.double_union.as_uint64 <= 0x7FF7FFFFFFFFFFFFULL)
-        || (v.double_union.as_uint64 >= 0xFFF0000000000001ULL && v.double_union.as_uint64 <= 0xFFF7FFFFFFFFFFFFULL))
-        return false;
-    // Quiet NaN (NANQ)
-    if ((v.double_union.as_uint64 >= 0x7FF8000000000000ULL && v.double_union.as_uint64 <= 0x7FFFFFFFFFFFFFFFULL)
-        || (v.double_union.as_uint64 >= 0xFFF8000000000000ULL && v.double_union.as_uint64 <= 0xFFFFFFFFFFFFFFFFULL))
-        return false;
-    // Valid
-    return true;
-}
-
 // Return true if a field is present in the response
 bool JIsPresent(J *rsp, const char *field) {
     if (rsp == NULL)
@@ -96,7 +40,7 @@ J *JGetObject(J *rsp, const char *field) {
 }
 
 // Return a number from the specified JSON object, or 0 if it's not present
-double JGetNumber(J *rsp, const char *field) {
+JNUMBER JGetNumber(J *rsp, const char *field) {
     if (rsp == NULL)
         return 0.0;
     J *item = JGetObjectItem(rsp, field);
@@ -104,7 +48,7 @@ double JGetNumber(J *rsp, const char *field) {
         return 0.0;
     if (!JIsNumber(item))
         return 0.0;
-    return item->valuedouble;
+    return item->valuenumber;
 }
 
 // Return a number from the JSON object, or 0 if it's not present

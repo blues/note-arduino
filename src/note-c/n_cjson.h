@@ -80,7 +80,7 @@ typedef struct J
     /* writing to valueint is DEPRECATED, use JSetNumberValue instead */
     int valueint;
     /* The item's number, if type==JNumber */
-    double valuedouble;
+    JNUMBER valuenumber;
 
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
     char *string;
@@ -199,7 +199,7 @@ N_CJSON_PUBLIC(J *) JCreateNull(void);
 N_CJSON_PUBLIC(J *) JCreateTrue(void);
 N_CJSON_PUBLIC(J *) JCreateFalse(void);
 N_CJSON_PUBLIC(J *) JCreateBool(Jbool boolean);
-N_CJSON_PUBLIC(J *) JCreateNumber(double num);
+N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num);
 N_CJSON_PUBLIC(J *) JCreateString(const char *string);
 /* raw json */
 N_CJSON_PUBLIC(J *) JCreateRaw(const char *raw);
@@ -216,8 +216,7 @@ N_CJSON_PUBLIC(J *) JCreateArrayReference(const J *child);
 
 /* These utilities create an Array of count items. */
 N_CJSON_PUBLIC(J *) JCreateIntArray(const int *numbers, int count);
-N_CJSON_PUBLIC(J *) JCreateFloatArray(const float *numbers, int count);
-N_CJSON_PUBLIC(J *) JCreateDoubleArray(const double *numbers, int count);
+N_CJSON_PUBLIC(J *) JCreateNumberArray(const JNUMBER *numbers, int count);
 N_CJSON_PUBLIC(J *) JCreateStringArray(const char **strings, int count);
 
 /* Append item to the specified array/object. */
@@ -265,17 +264,17 @@ N_CJSON_PUBLIC(J*) JAddNullToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, const Jbool boolean);
-N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const double number);
+N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const JNUMBER number);
 N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name, const char * const string);
 N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, const char * const raw);
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name);
 
-/* When assigning an integer value, it needs to be propagated to valuedouble too. */
-#define JSetIntValue(object, number) ((object) ? (object)->valueint = (object)->valuedouble = (number) : (number))
+/* When assigning an integer value, it needs to be propagated to valuenumber too. */
+#define JSetIntValue(object, number) ((object) ? (object)->valueint = (object)->valuenumber = (number) : (number))
 /* helper for the JSetNumberValue macro */
-N_CJSON_PUBLIC(double) JSetNumberHelper(J *object, double number);
-#define JSetNumberValue(object, number) ((object != NULL) ? JSetNumberHelper(object, (double)number) : (number))
+N_CJSON_PUBLIC(JNUMBER) JSetNumberHelper(J *object, JNUMBER number);
+#define JSetNumberValue(object, number) ((object != NULL) ? JSetNumberHelper(object, (JNUMBER)number) : (number))
 
 /* Macro for iterating over an array or object */
 #define JArrayForEach(element, array) for(element = (array != NULL) ? (array)->child : NULL; element != NULL; element = element->next)

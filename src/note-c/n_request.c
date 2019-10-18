@@ -16,7 +16,9 @@ static J *errDoc(const char *errmsg) {
     if (rspdoc != NULL)
         JAddStringToObject(rspdoc, "err", errmsg);
 #ifdef SHOW_TRANSACTIONS
-    _Debug("{\"err\":\"%s\"}\n", errmsg);
+    _Debug("{\"err\":\"");
+	_Debug(errmsg);
+	_Debug("\"}\n");
 #endif
     return rspdoc;
 }
@@ -90,7 +92,8 @@ J *NoteTransaction(J *req) {
     }
     
 #ifdef SHOW_TRANSACTIONS
-    _Debug("%s\n", json);
+    _Debug(json);
+	_Debug("\n");
 #endif
 
     // Pertform the transaction
@@ -112,7 +115,8 @@ J *NoteTransaction(J *req) {
     J *rspdoc = JParse(responseJSON);
     if (rspdoc == NULL) {
         _Free(responseJSON);
-        _Debug("unable to parse %d-byte response JSON: \"%s\"\n", strlen(responseJSON), responseJSON);
+        _Debug("unable to parse response JSON:\n");
+		_Debug(responseJSON);
         J *rsp = errDoc("unrecognized response from card");
         _UnlockNote();
         return rsp;
@@ -120,7 +124,8 @@ J *NoteTransaction(J *req) {
 
     // Debug
 #ifdef SHOW_TRANSACTIONS
-    _Debug("%s\n", responseJSON);
+    _Debug(responseJSON);
+	_Debug("\n");
 #endif
 
     // Discard the buffer now that it's parsed
@@ -142,10 +147,9 @@ void NoteResetRequired() {
 // Initialize or re-initialize the module, returning false if anything fails
 bool NoteReset() {
     _LockNote();
-    resetRequired = false;
-    bool success = _NoteReset();
+    resetRequired = !_NoteReset();
     _UnlockNote();
-    return success;
+    return !resetRequired;
 }
 
 // Check to see if a notecard error is present

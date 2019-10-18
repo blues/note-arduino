@@ -16,7 +16,7 @@
 
 // Time-related suppression timer and cache
 static long timeBaseSetAtMs = 0;
-static epoch timeBase = 0;
+static JTIME timeBase = 0;
 static uint32_t timeTimer = 0;
 static bool zoneStillUnavailable = true;
 static char curZone[48] = {0};
@@ -56,21 +56,21 @@ bool NoteTimeValidST() {
 }
 
 // Get the current epoch time, unsuppressed
-epoch NoteTime() {
+JTIME NoteTime() {
     timeTimer = 0;
     return NoteTimeST();
 }
 
 // Set the time
-static void setTime(epoch seconds) {
+static void setTime(JTIME seconds) {
     timeBase = seconds;
     timeBaseSetAtMs = _GetMs();
-    _Debug("setting time to %d\n", seconds);
+    _Debug("setting time\n");
 }
 
 // Get the current epoch time as known by the module.  If it isn't known by the module, just
 // return the time since boot as indicated by the millisecond clock.
-epoch NoteTimeST() {
+JTIME NoteTimeST() {
 
     // If we haven't yet fetched the time, or if we still need the timezone, do so with a suppression
     // timer so that we don't hammer the module before it's had a chance to connect to the network to fetch time.
@@ -81,7 +81,7 @@ epoch NoteTimeST() {
             J *rsp = NoteRequestResponse(NoteNewRequest("card.time"));
             if (rsp != NULL) {
                 if (!NoteResponseError(rsp)) {
-                    epoch seconds = JGetInt(rsp, "time");
+                    JTIME seconds = JGetInt(rsp, "time");
                     if (seconds != 0) {
 
                         // Set the time if it hasn't yet been set
@@ -114,7 +114,7 @@ epoch NoteTimeST() {
     }
 
     // Adjust the base time by the number of seconds that have elapsed since the base.
-    epoch adjustedTime = timeBase + ((_GetMs() - timeBaseSetAtMs) / 1000);
+    JTIME adjustedTime = timeBase + ((_GetMs() - timeBaseSetAtMs) / 1000);
 
     // Done
     return adjustedTime;
@@ -293,7 +293,7 @@ bool NoteGetVersion(char *versionBuf, int versionBufLen) {
 }
 
 // Get Location
-bool NoteGetLocation(double *retLat, double *retLon, epoch *time, char *statusBuf, int statusBufLen) {
+bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *statusBuf, int statusBufLen) {
     bool locValid = false;
     if (statusBuf != NULL)
         *statusBuf = '\0';
@@ -314,7 +314,7 @@ bool NoteGetLocation(double *retLat, double *retLon, epoch *time, char *statusBu
                 *retLon = JGetNumber(rsp, "lon");
             locValid = true;
         }
-        epoch seconds = JGetInt(rsp, "time");
+        JTIME seconds = JGetInt(rsp, "time");
         if (seconds != 0 && time != NULL)
             *time = seconds;
         NoteDeleteResponse(rsp);
@@ -323,7 +323,7 @@ bool NoteGetLocation(double *retLat, double *retLon, epoch *time, char *statusBu
 }
 
 // Set Static Location
-bool NoteSetLocation(double lat, double lon) {
+bool NoteSetLocation(JNUMBER lat, JNUMBER lon) {
     bool success = false;
     J *req = NoteNewRequest("card.location.mode");
     if (req != NULL) {
@@ -413,7 +413,7 @@ bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBu
 }
 
 // Get Status of the Notecard
-bool NoteGetStatus(char *statusBuf, int statusBufLen, epoch *bootTime, bool *retUSB, bool *retSignals) {
+bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals) {
     bool success = false;
     if (statusBuf != NULL)
         statusBuf[0] = '\0';
@@ -442,10 +442,10 @@ bool NoteGetStatus(char *statusBuf, int statusBufLen, epoch *bootTime, bool *ret
 }
 
 // Get Status with a Suppression Timer
-bool NoteGetStatusST(char *statusBuf, int statusBufLen, epoch *bootTime, bool *retUSB, bool *retSignals) {
+bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals) {
     bool success = false;
     static char lastStatus[128] = {0};
-    static epoch lastBootTime = 0;
+    static JTIME lastBootTime = 0;
     static bool lastUSB = false;
     static bool lastSignals = false;
     static uint32_t statusTimer = 0;
@@ -498,7 +498,7 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
     }
 
     // Put ourselves to sleep
-    _Debug("requesting sleep for %d seconds\n", seconds);
+    _Debug("requesting sleep\n");
     J *req = NoteNewRequest("card.attn");
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
@@ -533,7 +533,7 @@ bool NoteWake(int stateLen, void *state) {
     }
 
     // Note the current time, if the field is present
-    epoch seconds = JGetInt(rsp, "time");
+    JTIME seconds = JGetInt(rsp, "time");
     if (seconds != 0)
         setTime(seconds);
 
@@ -560,7 +560,7 @@ bool NoteWake(int stateLen, void *state) {
     int actualLen = JB64Decode(p, payload);
     if (actualLen != stateLen) {
         _Free(p);
-        _Debug("*** (%d != %d) discarding saved state\n", actualLen, stateLen);
+        _Debug("*** discarding saved state\n");
         NoteDeleteResponse(rsp);
         return false;
     }
@@ -734,7 +734,7 @@ bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile,
 }
 
 // Get the voltage of the Notecard
-bool NoteGetVoltage(double *voltage) {
+bool NoteGetVoltage(JNUMBER *voltage) {
     bool success = false;
     *voltage = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
@@ -747,7 +747,7 @@ bool NoteGetVoltage(double *voltage) {
 }
 
 // Get the temperature of the Notecard
-bool NoteGetTemperature(double *temp) {
+bool NoteGetTemperature(JNUMBER *temp) {
     bool success = false;
     *temp = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));

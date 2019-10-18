@@ -45,22 +45,25 @@ static int maxExponent = 511;   /* Largest possible base 10 exponent.  Any
                                  * produce underflow or overflow, so there's
                                  * no need to worry about additional digits.
                                  */
-static double powersOf10[] = {  /* Table giving binary powers of 10.  Entry */
+static JNUMBER powersOf10[] = {  /* Table giving binary powers of 10.  Entry */
     10.,                        /* is 10^2^i.  Used to convert decimal */
     100.,                       /* exponents into floating-point numbers. */
     1.0e4,
     1.0e8,
     1.0e16,
     1.0e32,
+#ifndef NOTE_FLOAT
     1.0e64,
     1.0e128,
-    1.0e256
+    1.0e256,
+#endif
+    0.0
 };
 
 /*
  *----------------------------------------------------------------------
  *
- * atof -- a LOCALE-INDEPENDENT string to double
+ * atof -- a LOCALE-INDEPENDENT string to floating point
  *
  *      This procedure converts a floating-point number from an ASCII
  *      decimal representation to internal double-precision format.
@@ -78,7 +81,7 @@ static double powersOf10[] = {  /* Table giving binary powers of 10.  Entry */
  *----------------------------------------------------------------------
  */
 
-double
+JNUMBER
 JAtoN(string, endPtr)
     const char *string;         /* A decimal ASCII floating-point number,
                                  * optionally preceded by white space.
@@ -96,7 +99,7 @@ JAtoN(string, endPtr)
                                  * address here. */
 {
     int sign, expSign = FALSE;
-    double fraction, dblExp, *d;
+    JNUMBER fraction, dblExp, *d;
     register const char *p;
     register int c;
     int exp = 0;                /* Exponent read from "EX" field. */
@@ -246,7 +249,7 @@ JAtoN(string, endPtr)
         exp = maxExponent;
     }
     dblExp = 1.0;
-    for (d = powersOf10; exp != 0; exp >>= 1, d += 1) {
+    for (d = powersOf10; *d != 0.0 && exp != 0; exp >>= 1, d += 1) {
         if (exp & 01) {
             dblExp *= *d;
         }
