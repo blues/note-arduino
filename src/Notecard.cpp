@@ -5,8 +5,9 @@
 #include <Notecard.h>
 #include <Wire.h>
 
-#define DEBUG_READ_TOO_LONG  false // If ST bug present, immediate notecard crash
-#define DEBUG_READ_TOO_SHORT false
+// 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.  This code enables
+// us to exercise that code path to test the state of the bug.
+static int readLengthAdjustment = 0;
 
 // Forward references to C-callable functions defined below
 extern "C" {
@@ -162,13 +163,7 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 	if (errstr == NULL) {
 
 		int readlen = Size + (sizeof(uint8_t)*2);
-#if DEBUG_READ_TOO_LONG
-		int len = Wire.requestFrom((int) DevAddress, readlen+10);
-#elif DEBUG_READ_TOO_SHORT
-		int len = Wire.requestFrom((int) DevAddress, readlen-1);
-#else
-		int len = Wire.requestFrom((int) DevAddress, readlen);
-#endif
+		int len = Wire.requestFrom((int) DevAddress, readlen+readLengthAdjustment);
 		if (len == 0) {
 			errstr = "i2c: no response";
 		} else if (len != readlen) {
@@ -207,4 +202,9 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 #endif
 	*available = availbyte;
 	return NULL;
+}
+
+// Method enabling us to test the state of the ST Microelectronics I2C HAL issue
+const char *NoteI2CTest(int Adjustment) {
+	readLengthAdjustment = Adjustment;
 }
