@@ -108,7 +108,7 @@ void setup() {
 		}
 
 		// Create a template of the payload that will be used to send notes below
-		myBinaryPayload binaryData = {0};
+		struct myBinaryPayload binaryData;
 		JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
 
 		// Register the template in the output queue notefile
@@ -140,12 +140,6 @@ void loop() {
 		NoteDeleteResponse(rsp);
 	}
 
-	// Add an indication of temperature status
-	if (temperature > 26.67)	// 80F
-		JAddStringToObject(rsp, "status", "hot");
-	if (temperature < -6.67)	// 20F
-		JAddStringToObject(rsp, "status", "cold");
-
 	// Do the same to retrieve the voltage that is detected by the Notecard on its V+ pin.
 	double voltage = 0;
 	rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
@@ -155,7 +149,7 @@ void loop() {
 	}
 
 	// Add a binary data structure to the simulation
-	myBinaryPayload binaryData;
+	struct myBinaryPayload binaryData;
 	binaryData.temp = temperature;
 	binaryData.voltage = voltage;
 
@@ -167,12 +161,13 @@ void loop() {
 		JAddStringToObject(req, "file", "sensors.qo");
 		J *body = JCreateObject();
 		if (body != NULL) {
+			JAddStringToObject(body, "status", temperature > 26.67 ? "hot" : "normal");	// 80F
 			JAddNumberToObject(body, "temp", temperature);
 			JAddNumberToObject(body, "voltage", voltage);
 			JAddNumberToObject(body, "count", eventCounter);
-			JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
 			JAddItemToObject(req, "body", body);
 		}
+		JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
 		NoteRequest(req);
 	}
 
