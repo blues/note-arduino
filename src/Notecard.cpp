@@ -205,6 +205,6 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 }
 
 // Method enabling us to test the state of the ST Microelectronics I2C HAL issue
-const char *NoteI2CTest(int Adjustment) {
+void NoteI2CTest(int Adjustment) {
 	readLengthAdjustment = Adjustment;
 }

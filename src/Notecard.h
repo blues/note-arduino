@@ -12,4 +12,4 @@ void NoteInitI2C(void);
 void NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
 void NoteInitSerial(HardwareSerial &serial, int speed);
 void NoteSetDebugOutputStream(Stream &dbgserial);
-const char *NoteI2CTest(int Adjustment);
+void NoteI2CTest(int Adjustment);
