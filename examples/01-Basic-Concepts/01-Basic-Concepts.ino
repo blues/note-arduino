@@ -12,7 +12,7 @@
 // would connect the R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin,
 // and then set these #defines to use Serial2 below.
 
-#define notecard Serial2
+#define notecard Serial1
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -66,7 +66,8 @@ void loop() {
 	// The "body" of the note is a JSON object completely of our own design, and is passed straight
 	// through as-is to notehub.io and beyond.	(Note that we add the "start" flag for demonstration
 	// purposes to upload the data instantaneously, so that if you are looking at this on notehub.io
-	// you will see the data appearing 'live'.)
+	// you will see the data appearing 'live'.)  Note that we use a somewhat convoluted way of displaying
+	// a floating point number because %f isn't supported in many versions of Arduino (newlib).
 	char message[150];
 	snprintf(message, sizeof(message),
 			 "{"
@@ -76,9 +77,11 @@ void loop() {
 			 ","
 			 "\"file\":\"sensor.qo\""
 			 ","
-			 "\"body\":{\"temp\":%f,\"voltage\":%f,\"count\":%d}"
+			 "\"body\":{\"temp\":%d.%02d,\"voltage\":%d.%02d,\"count\":%d}"
 			 "}",
-			 temperature, voltage, eventCounter);
+			 (int)temperature, abs(((int)(temperature*100.0)%100)),
+			 (int)voltage, (int)(voltage*100.0)%100,
+			 eventCounter);
 	notecard.println(message);
 
 	// Delay between simulated measurements
