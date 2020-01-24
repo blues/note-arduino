@@ -19,12 +19,14 @@
 #include <Notecard.h>
 
 // If the Notecard is connected to a serial port, define it here.  For example, if you are using
-// an M5Stack Basic Core IoT Development Kit, you would connect the R2 pin to the Notecard's TX pin,
-// and the M5Stack's T2 pin to the Notecard's RX pin, and then would use Serial2 below at 9600.
-// If, on the other hand, you are using I2C (such as by using the Grove cable on the M5Stack),
-// just disable this #define by preceding it with  //
+// the Adafruit Feather NRF52840 Express, the RX/TX pins (and thus the Notecard) are on Serial1.
+// If however you are using an M5Stack Basic Core IoT Development Kit, you would connect the
+// R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin, and then
+// would use Serial2.
+//
+// On any host, though, if you  are using I2C then just disable this #define by preceding it with  "//"
 
-#define notecard Serial2
+#define notecard Serial1
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -33,7 +35,6 @@
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
 
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
-#define myLiveDemo  true
 
 // One-time Arduino initialization
 void setup() {
@@ -43,6 +44,10 @@ void setup() {
 	// Arduino devices, Arduino's serial debug output is on the "Serial" device at 115200.
 	// If you don't wish to see the Notecard's debug output, or if your device doesn't have
 	// any debug output port, just comment out these lines by preceding them with //
+	// Note that the initial 2.5s delay is required by some Arduino cards before debug
+	// UART output can be successfully displayed in the Arduino IDE, including the
+	// Adafruit Feather nRF52840 Express.
+	delay(2500);
     Serial.begin(115200);
     NoteSetDebugOutputStream(Serial);
 
@@ -66,12 +71,7 @@ void setup() {
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
-#if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
-#else
-	JAddStringToObject(req, "mode", "periodic");
-	JAddNumberToObject(req, "minutes", 60);
-#endif
 
 	// Issue the request, telling the Notecard how and how often to access the service.
 	// This results in a JSON message to Notecard formatted like:
@@ -120,9 +120,7 @@ void loop() {
     J *req = NoteNewRequest("note.add");
 	if (req != NULL) {
 	    JAddStringToObject(req, "file", "sensors.qo");
-#if myLiveDemo
 	    JAddBoolToObject(req, "start", true);
-#endif
 		J *body = JCreateObject();
 		if (body != NULL) {
 			JAddNumberToObject(body, "temp", temperature);
@@ -134,10 +132,6 @@ void loop() {
 	}
 
 	// Delay between measurements
-#if myLiveDemo
 	delay(15*1000);     // 15 seconds
-#else
-	delay(15*60*1000);  // 15 minutes
-#endif
 
 }

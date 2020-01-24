@@ -29,15 +29,13 @@
 #include <stdlib.h>
 
 // Define your Notecard serial port, else comment this out for I2C
-
-//#define notecard Serial2
+//#define notecard Serial1
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
 // of "managing" it.  In order to set this value, you must first register with notehub.io and
 // "claim" a unique product ID for your device.	 It could be something as simple as as your email
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
-
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
 
 // A sample binary object, just for binary payload simulation
@@ -49,11 +47,8 @@ struct myBinaryPayload {
 // One-time Arduino initialization
 void setup() {
 
-	// Set up for debug output.	 If you open Arduino's serial terminal window, you'll be able to
-	// watch JSON objects being transferred to and from the Notecard for each request.	On most
-	// Arduino devices, Arduino's serial debug output is on the "Serial" device at 115200.
-	// If you don't wish to see the Notecard's debug output, or if your device doesn't have
-	// any debug output port, just comment out these lines by preceding them with //
+	// Set up for debug output.
+	delay(2500);
 	Serial.begin(115200);
 	NoteSetDebugOutputStream(Serial);
 

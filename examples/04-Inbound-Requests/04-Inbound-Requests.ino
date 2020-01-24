@@ -26,10 +26,9 @@
 #define	INBOUND_QUEUE_COMMAND_FIELD	"my-request-type"
 
 // Set this to the Notecard's serial port.  If using I2C, comment this line out using //
-#define notecard Serial2
+#define notecard Serial1
 
 // This is the unique Product Identifier for your device.
-
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
 #define myLiveDemo  true
 
@@ -37,6 +36,7 @@
 void setup() {
 
 	// Set up for debug output.
+	delay(2500);
     Serial.begin(115200);
     NoteSetDebugOutputStream(Serial);
 

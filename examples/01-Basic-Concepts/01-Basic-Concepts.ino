@@ -7,10 +7,13 @@
 // port by using nothing but simple "print line" functions targeting that Arduino serial port.
 //
 
-// This configuration parameter defines which serial port on your Arduino device is connected to
-// the Notecard.  For example, if you are using an M5Stack Basic Core IoT Development Kit, you
-// would connect the R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin,
-// and then set these #defines to use Serial2 below.
+// If the Notecard is connected to a serial port, define it here.  For example, if you are using
+// the Adafruit Feather NRF52840 Express, the RX/TX pins (and thus the Notecard) are on Serial1.
+// If however you are using an M5Stack Basic Core IoT Development Kit, you would connect the
+// R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin, and then
+// would use Serial2.
+//
+// On any host, though, if you  are using I2C then just disable this #define by preceding it with  "//"
 
 #define notecard Serial1
 
