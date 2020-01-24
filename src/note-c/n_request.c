@@ -5,7 +5,7 @@
 #include "n_lib.h"
 
 // For flow tracing
-#define SHOW_TRANSACTIONS
+static int suppressShowTransactions = 0;
 
 // Flag that gets set whenever an error occurs that should force a reset
 static bool resetRequired = true;
@@ -15,12 +15,20 @@ static J *errDoc(const char *errmsg) {
     J *rspdoc = JCreateObject();
     if (rspdoc != NULL)
         JAddStringToObject(rspdoc, "err", errmsg);
-#ifdef SHOW_TRANSACTIONS
-    _Debug("{\"err\":\"");
-	_Debug(errmsg);
-	_Debug("\"}\n");
-#endif
+	if (suppressShowTransactions == 0) {
+	    _Debug("{\"err\":\"");
+		_Debug(errmsg);
+		_Debug("\"}\n");
+	}
     return rspdoc;
+}
+
+// Suppress or resume showing of transactions
+void NoteSuspendTransactionDebug() {
+	suppressShowTransactions++;
+}
+void NoteResumeTransactionDebug() {
+	suppressShowTransactions--;
 }
 
 // Lock for mutual exclusion, not only because access to the card must be serialized, but also because
@@ -91,10 +99,10 @@ J *NoteTransaction(J *req) {
         return rsp;
     }
     
-#ifdef SHOW_TRANSACTIONS
-    _Debug(json);
-	_Debug("\n");
-#endif
+	if (suppressShowTransactions == 0) {
+	    _Debug(json);
+		_Debug("\n");
+	}
 
     // Pertform the transaction
     char *responseJSON;
@@ -123,10 +131,10 @@ J *NoteTransaction(J *req) {
     }
 
     // Debug
-#ifdef SHOW_TRANSACTIONS
-    _Debug(responseJSON);
-	_Debug("\n");
-#endif
+	if (suppressShowTransactions == 0) {
+	    _Debug(responseJSON);
+		_Debug("\n");
+	}
 
     // Discard the buffer now that it's parsed
     _Free(responseJSON);

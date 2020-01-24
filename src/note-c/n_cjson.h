@@ -269,6 +269,8 @@ N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name,
 N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, const char * const raw);
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name);
+#define JConvertToJSONString JPrintUnformatted
+#define JConvertFromJSONString JParse
 
 /* When assigning an integer value, it needs to be propagated to valuenumber too. */
 #define JSetIntValue(object, number) ((object) ? (object)->valueint = (object)->valuenumber = (number) : (number))

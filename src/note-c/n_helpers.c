@@ -829,3 +829,48 @@ static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs) {
     return expired;
 
 }
+
+// Periodically show Notecard sync status, returning TRUE if something was displayed
+bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel) {
+
+	// Suppress polls so as to not overwhelm the notecard
+	static int lastCommStatusPoll = 0;
+	if (lastCommStatusPoll != 0 && _GetMs() < (lastCommStatusPoll + pollFrequencyMs))
+		return false;
+
+	// Get the next queued status note
+	J *req = NoteNewRequest("note.get");
+	JAddStringToObject(req, "file", "_synclog.qi");
+	JAddBoolToObject(req, "delete", true);
+	NoteSuspendTransactionDebug();
+	J *rsp = NoteRequestResponse(req);
+	NoteResumeTransactionDebug();
+	if (rsp != NULL) {
+
+		// If an error is returned, this means that no response is pending.	 Note
+		// that it's expected that this might return either a "note does not exist"
+		// error if there are no pending inbound notes, or a "file does not exist" error
+		// if the inbound queue hasn't yet been created on the service.
+		if (NoteResponseError(rsp)) {
+			NoteDeleteResponse(rsp);
+
+			// Only stop polling quickly if we don't receive anything
+			lastCommStatusPoll = _GetMs();
+			return false;
+		}
+
+		// Get the note's body
+		J *body = JGetObject(rsp, "body");
+		if (body != NULL) {
+			if (maxLevel < 0 || JGetInt(body, "level") <= maxLevel)
+				NoteFnDebug("sync: %s: %s\n", JGetString(body, "subsystem"), JGetString(body, "text"));
+		}
+
+		// Done with this response
+		NoteDeleteResponse(rsp);
+		return true;
+	}
+
+	return false;
+
+}

@@ -50,6 +50,9 @@ void NoteResetRequired(void);
 #define NoteNewBody JCreateObject
 J *NoteNewRequest(const char *request);
 J *NoteRequestResponse(J *req);
+void NoteSuspendTransactionDebug(void);
+void NoteResumeTransactionDebug(void);
+bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
 bool NoteRequest(J *req);
 #define NoteResponseError(rsp) (!JIsNullString(rsp, "err"))
 #define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, "err", errstr))
