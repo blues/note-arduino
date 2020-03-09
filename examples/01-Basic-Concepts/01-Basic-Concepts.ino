@@ -33,7 +33,7 @@ void setup() {
 	// that the Arduino software may have pending so that we always start sending commands "cleanly".
 	// We use the speed of 9600 because the Notecard's RX/TX pins are always configured for that speed.
 	notecard.begin(9600);
-	notecard.println("\n");
+	notecard.println("\n\n");
 
 	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
 	// this Product ID.	 (see above)

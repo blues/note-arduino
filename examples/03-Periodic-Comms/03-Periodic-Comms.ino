@@ -9,9 +9,20 @@
 //
 
 // Define the pin number of the pushbutton pin
-#define buttonPin			7				// Change to any GPIO pin where there is an active-high button
-#define	buttonPressedState	LOW				// Active high, or active low
-#define ledPin				LED_RED			// Change to any GPIO pin where there is an LED
+#if defined(ARDUINO_ARCH_ESP32)
+#define buttonPin			21
+#define	buttonPressedState	HIGH
+#define ledPin				13
+#elif defined(ARDUINO_ARCH_NRF52)
+#define buttonPin			7
+#define	buttonPressedState	LOW
+#define ledPin				LED_RED
+#else
+#error "please add a board definition for button and led"
+#define buttonPin			?				// Change to any GPIO pin where there is an active-high button
+#define	buttonPressedState	?				// Active high, or active low
+#define ledPin				?				// Change to any GPIO pin where there is an LED
+#endif
 
 // Include the Arduino library for the Notecard
 
