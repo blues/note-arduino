@@ -59,6 +59,7 @@ void setup() {
 	JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
+	JAddBoolToObject(req, "sync", true);	// Automatically sync when changes are made on notehub
 #else
 	JAddStringToObject(req, "mode", "periodic");
 	JAddNumberToObject(req, "minutes", 60);
