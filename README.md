@@ -11,14 +11,23 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
 
 ## Installation
 
-1. Download the library as a zip from [here][archive] or use the
-UI `Clone or Download` -> `Download ZIP`
+1. Download the library as a .zip file from [here][archive] or use the UI `Clone or download -> Download ZIP`
 2. Start the Arduino IDE
-3. Import the library:
+3. Open a new or existing sketch which will talk to Notecard
+4. Include the library in your sketch:
    ```
-   Sketch -> Include library -> Add ZIP Library
+   Sketch -> Include Library -> Add .ZIP Library...
    ```
-And select the previously downloaded zip file.
+   and select the previously downloaded .zip file
+5. Position the text cursor at the top of your sketch
+6. Include the library in your sketch:
+   ```
+   Sketch -> Include Library -> Contributed libraries -> Blues Wireless Notecard
+   ```
+   This will have the effect of inserting this line of code at the top of your sketch:
+   ```
+   #include <Notecard.h>
+   ```
 
 ## Keeping up to date with note-c repo
 
