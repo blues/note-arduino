@@ -26,7 +26,12 @@ This library depends on the blues [note-c repo][note-c] and utilizes
 git subtrees to include those files in the src/note-c folder. To
 update this repo with the latest from note-c:
 
-```
+```sh
+# Prefer this to keep history linear.
+git pull --strategy=subtree --squash https://github.com/blues/note-c.git master
+# This works if the above doesn't.
+git pull --allow-unrelated-histories --strategy=subtree --squash https://github.com/blues/note-c.git master
+# This creates a merge commit sometimes which we don't want.
 git subtree pull --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 

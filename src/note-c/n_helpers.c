@@ -740,8 +740,10 @@ bool NoteGetVoltage(JNUMBER *voltage) {
     *voltage = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
     if (rsp != NULL) {
-        if (!NoteResponseError(rsp))
+        if (!NoteResponseError(rsp)) {
             *voltage = JGetNumber(rsp, "value");
+			success = true;
+		}
         NoteDeleteResponse(rsp);
     }
     return success;
@@ -753,8 +755,10 @@ bool NoteGetTemperature(JNUMBER *temp) {
     *temp = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
     if (rsp != NULL) {
-        if (!NoteResponseError(rsp))
+        if (!NoteResponseError(rsp)) {
             *temp = JGetNumber(rsp, "value");
+			success = true;
+		}
         NoteDeleteResponse(rsp);
     }
     return success;

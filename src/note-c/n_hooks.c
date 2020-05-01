@@ -184,6 +184,9 @@ uint32_t NoteFnI2CAddress() {
         return 0x17;
     return i2cAddress;
 }
+void NoteSetI2CAddress(uint32_t i2caddress) {
+	i2cAddress = i2caddress;
+}
 uint32_t NoteFnI2CMax() {
     // Many Arduino libraries (such as ESP32) have a limit less than 32, so if the max isn't specified
     // we must assume the worst and segment the I2C messages into very tiny chunks.

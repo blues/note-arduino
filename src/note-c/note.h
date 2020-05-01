@@ -68,6 +68,7 @@ void NoteSetFnSerial(serialResetFn resetfn, serialTransmitFn writefn, serialAvai
 #define NOTE_I2C_ADDR_DEFAULT	0
 #define NOTE_I2C_MAX_DEFAULT	0
 void NoteSetFnI2C(uint32_t i2caddr, uint32_t i2cmax, i2cResetFn resetfn, i2cTransmitFn transmitfn, i2cReceiveFn receivefn);
+void NoteSetI2CAddress(uint32_t i2caddress);
 
 // Calls to the functions set above
 #define NotePrintf NoteFnDebug
