@@ -19,8 +19,7 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
    Sketch -> Include Library -> Add .ZIP Library...
    ```
    and select the previously downloaded .zip file
-5. Position the text cursor at the top of your sketch
-6. Include the library in your sketch:
+5. Include the library in your sketch:
    ```
    Sketch -> Include Library -> Contributed libraries -> Blues Wireless Notecard
    ```
