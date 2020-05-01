@@ -14,7 +14,7 @@ This library is used by the [m5stack repo][m5stack] m5note Arduino sketch, which
 1. Download the library as a .zip file from [here][archive] or use the UI `Clone or download -> Download ZIP`
 2. Start the Arduino IDE
 3. Open a new or existing sketch which will talk to Notecard
-4. Include the library in your sketch:
+4. Add the library to the Arduino IDE:
    ```
    Sketch -> Include Library -> Add .ZIP Library...
    ```
