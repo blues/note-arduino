@@ -13,9 +13,10 @@
 // R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin, and then
 // would use Serial2.
 //
-// On any host, though, if you  are using I2C then just disable this #define by preceding it with  "//"
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
-#define notecard Serial1
+#define serialNotecard Serial1
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -32,21 +33,21 @@ void setup() {
 	// Initialize the serial port being used by the Notecard, and send newlines to clear out any data
 	// that the Arduino software may have pending so that we always start sending commands "cleanly".
 	// We use the speed of 9600 because the Notecard's RX/TX pins are always configured for that speed.
-	notecard.begin(9600);
-	notecard.println("\n\n");
+	serialNotecard.begin(9600);
+	serialNotecard.println("\n\n");
 
 	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
 	// this Product ID.	 (see above)
-	notecard.println("{\"req\":\"service.set\",\"product\":\"" myProductID "\"}");
+	serialNotecard.println("{\"req\":\"service.set\",\"product\":\"" myProductID "\"}");
 
 	// This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
 #if myLiveDemo
-	notecard.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
+	serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
 #else
-	notecard.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"minutes\":60}");
+	serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"minutes\":60}");
 #endif
 
 }
@@ -64,13 +65,12 @@ void loop() {
 	// Simulate a voltage reading, between 3.1 and 4.2 degrees
 	double voltage = (double) random(31, 42) / 10.0;
 
-	// Add a "note" to the Notecard, in a queue that we will choose to name "sensor.qo" because it will
-	// contain our simulated "sensor data" and it is to be placed in a "queue" that is "outbound".
-	// The "body" of the note is a JSON object completely of our own design, and is passed straight
-	// through as-is to notehub.io and beyond.	(Note that we add the "start" flag for demonstration
-	// purposes to upload the data instantaneously, so that if you are looking at this on notehub.io
-	// you will see the data appearing 'live'.)  Note that we use a somewhat convoluted way of displaying
-	// a floating point number because %f isn't supported in many versions of Arduino (newlib).
+	// Add a "note" to the Notecard, in the default data notefile. The "body" of the note is
+	// JSON object completely of our own design, and is passed straight through as-is to notehub.io.
+	// (Note that we add the "start" flag for demonstration purposes to upload the data instantaneously,
+	// so that if you are looking at this on notehub.io you will see the data appearing 'live'.)
+	// Note that we use a somewhat convoluted way of displaying a floating point number because %f
+	// isn't supported in many versions of Arduino (newlib).
 	char message[150];
 	snprintf(message, sizeof(message),
 			 "{"
@@ -78,14 +78,12 @@ void loop() {
 			 ","
 			 "\"start\":true"
 			 ","
-			 "\"file\":\"sensor.qo\""
-			 ","
 			 "\"body\":{\"temp\":%d.%02d,\"voltage\":%d.%02d,\"count\":%d}"
 			 "}",
 			 (int)temperature, abs(((int)(temperature*100.0)%100)),
 			 (int)voltage, (int)(voltage*100.0)%100,
 			 eventCounter);
-	notecard.println(message);
+	serialNotecard.println(message);
 
 	// Delay between simulated measurements
 #if myLiveDemo

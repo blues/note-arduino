@@ -30,8 +30,11 @@
 #define	INBOUND_QUEUE_NOTEFILE		"my-inbound.qi"
 #define	INBOUND_QUEUE_COMMAND_FIELD	"my-request-type"
 
-// Set this to the Notecard's serial port.	If using I2C, comment this line out using //
-#define notecard Serial1
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove serialDebug if you don't want the Notecard library to output debug information
+#define serialNotecard Serial1
+#define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
@@ -48,23 +51,18 @@ void attnArm();
 void setup() {
 
 	// Set up for debug output.
-	delay(2500);
-	Serial.begin(115200);
-	NoteSetDebugOutputStream(Serial);
+#ifdef serialDebugOut
+    delay(2500);
+    serialDebugOut.begin(115200);
+    NoteSetDebugOutputStream(serialDebugOut);
+#endif
 
 	// Initialize the physical I/O channel to the Notecard
-#ifdef notecard
-	NoteInitSerial(notecard, 9600);
+#ifdef serialNotecard
+	NoteInitSerial(serialNotecard, 9600);
 #else
 	NoteInitI2C();
 #endif
-
-	// This request marks this device as a "development device".  For development devices, the service
-	// accepts inbound HTTP requests in an open, unauthenticated manner for developer convenience.
-	// No devices should ever be deployed in this mode, for obvious reasons!
-	J *req = NoteNewRequest("card.io");
-	JAddStringToObject(req, "mode", "development-on");
-	NoteRequest(req);
 
 	// Configure the productUID, and instruct the Notecard to stay connected to the service
 	req = NoteNewRequest("service.set");
@@ -130,7 +128,7 @@ void loop() {
 
 				// Simulate Processing the response here
 				char *myCommandType = JGetString(body, INBOUND_QUEUE_COMMAND_FIELD);
-				NotePrintf("INBOUND REQUEST: %s\n\n", myCommandType);
+				NoteDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
 
 			}
 

@@ -28,8 +28,11 @@
 #include <Notecard.h>
 #include <stdlib.h>
 
-// Define your Notecard serial port, else comment this out for I2C
-//#define notecard Serial1
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove serialDebug if you don't want the Notecard library to output debug information
+#define serialNotecard Serial1
+#define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -48,13 +51,15 @@ struct myBinaryPayload {
 void setup() {
 
 	// Set up for debug output.
-	delay(2500);
-	Serial.begin(115200);
-	NoteSetDebugOutputStream(Serial);
+#ifdef serialDebugOut
+    delay(2500);
+    serialDebugOut.begin(115200);
+    NoteSetDebugOutputStream(serialDebugOut);
+#endif
 
 	// Initialize the physical I/O channel to the Notecard
-#ifdef notecard
-	NoteInitSerial(notecard, 9600);
+#ifdef serialNotecard
+	NoteInitSerial(serialNotecard, 9600);
 #else
 	NoteInitI2C();
 #endif
@@ -85,7 +90,7 @@ void setup() {
 	// Create a template note that we will register.  This template note will look "similar" to
 	// the notes that will later be added with note.add, in that the data types are used to
 	// intuit what the ultimate field data types will be, and their maximum length.
-	req = NoteNewRequest("note.template");
+	req = NoteNewRequest("note.add");
 	if (req != NULL) {
 
 		// Create the body for a template that will be used to send notes below
@@ -98,16 +103,16 @@ void setup() {
 			JAddNumberToObject(body, "voltage", 1.1);				// floating point (double)
 			JAddNumberToObject(body, "count", 1);					// integer
 
-			// Add it to the template note
+			// Add the body to the request
 			JAddItemToObject(req, "body", body);
 		}
 
 		// Create a template of the payload that will be used to send notes below
-		struct myBinaryPayload binaryData;
-		JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
+		JAddNumberToObject(req, "length", sizeof(myBinaryPayload));
 
 		// Register the template in the output queue notefile
 		JAddStringToObject(req, "file", "sensors.qo");
+		JAddBoolToObject(req, "template", true);
 		NoteRequest(req);
 	}
 

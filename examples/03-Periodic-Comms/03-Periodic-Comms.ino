@@ -17,6 +17,14 @@
 #define buttonPin			7
 #define	buttonPressedState	LOW
 #define ledPin				LED_RED
+#elif defined(ARDUINO_ARCH_NRF52)
+#define buttonPin			7
+#define	buttonPressedState	LOW
+#define ledPin				LED_RED
+#elif defined(ARDUINO_ARCH_AVR)
+#define buttonPin			6
+#define	buttonPressedState	LOW
+#define ledPin				4
 #else
 #error "please add a board definition for button and led"
 #define buttonPin			?				// Change to any GPIO pin where there is an active-high button
@@ -25,11 +33,13 @@
 #endif
 
 // Include the Arduino library for the Notecard
-
 #include <Notecard.h>
 
-// Set this to the Notecard's serial port.	If using I2C, comment this line out using //
-#define notecard Serial1
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove serialDebug if you don't want the Notecard library to output debug information
+#define serialNotecard Serial1
+#define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
@@ -50,13 +60,15 @@ void setup() {
 	// During development, set up for debug output from the Notecard.  Note that the initial delay is
 	// required by some Arduino cards before debug UART output can be successfully displayed in the
 	// Arduino IDE, including the Adafruit Feather nRF52840 Express.
-	delay(2500);
-	Serial.begin(115200);
-	NoteSetDebugOutputStream(Serial);
+#ifdef serialDebugOut
+    delay(2500);
+    serialDebugOut.begin(115200);
+    NoteSetDebugOutputStream(serialDebugOut);
+#endif
 
 	// Initialize the physical I/O channel to the Notecard
-#ifdef notecard
-	NoteInitSerial(notecard, 9600);
+#ifdef serialNotecard
+	NoteInitSerial(serialNotecard, 9600);
 #else
 	NoteInitI2C();
 #endif
@@ -90,29 +102,37 @@ void setup() {
 
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
 void loop() {
+	static unsigned long lastStatusMs = 0;
+
+	// Activity indicator
+	digitalWrite(ledPin, HIGH);
 
 	// Wait for a button press, or perform idle activities
 	int buttonState = buttonPress();
 	switch (buttonState) {
 
 	case BUTTON_IDLE:
-		static int lastStatusMs = 0;
 		if (NoteDebugSyncStatus(2500, 0))
 			lastStatusMs = millis();
-		if (millis() > lastStatusMs + 15000) {
+		if (millis() > lastStatusMs + 10000) {
 			lastStatusMs = millis();
-			Serial.printf("%05d press button to simulate a sensor measurement\n", lastStatusMs/1000);
+			NoteDebug("press button to simulate a sensor measurement\n");
 		}
+		delay(25);
+		digitalWrite(ledPin, LOW);
+		delay(100);
 		return;
 
 	case BUTTON_DOUBLEPRESS:
 		NoteRequest(NoteNewRequest("service.sync"));
+		digitalWrite(ledPin, LOW);
 		return;
 
 	}
 
 	// The button was pressed, so we should begin a transaction
-	digitalWrite(ledPin, HIGH);
+	NoteDebug("performing sensor measurement\n");
+	lastStatusMs = millis();
 
 	// Simulate an event counter of some kind
 	static unsigned eventCounter = 0;
@@ -136,7 +156,6 @@ void loop() {
 	// will be staged in the Notecard's flash memory until it's time to transmit them to the service.
 	J *req = NoteNewRequest("note.add");
 	if (req != NULL) {
-		JAddStringToObject(req, "file", "sensors.qo");
 		J *body = JCreateObject();
 		if (body != NULL) {
 			JAddNumberToObject(body, "temp", temperature);
@@ -166,16 +185,15 @@ int buttonPress() {
 	}
 	if (buttonBeingDebounced)
 		return BUTTON_IDLE;
-	buttonBeingDebounced = true;
 
 	// Wait to see if this is a double-press
 	bool buttonDoublePress = false;
-	int buttonPressed = millis();
 	bool buttonReleased = false;
-	int ignoreBounceMs = 100;
-	int doublePressMs = 750;
-	while (millis() < buttonPressed+doublePressMs) {
-		if (millis() < buttonPressed+ignoreBounceMs)
+	unsigned long buttonPressedMs = millis();
+	unsigned long ignoreBounceMs = 100;
+	unsigned long doublePressMs = 750;
+	while (millis() < buttonPressedMs+doublePressMs || digitalRead(buttonPin) == buttonPressedState) {
+		if (millis() < buttonPressedMs+ignoreBounceMs)
 			continue;
 		if (digitalRead(buttonPin) != buttonPressedState) {
 			if (!buttonReleased)
@@ -184,7 +202,8 @@ int buttonPress() {
 		}
 		if (buttonReleased) {
 			buttonDoublePress = true;
-			break;
+			if (digitalRead(buttonPin) != buttonPressedState)
+				break;
 		}
 	}
 

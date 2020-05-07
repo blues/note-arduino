@@ -24,6 +24,7 @@ extern "C" {
 // For serial debug output
 static bool debugSerialInitialized;
 static Stream *debugSerial;
+static const char *i2cerr = "i2c?";
 
 // Debugging
 #define I2C_DATA_TRACE false
@@ -80,7 +81,7 @@ void noteSerialTransmit(uint8_t *text, size_t len, bool flush) {
 		hwSerial->flush();
 }
 
-// Serial "is anything available" function
+// Serial 'is anything available?' function
 bool noteSerialAvailable() {
 	return (hwSerial->available() > 0);
 }
@@ -101,13 +102,13 @@ void noteI2CReset() {
 // An error message is returned, else NULL if success.
 const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
 #if I2C_DATA_TRACE
-	NoteFnDebug("i2c transmit len: \n", Size);
+	NoteDebugf("i2c transmit len: \n", Size);
 	for (int i=0; i<Size; i++)
-		NoteFnDebug("%c", pBuffer[i]);
-	NoteFnDebug("  ");
+		NoteDebugf("%c", pBuffer[i]);
+	NoteDebugf("  ");
 	for (int i=0; i<Size; i++)
-		NoteFnDebug("%02x", pBuffer[i]);
-	NoteFnDebug("\n");
+		NoteDebugf("%02x", pBuffer[i]);
+	NoteDebugf("\n");
 #endif
 	Wire.beginTransmission((int) DevAddress);
 	uint8_t reg = Size;
@@ -116,7 +117,7 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 	if (Wire.endTransmission() != 0)
 		success = false;
 	if (!success)
-		return "i2c: write error";
+		return ERRSTR("i2c: write error",i2cerr);
 	return NULL;
 }
 
@@ -125,7 +126,7 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 #if I2C_DATA_TRACE
 	uint8_t *original = pBuffer;
 	if (Size)
-		NoteFnDebug("i2c receive: %d\n	", Size);
+		NoteDebugf("i2c receive: %d\n	", Size);
 #endif
 	const char *errstr = NULL;
 	uint8_t goodbyte = 0;
@@ -141,6 +142,7 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 			errstr = NULL;
 			break;
 		}
+#ifdef ERRDBG
 		switch (result) {
 		case 1:
 			// Interestingly, this is the error that is returned when
@@ -157,6 +159,9 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 			errstr = "unknown error on endTransmission";
 			break;
 		}
+#else
+		errstr = i2cerr;
+#endif
 	}
 
 	// Only receive if we successfully began transmission
@@ -165,21 +170,23 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 		int readlen = Size + (sizeof(uint8_t)*2);
 		int len = Wire.requestFrom((int) DevAddress, readlen+readLengthAdjustment);
 		if (len == 0) {
-			errstr = "i2c: no response";
+			errstr = ERRSTR("i2c: no response",i2cerr);
 		} else if (len != readlen) {
 #if I2C_DATA_TRACE
-			NoteFnDebug("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
+			NoteDebugf("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
 #endif
-			errstr = "i2c: incorrect amount of data received";
+			errstr = ERRSTR("i2c: incorrect amount of data received",i2cerr);
 		} else {
 			availbyte = Wire.read();
 			goodbyte = Wire.read();
 			if (goodbyte != Size) {
-				NoteFnDebug("%d != %d, received:\n", goodbyte, Size);
+#if I2C_DATA_TRACE
+				NoteDebugf("%d != %d, received:\n", goodbyte, Size);
 				for (int i=0; i<Size; i++)
-					NoteFnDebug("%c", Wire.read());
-				NoteFnDebug("\n");
-				errstr = "i2c: incorrect amount of data";
+					NoteDebugf("%c", Wire.read());
+				NoteDebugf("\n");
+#endif
+				errstr = ERRSTR("i2c: incorrect amount of data",i2cerr);
 			} else {
 				for (int i=0; i<Size; i++)
 					*pBuffer++ = Wire.read();
@@ -188,17 +195,17 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 	}
 
 	if (errstr != NULL) {
-		NoteFnDebug("%s\n", errstr);
+		NoteDebugln(errstr);
 		return errstr;
 	}
 #if I2C_DATA_TRACE
 	if (Size) {
 		for (int i=0; i<Size; i++)
-			NoteFnDebug("%02x", original[i]);
-		NoteFnDebug("\n", availbyte);
+			NoteDebugf("%02x", original[i]);
+		NoteDebugf("\n", availbyte);
 	}
 	if (availbyte)
-		NoteFnDebug("%d available\n", availbyte);
+		NoteDebugf("%d available\n", availbyte);
 #endif
 	*available = availbyte;
 	return NULL;

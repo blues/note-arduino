@@ -24,9 +24,16 @@
 // R2 pin to the Notecard's TX pin, and the M5Stack's T2 pin to the Notecard's RX pin, and then
 // would use Serial2.
 //
-// On any host, though, if you  are using I2C then just disable this #define by preceding it with  "//"
+// Also, you may define a debug output port where you can watch transaction as they are sent
+// to and from the Notecard.  When using the Arduino IDE this is typically "Serial", but you
+// can use any available port.
+//
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove serialDebug if you don't want the Notecard library to output debug information
 
-#define notecard Serial1
+//#define serialNotecard Serial1
+#define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -47,13 +54,15 @@ void setup() {
 	// Note that the initial 2.5s delay is required by some Arduino cards before debug
 	// UART output can be successfully displayed in the Arduino IDE, including the
 	// Adafruit Feather nRF52840 Express.
-	delay(2500);
-    Serial.begin(115200);
-    NoteSetDebugOutputStream(Serial);
+#ifdef serialDebugOut
+    delay(2500);
+    serialDebugOut.begin(115200);
+    NoteSetDebugOutputStream(serialDebugOut);
+#endif
 
 	// Initialize the physical I/O channel to the Notecard
-#ifdef notecard
-	NoteInitSerial(notecard, 9600);
+#ifdef serialNotecard
+	NoteInitSerial(serialNotecard, 9600);
 #else
 	NoteInitI2C();
 #endif
@@ -119,7 +128,6 @@ void loop() {
 	// at this on notehub.io you will see the data appearing 'live'.)
     J *req = NoteNewRequest("note.add");
 	if (req != NULL) {
-	    JAddStringToObject(req, "file", "sensors.qo");
 	    JAddBoolToObject(req, "start", true);
 		J *body = JCreateObject();
 		if (body != NULL) {

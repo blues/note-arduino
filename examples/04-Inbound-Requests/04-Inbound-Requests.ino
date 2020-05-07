@@ -25,8 +25,11 @@
 #define	INBOUND_QUEUE_NOTEFILE		"my-inbound.qi"
 #define	INBOUND_QUEUE_COMMAND_FIELD	"my-request-type"
 
-// Set this to the Notecard's serial port.  If using I2C, comment this line out using //
-#define notecard Serial1
+// Note that both of these definitions are optional; just prefix either line with // to remove it.
+//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove serialDebug if you don't want the Notecard library to output debug information
+#define serialNotecard Serial1
+#define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
@@ -36,13 +39,15 @@
 void setup() {
 
 	// Set up for debug output.
-	delay(2500);
-    Serial.begin(115200);
-    NoteSetDebugOutputStream(Serial);
+#ifdef serialDebugOut
+    delay(2500);
+    serialDebugOut.begin(115200);
+    NoteSetDebugOutputStream(serialDebugOut);
+#endif
 
 	// Initialize the physical I/O channel to the Notecard
-#ifdef notecard
-	NoteInitSerial(notecard, 9600);
+#ifdef serialNotecard
+	NoteInitSerial(serialNotecard, 9600);
 #else
 	NoteInitI2C();
 #endif
@@ -75,7 +80,7 @@ void loop() {
 	// this would be checked using a frequency commensurate with the required inbound responsiveness.
 	// For the most common "periodic" mode applications, this might be daily or weekly.  In this
 	// example, where we are using "continuous" mode, we check quite often for demonstratio purposes.
-	static int nextPollMs = 0;
+	static unsigned long nextPollMs = 0;
 	if (millis() > nextPollMs) {
 		nextPollMs = millis() + (INBOUND_QUEUE_POLL_SECS * 1000);
 
@@ -103,8 +108,9 @@ void loop() {
 				if (body != NULL) {
 
 					// Simulate Processing the response here
-					char *myCommandType = JGetString(body, INBOUND_QUEUE_COMMAND_FIELD);
-					NotePrintf("INBOUND REQUEST: %s\n\n", myCommandType);
+					NoteDebug("INBOUND REQUEST: ");
+					NoteDebug(JGetString(body, INBOUND_QUEUE_COMMAND_FIELD));
+					NoteDebug("\n\n");
 
 				}
 
