@@ -35,9 +35,8 @@ git subtrees to include those files in the src/note-c folder. To
 update this repo with the latest from note-c:
 
 ```sh
-# This will create a merge commit, but that's how subtree likes to work.
-git subtree pull --prefix=src/note-c --squash https://github.com/blues/note-c.git master
-# If that fails, you can delete the src/note-c dir and start over with a new subtree:
+rm -rf src/note-c
+git commit -am'remove note-c before readd'
 git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 
