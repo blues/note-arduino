@@ -35,12 +35,10 @@ git subtrees to include those files in the src/note-c folder. To
 update this repo with the latest from note-c:
 
 ```sh
-# Prefer this to keep history linear.
-git pull --strategy=subtree --squash https://github.com/blues/note-c.git master
-# This works if the above doesn't.
-git pull --allow-unrelated-histories --strategy=subtree --squash https://github.com/blues/note-c.git master
-# This creates a merge commit sometimes which we don't want.
+# This will create a merge commit, but that's how subtree likes to work.
 git subtree pull --prefix=src/note-c --squash https://github.com/blues/note-c.git master
+# If that fails, you can delete the src/note-c dir and start over with a new subtree:
+git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 
 [blues]: https://blues.com
