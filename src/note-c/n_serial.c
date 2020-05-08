@@ -42,7 +42,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse) {
 	// Allocate a buffer for input, noting that we always put the +1 in the alloc so we can be assured
 	// that it can be null-terminated.	This must be the case because json parsing requires a
 	// null-terminated string.
-	int jsonbufAllocLen = 128;
+	int jsonbufAllocLen = ALLOC_CHUNK;
 	char *jsonbuf = (char *) _Malloc(jsonbufAllocLen+1);
 	if (jsonbuf == NULL) {
 #ifdef ERRDBG
@@ -83,7 +83,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse) {
 		// Append into the json buffer
 		jsonbuf[jsonbufLen++] = ch;
 		if (jsonbufLen >= jsonbufAllocLen) {
-			jsonbufAllocLen += 512;
+			jsonbufAllocLen += ALLOC_CHUNK;
 			char *jsonbufNew = (char *) _Malloc(jsonbufAllocLen+1);
 			if (jsonbufNew == NULL) {
 #ifdef ERRDBG

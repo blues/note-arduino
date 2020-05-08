@@ -14,6 +14,7 @@
 #if (__FLT_MAX_EXP__ == __DBL_MAX_EXP__)
 #define NOTE_FLOAT
 #define	ERRSTR(x,y) (y)
+#define NOTE_LOWMEM
 #else
 #define	ERRSTR(x,y) (x)
 #define	ERRDBG

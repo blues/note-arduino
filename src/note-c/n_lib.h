@@ -21,6 +21,13 @@ extern "C" {
 #define CARD_REQUEST_SEGMENT_MAX_LEN 1000
 #define CARD_REQUEST_SEGMENT_DELAY_MS 250
 
+// Memory allocation chunk size
+#ifdef NOTE_LOWMEM
+#define ALLOC_CHUNK 64
+#else
+#define ALLOC_CHUNK 128
+#endif
+
 // Transactions
 const char *i2cNoteTransaction(char *json, char **jsonResponse);
 bool i2cNoteReset(void);
