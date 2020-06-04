@@ -65,7 +65,7 @@ void setup() {
 #endif
 
 	// Configure the productUID, and instruct the Notecard to stay connected to the service
-	req = NoteNewRequest("service.set");
+	J *req = NoteNewRequest("service.set");
 	JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
