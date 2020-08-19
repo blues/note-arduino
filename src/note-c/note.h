@@ -46,11 +46,11 @@ typedef void (*freeFn) (void *);
 typedef void (*delayMsFn) (uint32_t ms);
 typedef long unsigned int (*getMsFn) (void);
 typedef size_t (*debugOutputFn) (const char *text);
-typedef void (*serialResetFn) (void);
+typedef bool (*serialResetFn) (void);
 typedef void (*serialTransmitFn) (uint8_t *data, size_t len, bool flush);
 typedef bool (*serialAvailableFn) (void);
 typedef char (*serialReceiveFn) (void);
-typedef void (*i2cResetFn) (void);
+typedef bool (*i2cResetFn) (void);
 typedef const char * (*i2cTransmitFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
 typedef const char * (*i2cReceiveFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 
@@ -60,6 +60,7 @@ void NoteResetRequired(void);
 #define NoteNewBody JCreateObject
 J *NoteNewRequest(const char *request);
 J *NoteRequestResponse(J *req);
+char *NoteRequestResponseJSON(char *reqJSON);
 void NoteSuspendTransactionDebug(void);
 void NoteResumeTransactionDebug(void);
 bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
@@ -104,21 +105,23 @@ size_t strlcat(char *dst, const char *src, size_t siz);
 // JSON helpers
 void JInit(void);
 void JCheck(void);
-void *JMalloc(size_t size);
-void JFree(void *p);
 bool JIsPresent(J *rsp, const char *field);
 char *JGetString(J *rsp, const char *field);
 JNUMBER JGetNumber(J *rsp, const char *field);
 J *JGetObject(J *rsp, const char *field);
 int JGetInt(J *rsp, const char *field);
 bool JGetBool(J *rsp, const char *field);
+JNUMBER JNumberValue(J *item);
+char *JStringValue(J *item);
+bool JBoolValue(J *item);
+int JIntValue(J *item);
 bool JIsNullString(J *rsp, const char *field);
 bool JIsExactString(J *rsp, const char *field, const char *teststr);
 bool JContainsString(J *rsp, const char *field, const char *substr);
 bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, uint32_t binaryDataLen);
+const char *JGetItemName(const J * item);
 
 // Helper functions for apps that wish to limit their C library dependencies
-#define JNRound(x,NUMDIGITS) ((round((x) * 1E##NUMDIGITS)) / 1E##NUMDIGITS)
 #define JNTOA_PRECISION (10)
 #define JNTOA_MAX       ((2*JNTOA_PRECISION)+1+1)
 char * JNtoA(JNUMBER f, char * buf, int precision);
@@ -137,8 +140,11 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
 bool NoteLocationValid(char *errbuf, uint32_t errbuflen);
 bool NoteLocationValidST(char *errbuf, uint32_t errbuflen);
 int NoteGetEnvInt(const char *variable, int defaultVal);
+JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal);
 void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen);
-bool NoteGetEnvAll(char *statusBuf, int statusBufLen);
+bool NoteSetEnvDefault(const char *variable, char *buf);
+bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal);
+bool NoteSetEnvDefaultInt(const char *variable, int defaultVal);
 bool NoteIsConnected(void);
 bool NoteIsConnectedST(void);
 bool NoteGetNetStatus(char *statusBuf, int statusBufLen);
@@ -158,8 +164,10 @@ bool NoteFactoryReset(bool deleteConfigSettings);
 bool NoteSetSerialNumber(const char *sn);
 bool NoteSetProductID(const char *productID);
 bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align);
+bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downlaodHours, bool align, bool sync);
 bool NoteTemplate(const char *target, J *body);
-bool NoteSend(const char *target, J *body, bool urgent);
+#define NoteSend NoteAdd
+bool NoteAdd(const char *target, J *body, bool urgent);
 bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile, J *body);
 bool NoteGetVoltage(JNUMBER *voltage);
 bool NoteGetTemperature(JNUMBER *temp);

@@ -2177,7 +2177,7 @@ static Jbool replace_item_in_object(J *object, const char *string, J *replacemen
     /* replace the name in the replacement */
     if (!(replacement->type & JStringIsConst) && (replacement->string != NULL))
     {
-        Jfree(replacement->string);
+        _Free(replacement->string);
     }
     replacement->string = (char*)Jstrdup((const unsigned char*)string);
     replacement->type &= ~JStringIsConst;

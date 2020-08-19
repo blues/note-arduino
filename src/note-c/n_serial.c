@@ -12,8 +12,8 @@ const char *serialNoteTransaction(char *json, char **jsonResponse) {
 	uint32_t segLeft = strlen(json);
 	while (true) {
 		size_t segLen = segLeft;
-		if (segLen > CARD_REQUEST_SEGMENT_MAX_LEN)
-			segLen = CARD_REQUEST_SEGMENT_MAX_LEN;
+		if (segLen > CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN)
+			segLen = CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN;
 		segLeft -= segLen;
 		_SerialTransmit((uint8_t *)&json[segOff], segLen, false);
 		if (segLeft == 0) {
@@ -21,7 +21,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse) {
 			break;
 		}
 		segOff += segLen;
-		_DelayMs(CARD_REQUEST_SEGMENT_DELAY_MS);
+		_DelayMs(CARD_REQUEST_SERIAL_SEGMENT_DELAY_MS);
 	}
 
 	// Wait for something to become available, processing timeout errors up-front
@@ -112,7 +112,8 @@ bool serialNoteReset() {
 
 	// Initialize, or re-initialize.  Because we've observed Arduino serial driver flakiness,
 	_DelayMs(250);
-	_SerialReset();
+	if (!_SerialReset())
+		return false;
 
 	// The guaranteed behavior for robust resyncing is to send two newlines
 	// and	wait for two echoed blank lines in return.
@@ -124,8 +125,7 @@ bool serialNoteReset() {
 		_Debug("serial reset\n");
 #endif
 
-		// Send a few newlines to the module to clean out request/response processing
-		_SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
+		// Send a newline to the module to clean out request/response processing
 		_SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
 
 		// Drain all serial for 500ms

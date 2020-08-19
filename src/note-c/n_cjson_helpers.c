@@ -40,6 +40,27 @@ J *JGetObject(J *rsp, const char *field) {
 	return item;
 }
 
+// Return a bool from the JSON object, or false if it's not present
+bool JBoolValue(J *item) {
+	if (item == NULL)
+		return false;
+	return ((item->type & 0xff) == JTrue);
+}
+
+// Return a number from the JSON object, or 0 if it's not present
+char *JStringValue(J *item) {
+	if (item == NULL)
+		return "";
+	return item->valuestring;
+}
+
+// Return a number from the JSON object, or 0 if it's not present
+JNUMBER JNumberValue(J *item) {
+	if (item == NULL)
+		return 0.0;
+	return item->valuenumber;
+}
+
 // Return a number from the specified JSON object, or 0 if it's not present
 JNUMBER JGetNumber(J *rsp, const char *field) {
 	if (rsp == NULL)
@@ -49,7 +70,14 @@ JNUMBER JGetNumber(J *rsp, const char *field) {
 		return 0.0;
 	if (!JIsNumber(item))
 		return 0.0;
-	return item->valuenumber;
+	return JNumberValue(item);
+}
+
+// Return a number from the JSON object, or 0 if it's not present
+int JIntValue(J *item) {
+	if (item == NULL)
+		return 0;
+	return item->valueint;
 }
 
 // Return a number from the JSON object, or 0 if it's not present
@@ -61,7 +89,7 @@ int JGetInt(J *rsp, const char *field) {
 		return 0.0;
 	if (!JIsNumber(item))
 		return 0.0;
-	return item->valueint;
+	return JIntValue(item);
 }
 
 // Return a bool from the JSON object, or false if it's not present
@@ -139,3 +167,11 @@ bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, u
 	JAddItemToObject(req, fieldName, stringItem);
 	return true;
 }
+
+// Get the object name
+const char *JGetItemName(const J * item) {
+	if (item->string == NULL)
+		return "";
+	return item->string;
+}
+

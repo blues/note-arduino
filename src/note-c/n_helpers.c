@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include "n_lib.h"
 
 // When interfacing with the Notecard, it is generally encouraged that the JSON object manipulation and
@@ -233,10 +234,45 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen) {
 
 }
 
+// Set a service environment variable default
+bool NoteSetEnvDefault(const char *variable, char *buf) {
+	bool success = false;
+    J *req = NoteNewRequest("env.default");
+    if (req != NULL) {
+        JAddStringToObject(req, "name", variable);
+		JAddStringToObject(req, "text", buf);
+        success = NoteRequest(req);
+    }
+	return success;
+}
+
+// Set the default value for a service environment variable
+bool NoteSetEnvDefaultInt(const char *variable, int defaultVal) {
+    char buf[32];
+	snprintf(buf, sizeof(buf), "%d", defaultVal);
+    return NoteSetEnvDefault(variable, buf);
+}
+
+// Set the default value for a service environment variable
+bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal) {
+    char buf[32];
+	JNtoA(defaultVal, buf, -1);
+    return NoteSetEnvDefault(variable, buf);
+}
+
+// Get a service environment variable integer
+JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal) {
+    char buf[32], buf2[32];;
+	snprintf(buf2, sizeof(buf2), "%f", defaultVal);
+    NoteGetEnv(variable, buf2, buf, sizeof(buf));
+    return JAtoN(buf, NULL);
+}
+
 // Get a service environment variable integer
 int NoteGetEnvInt(const char *variable, int defaultVal) {
-    char buf[64];
-    NoteGetEnv(variable, "0", buf, sizeof(buf));
+    char buf[32], buf2[32];;
+	snprintf(buf2, sizeof(buf2), "%d", defaultVal);
+    NoteGetEnv(variable, buf2, buf, sizeof(buf));
     return atoi(buf);
 }
 
@@ -246,7 +282,7 @@ void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
         buf[0] = '\0';
     else
         strlcpy(buf, defaultVal, buflen);
-    J *req = NoteNewRequest("service.env");
+    J *req = NoteNewRequest("env.get");
     if (req != NULL) {
         JAddStringToObject(req, "name", variable);
         J *rsp = NoteRequestResponse(req);
@@ -259,23 +295,6 @@ void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
             NoteDeleteResponse(rsp);
         }
     }
-}
-
-// Get the entire set of available environment vars
-bool NoteGetEnvAll(char *statusBuf, int statusBufLen) {
-    bool success = false;
-    statusBuf[0] = '\0';
-    J *rsp = NoteRequestResponse(NoteNewRequest("service.env"));
-    if (rsp != NULL) {
-        success = !NoteResponseError(rsp);
-        if (success) {
-            char *text = JGetString(rsp, "text");
-            if (text[0] != '\0')
-                strlcpy(statusBuf, text, statusBufLen);
-        }
-        NoteDeleteResponse(rsp);
-    }
-    return success;
 }
 
 // See if we're connected to the net
@@ -523,16 +542,6 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
 bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
     bool success = false;
 
-    // If optional wakeup modes are specified, set them
-    if (modes != NULL) {
-        J *req = NoteNewRequest("card.attn");
-        if (req != NULL) {
-            JAddStringToObject(req, "mode", modes);
-            if (!NoteRequest(req))
-                return false;
-        }
-    }
-
     // Put ourselves to sleep
     _Debug("requesting sleep\n");
     J *req = NoteNewRequest("card.attn");
@@ -541,7 +550,13 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
         J *stringReferenceItem = JCreateStringReference(stateb64);
         if (stringReferenceItem != NULL)
             JAddItemToObject(req, "payload", stringReferenceItem);
-        JAddStringToObject(req, "mode", "reset");
+		char modestr[64];
+		strlcpy(modestr, "arm", sizeof(modestr));
+		if (modes != NULL) {
+			strlcat(modestr, ",", sizeof(modestr));
+			strlcat(modestr, modes, sizeof(modestr));
+		}
+        JAddStringToObject(req, "mode", modestr);
         JAddNumberToObject(req, "seconds", seconds);
         success = NoteRequest(req);
     }
@@ -688,6 +703,29 @@ bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align) {
 
 }
 
+// Set the upload and download mode and interval
+bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadHours, bool align, bool sync) {
+    bool success = false;
+    J *req = NoteNewRequest("service.set");
+    if (req != NULL) {
+        JAddStringToObject(req, "mode", uploadMode);
+        if (uploadMinutes != 0) {
+            JAddNumberToObject(req, "minutes", uploadMinutes);
+            // Setting this flag aligns uploads to be grouped within the period,
+            // rather than counting the number of minutes from "first modified".
+            JAddBoolToObject(req, "align", align);
+        }
+        if (downloadHours != 0)
+            JAddNumberToObject(req, "hours", downloadHours);
+        // Setting this flag when mode is "continuous" causes an immediate sync
+        // when a file is modified on the service side via HTTP
+        JAddBoolToObject(req, "sync", sync);
+        success = NoteRequest(req);
+    }
+    return success;
+
+}
+
 // Set the JSON template for a target
 bool NoteTemplate(const char *target, J *body) {
     J *req = NoteNewRequest("note.template");
@@ -701,7 +739,7 @@ bool NoteTemplate(const char *target, J *body) {
 }
 
 // Append a new value to be sent to the card, with an "urgent" flag indicating that it must be sent NOW.
-bool NoteSend(const char *target, J *body, bool urgent) {
+bool NoteAdd(const char *target, J *body, bool urgent) {
 
     // Initiate the request
     J *req = NoteNewRequest("note.add");

@@ -91,7 +91,7 @@ char * JNtoA(JNUMBER f, char * buf, int original_precision)
 		f += rounders[precision];
 
 	// integer part...
-	intPart = f;
+	intPart = (int) f;
 	f -= intPart;
 
 	if (!intPart)
@@ -134,7 +134,7 @@ char * JNtoA(JNUMBER f, char * buf, int original_precision)
 		while (precision--)
 		{
 			f *= 10.0;
-			c = f;
+			c = (int) f;
 
 			// Invalid floating point numbers (specifically 0xffffff) end up at this point
 			// with a c == 255 after the coercion
