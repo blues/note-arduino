@@ -42,6 +42,7 @@
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
 
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
+Notecard notecard;
 
 // One-time Arduino initialization
 void setup() {
@@ -57,14 +58,14 @@ void setup() {
 #ifdef serialDebugOut
     delay(2500);
     serialDebugOut.begin(115200);
-    NoteSetDebugOutputStream(serialDebugOut);
+    notecard.setDebugOutputStream(serialDebugOut);
 #endif
 
 	// Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	NoteInitSerial(serialNotecard, 9600);
+	notecard.begin(serialNotecard, 9600);
 #else
-	NoteInitI2C();
+	notecard.begin();
 #endif
 
 	// "NoteNewRequest()" uses the bundled "J" json package to allocate a "req", which is a JSON object

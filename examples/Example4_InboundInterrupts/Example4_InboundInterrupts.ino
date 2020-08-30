@@ -38,6 +38,7 @@
 
 // This is the unique Product Identifier for your device.
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
+Notecard notecard;
 #define myLiveDemo	true
 
 // Set to true whenever ATTN interrupt occurs
@@ -54,14 +55,14 @@ void setup() {
 #ifdef serialDebugOut
     delay(2500);
     serialDebugOut.begin(115200);
-    NoteSetDebugOutputStream(serialDebugOut);
+    notecard.setDebugOutputStream(serialDebugOut);
 #endif
 
 	// Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	NoteInitSerial(serialNotecard, 9600);
+	notecard.begin(serialNotecard, 9600);
 #else
-	NoteInitI2C();
+	notecard.begin();
 #endif
 
 	// Configure the productUID, and instruct the Notecard to stay connected to the service

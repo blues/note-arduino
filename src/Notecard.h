@@ -2,14 +2,39 @@
 // Use of this source code is governed by licenses granted by the
 // copyright holder including that found in the LICENSE file.
 
-#pragma once
+#ifndef Notecard_h
+#define Notecard_h
 
 #include <Arduino.h>
 #include <HardwareSerial.h>
+#include <Wire.h>
 #include <note-c/note.h>
 
-void NoteInitI2C(void);
-void NoteInitI2CExt(uint32_t i2cAddress, uint32_t i2cMax);
-void NoteInitSerial(HardwareSerial &serial, int speed);
-void NoteSetDebugOutputStream(Stream &dbgserial);
-void NoteI2CTest(int Adjustment);
+class Notecard
+{
+  public:
+    void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
+                 uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
+                 TwoWire &wirePort = Wire);
+    void begin(HardwareSerial &serial, int speed);
+    void setDebugOutputStream(Stream &dbgserial);
+    void i2cTest(int Adjustment);
+
+  private:
+    static TwoWire *_i2cPort;
+    static HardwareSerial *_notecardSerial;
+    static int _notecardSerialSpeed;
+    static Stream *_debugSerial;
+    static bool _debugSerialInitialized;
+
+    static bool noteSerialReset(void);
+    static void noteSerialTransmit(uint8_t *text, size_t len, bool flush);
+    static bool noteSerialAvailable(void);
+    static char noteSerialReceive(void);
+    static bool noteI2CReset(void);
+    static const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+    static const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+    static size_t debugSerialOutput(const char *message);
+};
+
+#endif
