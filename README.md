@@ -36,18 +36,28 @@ as a git submodule.
 
 ```cpp
 #include <Notecard.h>
+
+// Create an instance of the Notecard class.
+Notecard notecard;
 ```
+
+Both configuration methods use the `begin()` method, though the parameters
+differ depending on your approach.
 
 ### Serial Configuration
 
+For Serial, pass in the Serial object and baud rate.
+
 ```cpp
-NoteInitSerial(Serial1, 9600);
+notecard.begin(Serial1, 9600);
 ```
 
 ### I2C Configuration
 
+For I2C, simply call `begin()` with no parameters.
+
 ```cpp
-NoteI2C();
+notecard.begin();
 ```
 
 ### Sending Notecard Requests
