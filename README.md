@@ -59,7 +59,7 @@ function allocates a `"req` request structure using malloc() and initializes its
 
 ```cpp
 J *req = NoteNewRequest("service.set");
-JAddStringToObject(req, "product", "com.mycompany.myproduct");
+JAddStringToObject(req, "product", "com.[mycompany].[myproduct]");
 JAddStringToObject(req, "mode", "continuous");
 NoteRequest(req);
 ```
@@ -86,7 +86,7 @@ update this repo with the latest from note-c:
 
 ```sh
 rm -rf src/note-c
-git commit -am'remove note-c before readd'
+git commit -am 'remove note-c before readd'
 git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 
@@ -100,11 +100,11 @@ The documentation for this library can be found at the Blues Wireless
 The [examples](examples/) directory contains examples for using this library
 with:
 
-- [Notecard Basics](examples/notecard-basics/notecard-basics.ino)
-- [Performing Periodic Communications](examples/periodic-communications/periodic-communications.ino)
-- [Handling inbound requests with polling](examples/inbound-polling/inbound-polling.ino)
-- [Handling inbound interrupts](examples/inbound-interrupts/inbound-interrupts.ino)
-- [Using Note templates](examples/using-templates/using-templates.ino)
+- [Notecard Basics](examples/Example1_NotecardBasics/Example1_NotecardBasics.ino)
+- [Performing Periodic Communications](examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino)
+- [Handling inbound requests with polling](examples/Example3_InboundPolling/Example3_InboundPolling.ino)
+- [Handling inbound interrupts](examples/Example4_InboundInterrupts/Example4_InboundInterrupts.ino)
+- [Using Note templates](examples/Example4_UsingTemplates/Example4_UsingTemplates.ino)
 
 ## Contributing
 
