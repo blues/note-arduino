@@ -134,9 +134,10 @@ void loop() {
 	NoteDebug("performing sensor measurement\n");
 	lastStatusMs = millis();
 
-	// Simulate an event counter of some kind
+	// Count the simulated measurements that we send to the cloud, and stop the demo before long.
 	static unsigned eventCounter = 0;
-	eventCounter = eventCounter + 1;
+	if (eventCounter++ > 25)
+		return;
 
 	// Read the notecard's current temperature and voltage, as simulated sensor measurements
 	double temperature = 0;
