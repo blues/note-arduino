@@ -36,18 +36,28 @@ as a git submodule.
 
 ```cpp
 #include <Notecard.h>
+
+// Create an instance of the Notecard class.
+Notecard notecard;
 ```
+
+Both configuration methods use the `begin()` method, though the parameters
+differ depending on your approach.
 
 ### Serial Configuration
 
+For Serial, pass in the Serial object and baud rate.
+
 ```cpp
-NoteInitSerial(Serial1, 9600);
+notecard.begin(Serial1, 9600);
 ```
 
 ### I2C Configuration
 
+For I2C, simply call `begin()` with no parameters.
+
 ```cpp
-NoteI2C();
+notecard.begin();
 ```
 
 ### Sending Notecard Requests
@@ -58,23 +68,23 @@ function allocates a `"req` request structure using malloc() and initializes its
 "req" field with the type of request.
 
 ```cpp
-J *req = NoteNewRequest("service.set");
+J *req = notecard.newRequest("service.set");
 JAddStringToObject(req, "product", "com.[mycompany].[myproduct]");
 JAddStringToObject(req, "mode", "continuous");
-NoteRequest(req);
+notecard.sendRequest(req);
 ```
 
 ### Reading Notecard Responses
 
-If you need to read a response from the Notecard, use the `NoteRequestResponse`
-api and `JGet*` helper methods to read numbers, strings, etc. from the JSON
+If you need to read a response from the Notecard, use the `requestAndResponse()`
+method and `JGet*` helper methods to read numbers, strings, etc. from the JSON
 response.
 
 ```cpp
-J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
+J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
 if (rsp != NULL) {
    temperature = JGetNumber(rsp, "value");
-   NoteDeleteResponse(rsp);
+   notecard.deleteResponse(rsp);
 }
 ```
 
@@ -104,7 +114,7 @@ with:
 - [Performing Periodic Communications](examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino)
 - [Handling inbound requests with polling](examples/Example3_InboundPolling/Example3_InboundPolling.ino)
 - [Handling inbound interrupts](examples/Example4_InboundInterrupts/Example4_InboundInterrupts.ino)
-- [Using Note templates](examples/Example4_UsingTemplates/Example4_UsingTemplates.ino)
+- [Using Note templates](examples/Example5_UsingTemplates/Example5_UsingTemplates.ino)
 
 ## Contributing
 

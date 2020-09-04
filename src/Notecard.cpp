@@ -2,109 +2,133 @@
 // Use of this source code is governed by licenses granted by the
 // copyright holder including that found in the LICENSE file.
 
+#include <Arduino.h>
+#include <note-c/note.h>
 #include <Notecard.h>
-#include <Wire.h>
 
-// 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.  This code enables
-// us to exercise that code path to test the state of the bug.
-static int readLengthAdjustment = 0;
-
-// Forward references to C-callable functions defined below
-extern "C" {
-	bool noteSerialReset(void);
-	void noteSerialTransmit(uint8_t *text, size_t len, bool flush);
-	bool noteSerialAvailable(void);
-	char noteSerialReceive(void);
-	bool noteI2CReset(void);
-	const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-	const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
-	size_t debugSerialOutput(const char *message);
-}
-
-// For serial debug output
-static bool debugSerialInitialized;
-static Stream *debugSerial;
-static const char *i2cerr = "i2c?";
+TwoWire *Notecard::_i2cPort;
+HardwareSerial *Notecard::_notecardSerial;
+int Notecard::_notecardSerialSpeed;
+Stream *Notecard::_debugSerial;
+bool Notecard::_debugSerialInitialized;
 
 // Debugging
 #define I2C_DATA_TRACE false
+static const char *i2cerr = "i2c?";
 
-// Arduino serial port
-static bool hwSerialInitialized;
-static HardwareSerial *hwSerial;
-static int hwSerialSpeed;
-
-// Initialize for serial I/O
-void NoteInitSerial(HardwareSerial &selectedSerialPort, int selectedSpeed) {
-	NoteSetFnDefault(malloc, free, delay, millis);
-	hwSerial = &selectedSerialPort;
-	hwSerialSpeed = selectedSpeed;
-	NoteSetFnSerial(noteSerialReset, noteSerialTransmit, noteSerialAvailable, noteSerialReceive);
-	hwSerial->begin(hwSerialSpeed);
-}
+// 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
+// This code enables us to exercise that code path to test the state of the bug.
+int _readLengthAdjustment = 0;
 
 // Initialize for I2C I/O
-void NoteInitI2C() {
+void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort) {
 	NoteSetFnDefault(malloc, free, delay, millis);
-	NoteSetFnI2C(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+	_i2cPort = &wirePort;
+
+	NoteSetFnI2C(i2caddress, i2cmax, Notecard::noteI2CReset,
+							 Notecard::noteI2CTransmit, Notecard::noteI2CReceive);
 }
 
-// Initialize for I2C I/O with extended details
-void NoteInitI2CExt(uint32_t i2caddress, uint32_t i2cmax) {
+// Initialize for serial I/O
+void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
+{
 	NoteSetFnDefault(malloc, free, delay, millis);
-	NoteSetFnI2C(i2caddress, i2cmax, noteI2CReset, noteI2CTransmit, noteI2CReceive);
+	_notecardSerial = &selectedSerialPort;
+	_notecardSerialSpeed = selectedSpeed;
+
+	NoteSetFnSerial(Notecard::noteSerialReset, Notecard::noteSerialTransmit,
+									Notecard::noteSerialAvailable, Notecard::noteSerialReceive);
+	_notecardSerial->begin(_notecardSerialSpeed);
+}
+
+void Notecard::setDebugOutputStream(Stream &dbgserial) {
+	_debugSerial = &dbgserial;
+	_debugSerialInitialized = true;
+	NoteSetFnDebugOutput(Notecard::debugSerialOutput);
+}
+
+// Method enabling us to test the state of the ST Microelectronics I2C HAL issue
+void Notecard::i2cTest(int Adjustment) {
+	_readLengthAdjustment = Adjustment;
 }
 
 // Serial output method
-size_t debugSerialOutput(const char *message) {
-	if (!debugSerialInitialized)
+size_t Notecard::debugSerialOutput(const char *message) {
+	if (!_debugSerialInitialized)
 		return 0;
-	return(debugSerial->print(message));
-}
-
-void NoteSetDebugOutputStream(Stream &dbgserial) {
-	debugSerial = &dbgserial;
-	debugSerialInitialized = true;
-	NoteSetFnDebugOutput(debugSerialOutput);
+	return(_debugSerial->print(message));
 }
 
 // Serial port reset
-bool noteSerialReset() {
-	hwSerial->end();
-	hwSerial->begin(hwSerialSpeed);
+bool Notecard::noteSerialReset() {
+	_notecardSerial->end();
+	_notecardSerial->begin(_notecardSerialSpeed);
 
 	return true;
 }
 
 // Serial transmit function
-void noteSerialTransmit(uint8_t *text, size_t len, bool flush) {
-	hwSerial->write(text, len);
+void Notecard::noteSerialTransmit(uint8_t *text, size_t len, bool flush) {
+	_notecardSerial->write(text, len);
 	if (flush)
-		hwSerial->flush();
+		_notecardSerial->flush();
 }
 
 // Serial 'is anything available?' function
-bool noteSerialAvailable() {
-	return (hwSerial->available() > 0);
+bool Notecard::noteSerialAvailable() {
+	return (_notecardSerial->available() > 0);
 }
 
 // Serial read a byte function, guaranteed only ever to be called if there is data Available()
-char noteSerialReceive() {
-	return hwSerial->read();
+char Notecard::noteSerialReceive() {
+	return _notecardSerial->read();
 }
 
 // I2C port reset
-bool noteI2CReset() {
-	Wire.begin();
+bool Notecard::noteI2CReset() {
+	_i2cPort->begin();
 
 	return true;
+}
+
+J *Notecard::newRequest(const char *request) {
+	return NoteNewRequest(request);
+}
+
+bool Notecard::sendRequest(J *req) {
+	return NoteRequest(req);
+}
+
+J *Notecard::requestAndResponse(J *req) {
+	return NoteRequestResponse(req);
+}
+
+void Notecard::deleteResponse(J *rsp) {
+	NoteDeleteResponse(rsp);
+}
+
+void Notecard::logDebug(const char *message) {
+	NoteDebug(message);
+}
+
+void Notecard::logDebugf(const char *format, ...) {
+	va_list args;
+  NoteDebugf(format, args);
+}
+
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) {
+	return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
+}
+
+bool Notecard::responseError(J *rsp) {
+	return NoteResponseError(rsp);
 }
 
 // Transmits in master mode an amount of data in blocking mode.	 The address
 // is the actual address; the caller should have shifted it right so that the
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
 // An error message is returned, else NULL if success.
-const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
+const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
 #if I2C_DATA_TRACE
 	NoteDebugf("i2c transmit len: \n", Size);
 	for (int i=0; i<Size; i++)
@@ -114,11 +138,11 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 		NoteDebugf("%02x", pBuffer[i]);
 	NoteDebugf("\n");
 #endif
-	Wire.beginTransmission((int) DevAddress);
+	_i2cPort->beginTransmission((int) DevAddress);
 	uint8_t reg = Size;
-	bool success = (Wire.write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
-	if (success) success = (Wire.write(pBuffer, Size) == Size);
-	if (Wire.endTransmission() != 0)
+	bool success = (_i2cPort->write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
+	if (success) success = (_i2cPort->write(pBuffer, Size) == Size);
+	if (_i2cPort->endTransmission() != 0)
 		success = false;
 	if (!success)
 		return ERRSTR("i2c: write error",i2cerr);
@@ -126,7 +150,7 @@ const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
 }
 
 // Receives in master mode an amount of data in blocking mode.
-const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
+const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
 #if I2C_DATA_TRACE
 	uint8_t *original = pBuffer;
 	if (Size)
@@ -138,10 +162,10 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 
 	// Retry errors, because it's harmless to do so
 	for (int i=0; i<3; i++) {
-		Wire.beginTransmission((int) DevAddress);
-		Wire.write((uint8_t)0);
-		Wire.write((uint8_t)Size);
-		uint8_t result = Wire.endTransmission();
+		_i2cPort->beginTransmission((int) DevAddress);
+		_i2cPort->write((uint8_t)0);
+		_i2cPort->write((uint8_t)Size);
+		uint8_t result = _i2cPort->endTransmission();
 		if (result == 0) {
 			errstr = NULL;
 			break;
@@ -172,7 +196,7 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 	if (errstr == NULL) {
 
 		int readlen = Size + (sizeof(uint8_t)*2);
-		int len = Wire.requestFrom((int) DevAddress, readlen+readLengthAdjustment);
+		int len = _i2cPort->requestFrom((int) DevAddress, readlen+_readLengthAdjustment);
 		if (len == 0) {
 			errstr = ERRSTR("i2c: no response",i2cerr);
 		} else if (len != readlen) {
@@ -181,19 +205,19 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 #endif
 			errstr = ERRSTR("i2c: incorrect amount of data received",i2cerr);
 		} else {
-			availbyte = Wire.read();
-			goodbyte = Wire.read();
+			availbyte = _i2cPort->read();
+			goodbyte = _i2cPort->read();
 			if (goodbyte != Size) {
 #if I2C_DATA_TRACE
 				NoteDebugf("%d != %d, received:\n", goodbyte, Size);
 				for (int i=0; i<Size; i++)
-					NoteDebugf("%c", Wire.read());
+					NoteDebugf("%c", _i2cPort.read());
 				NoteDebugf("\n");
 #endif
 				errstr = ERRSTR("i2c: incorrect amount of data",i2cerr);
 			} else {
 				for (int i=0; i<Size; i++)
-					*pBuffer++ = Wire.read();
+					*pBuffer++ = _i2cPort->read();
 			}
 		}
 	}
@@ -213,9 +237,4 @@ const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 #endif
 	*available = availbyte;
 	return NULL;
-}
-
-// Method enabling us to test the state of the ST Microelectronics I2C HAL issue
-void NoteI2CTest(int Adjustment) {
-	readLengthAdjustment = Adjustment;
 }

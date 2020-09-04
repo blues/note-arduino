@@ -43,6 +43,7 @@
 
 // This is the unique Product Identifier for your device.
 #define myProductID "org.coca-cola.soda.vending-machine.v2"
+Notecard notecard;
 
 // Button handling
 #define BUTTON_IDLE			0
@@ -63,18 +64,18 @@ void setup() {
 #ifdef serialDebugOut
     delay(2500);
     serialDebugOut.begin(115200);
-    NoteSetDebugOutputStream(serialDebugOut);
+    notecard.setDebugOutputStream(serialDebugOut);
 #endif
 
 	// Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	NoteInitSerial(serialNotecard, 9600);
+	notecard.begin(serialNotecard, 9600);
 #else
-	NoteInitI2C();
+	notecard.begin();
 #endif
 
 	// Service configuration request
-	J *req = NoteNewRequest("service.set");
+	J *req = notecard.newRequest("hub.set");
 
 	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
 	// this Product ID.	 (see above)
@@ -96,7 +97,7 @@ void setup() {
 	JAddNumberToObject(req, "hours", 1);
 
 	// Issue the request
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 }
 
@@ -112,11 +113,11 @@ void loop() {
 	switch (buttonState) {
 
 	case BUTTON_IDLE:
-		if (NoteDebugSyncStatus(2500, 0))
+		if (notecard.debugSyncStatus(2500, 0))
 			lastStatusMs = millis();
 		if (millis() > lastStatusMs + 10000) {
 			lastStatusMs = millis();
-			NoteDebug("press button to simulate a sensor measurement\n");
+			notecard.logDebug("press button to simulate a sensor measurement\n");
 		}
 		delay(25);
 		digitalWrite(ledPin, LOW);
@@ -124,14 +125,14 @@ void loop() {
 		return;
 
 	case BUTTON_DOUBLEPRESS:
-		NoteRequest(NoteNewRequest("service.sync"));
+		notecard.requestAndResponse(notecard.newRequest("hub.sync"));
 		digitalWrite(ledPin, LOW);
 		return;
 
 	}
 
 	// The button was pressed, so we should begin a transaction
-	NoteDebug("performing sensor measurement\n");
+	notecard.logDebug("performing sensor measurement\n");
 	lastStatusMs = millis();
 
 	// Count the simulated measurements that we send to the cloud, and stop the demo before long.
@@ -141,21 +142,21 @@ void loop() {
 
 	// Read the notecard's current temperature and voltage, as simulated sensor measurements
 	double temperature = 0;
-	J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
+	J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
 	if (rsp != NULL) {
 		temperature = JGetNumber(rsp, "value");
-		NoteDeleteResponse(rsp);
+		notecard.deleteResponse(rsp);
 	}
 	double voltage = 0;
-	rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
+	rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
 	if (rsp != NULL) {
 		voltage = JGetNumber(rsp, "value");
-		NoteDeleteResponse(rsp);
+		notecard.deleteResponse(rsp);
 	}
 
 	// Enqueue the measurement to the Notecard for transmission to the Notehub.	 These measurements
 	// will be staged in the Notecard's flash memory until it's time to transmit them to the service.
-	J *req = NoteNewRequest("note.add");
+	J *req = notecard.newRequest("note.add");
 	if (req != NULL) {
 		J *body = JCreateObject();
 		if (body != NULL) {
@@ -164,7 +165,7 @@ void loop() {
 			JAddNumberToObject(body, "count", eventCounter);
 			JAddItemToObject(req, "body", body);
 		}
-		NoteRequest(req);
+		notecard.sendRequest(req);
 	}
 
 	// Done with transaction
