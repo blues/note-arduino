@@ -55,9 +55,10 @@ void setup() {
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
 void loop() {
 
-	// Simulate an event counter of some kind
+	// Count the simulated measurements that we send to the cloud, and stop the demo before long.
 	static unsigned eventCounter = 0;
-	eventCounter = eventCounter + 1;
+	if (eventCounter++ > 25)
+		return;
 
 	// Simulate a temperature reading, between 5.0 and 35.0 degrees C
 	double temperature = (double) random(50, 350) / 10.0;

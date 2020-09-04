@@ -98,9 +98,10 @@ void setup() {
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
 void loop() {
 
-	// Simulate an event counter of some kind
+	// Count the simulated measurements that we send to the cloud, and stop the demo before long.
 	static unsigned eventCounter = 0;
-	eventCounter = eventCounter + 1;
+	if (eventCounter++ > 25)
+		return;
 
 	// Rather than simulating a temperature reading, use a Notecard request to read the temp
 	// from the Notecard's built-in temperature sensor.  We use NoteRequestResponse() to indicate
