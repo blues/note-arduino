@@ -19,6 +19,14 @@ class Notecard
     void begin(HardwareSerial &serial, int speed);
     void setDebugOutputStream(Stream &dbgserial);
     void i2cTest(int Adjustment);
+    J *newRequest(const char *request);
+    bool sendRequest(J *req);
+    J *requestAndResponse(J *req);
+    void deleteResponse(J *rsp);
+    void logDebug(const char *message);
+    void logDebugf(const char *format, ...);
+    bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
+    bool responseError(J *rsp);
 
   private:
     static TwoWire *_i2cPort;

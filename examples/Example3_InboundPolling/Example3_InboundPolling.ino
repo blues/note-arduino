@@ -56,12 +56,12 @@ void setup() {
 	// This request marks this device as a "development device".  For development devices, the service
 	// accepts inbound HTTP requests in an open, unauthenticated manner for developer convenience.
 	// No devices should ever be deployed in this mode, for obvious reasons!
-	J *req = NoteNewRequest("card.io");
+	J *req = notecard.newRequest("card.io");
 	JAddStringToObject(req, "mode", "development-on");
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 	// Configure the productUID, and instruct the Notecard to stay connected to the service
-	req = NoteNewRequest("service.set");
+	req = notecard.newRequest("hub.set");
 	JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
@@ -70,7 +70,7 @@ void setup() {
 	JAddStringToObject(req, "mode", "periodic");
 	JAddNumberToObject(req, "minutes", 60);
 #endif
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 }
 
@@ -89,18 +89,18 @@ void loop() {
 		while (true) {
 
 			// Get the next available note from our inbound queue notefile, deleting it
-			J *req = NoteNewRequest("note.get");
+			J *req = notecard.newRequest("note.get");
 			JAddStringToObject(req, "file", INBOUND_QUEUE_NOTEFILE);
 			JAddBoolToObject(req, "delete", true);
-			J *rsp = NoteRequestResponse(req);
+			J *rsp = notecard.requestAndResponse(req);
 			if (rsp != NULL) {
 
 				// If an error is returned, this means that no response is pending.  Note
 				// that it's expected that this might return either a "note does not exist"
 				// error if there are no pending inbound notes, or a "file does not exist" error
 				// if the inbound queue hasn't yet been created on the service.
-				if (NoteResponseError(rsp)) {
-					NoteDeleteResponse(rsp);
+				if (notecard.responseError(rsp)) {
+					notecard.deleteResponse(rsp);
 					break;
 				}
 
@@ -109,16 +109,13 @@ void loop() {
 				if (body != NULL) {
 
 					// Simulate Processing the response here
-					NoteDebug("INBOUND REQUEST: ");
-					NoteDebug(JGetString(body, INBOUND_QUEUE_COMMAND_FIELD));
-					NoteDebug("\n\n");
-
+					notecard.logDebug("INBOUND REQUEST: ");
+					notecard.logDebug(JGetString(body, INBOUND_QUEUE_COMMAND_FIELD));
+					notecard.logDebug("\n\n");
 				}
 
 			}
-	        NoteDeleteResponse(rsp);
+	        notecard.deleteResponse(rsp);
 		}
-		
 	}
-
 }

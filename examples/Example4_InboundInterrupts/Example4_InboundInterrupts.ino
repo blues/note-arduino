@@ -66,7 +66,7 @@ void setup() {
 #endif
 
 	// Configure the productUID, and instruct the Notecard to stay connected to the service
-	J *req = NoteNewRequest("service.set");
+	J *req = notecard.newRequest("hub.set");
 	JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
@@ -74,16 +74,16 @@ void setup() {
 	JAddStringToObject(req, "mode", "periodic");
 	JAddNumberToObject(req, "minutes", 60);
 #endif
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 	// Configure ATTN to wait for a specific list of files
-	req = NoteNewRequest("card.attn");
+	req = notecard.newRequest("card.attn");
 	const char *filesToWatch[] = {INBOUND_QUEUE_NOTEFILE};
 	int numFilesToWatch = sizeof(filesToWatch) / sizeof(const char *);
 	J *filesArray = JCreateStringArray(filesToWatch, numFilesToWatch);
 	JAddItemToObject(req, "files", filesArray);
 	JAddStringToObject(req, "mode", "files");
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 	// Attach an interrupt pin
 	pinMode(ATTN_INPUT_PIN, INPUT);
@@ -108,18 +108,18 @@ void loop() {
 	while (true) {
 
 		// Get the next available note from our inbound queue notefile, deleting it
-		J *req = NoteNewRequest("note.get");
+		J *req = notecard.newRequest("note.get");
 		JAddStringToObject(req, "file", INBOUND_QUEUE_NOTEFILE);
 		JAddBoolToObject(req, "delete", true);
-		J *rsp = NoteRequestResponse(req);
+		J *rsp = notecard.requestAndResponse(req);
 		if (rsp != NULL) {
 
 			// If an error is returned, this means that no response is pending.	 Note
 			// that it's expected that this might return either a "note does not exist"
 			// error if there are no pending inbound notes, or a "file does not exist" error
 			// if the inbound queue hasn't yet been created on the service.
-			if (NoteResponseError(rsp)) {
-				NoteDeleteResponse(rsp);
+			if (notecard.responseError(rsp)) {
+				notecard.deleteResponse(rsp);
 				break;
 			}
 
@@ -129,12 +129,12 @@ void loop() {
 
 				// Simulate Processing the response here
 				char *myCommandType = JGetString(body, INBOUND_QUEUE_COMMAND_FIELD);
-				NoteDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
+				notecard.logDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
 
 			}
 
 		}
-		NoteDeleteResponse(rsp);
+		notecard.deleteResponse(rsp);
 	}
 
 }
@@ -151,9 +151,9 @@ void attnArm() {
 	attnInterruptOccurred = false;
 
 	// Set the ATTN pin low, and wait for the earlier of file modification or a timeout
-	J *req = NoteNewRequest("card.attn");
+	J *req = notecard.newRequest("card.attn");
 	JAddStringToObject(req, "mode", "reset");
 	JAddNumberToObject(req, "seconds", 120);
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 }

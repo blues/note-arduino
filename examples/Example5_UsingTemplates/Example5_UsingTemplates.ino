@@ -68,7 +68,7 @@ void setup() {
 	// "NoteNewRequest()" uses the bundled "J" json package to allocate a "req", which is a JSON object
 	// for the request to which we will then add Request arguments.	 The function allocates a "req"
 	// request structure using malloc() and initializes its "req" field with the type of request.
-	J *req = NoteNewRequest("service.set");
+	J *req = notecard.newRequest("hub.set");
 
 	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
 	// this Product ID.	 (see above)
@@ -86,12 +86,12 @@ void setup() {
 	//	   }
 	// Note that NoteRequest() always uses free() to release the request data structure, and it
 	// returns "true" if success and "false" if there is any failure.
-	NoteRequest(req);
+	notecard.sendRequest(req);
 
 	// Create a template note that we will register.  This template note will look "similar" to
 	// the notes that will later be added with note.add, in that the data types are used to
 	// intuit what the ultimate field data types will be, and their maximum length.
-	req = NoteNewRequest("note.add");
+	req = notecard.newRequest("note.add");
 	if (req != NULL) {
 
 		// Create the body for a template that will be used to send notes below
@@ -114,7 +114,7 @@ void setup() {
 		// Register the template in the output queue notefile
 		JAddStringToObject(req, "file", "sensors.qo");
 		JAddBoolToObject(req, "template", true);
-		NoteRequest(req);
+		notecard.sendRequest(req);
 	}
 
 
@@ -136,18 +136,18 @@ void loop() {
 	// check for NULL to ensure that there was enough memory available on the microcontroller to
 	// satisfy the allocation request.
 	double temperature = 0;
-	J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
+	J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
 	if (rsp != NULL) {
 		temperature = JGetNumber(rsp, "value");
-		NoteDeleteResponse(rsp);
+		notecard.deleteResponse(rsp);
 	}
 
 	// Do the same to retrieve the voltage that is detected by the Notecard on its V+ pin.
 	double voltage = 0;
-	rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
+	rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
 	if (rsp != NULL) {
 		voltage = JGetNumber(rsp, "value");
-		NoteDeleteResponse(rsp);
+		notecard.deleteResponse(rsp);
 	}
 
 	// Add a binary data structure to the simulation
@@ -158,7 +158,7 @@ void loop() {
 	// Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "start"
 	// flag for demonstration purposes to upload the data instantaneously, so that if you are looking
 	// at this on notehub.io you will see the data appearing 'live'.)
-	J *req = NoteNewRequest("note.add");
+	J *req = notecard.newRequest("note.add");
 	if (req != NULL) {
 		JAddStringToObject(req, "file", "sensors.qo");
 		J *body = JCreateObject();
@@ -170,7 +170,7 @@ void loop() {
 			JAddItemToObject(req, "body", body);
 		}
 		JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
-		NoteRequest(req);
+		notecard.sendRequest(req);
 	}
 
 	// Delay between measurements

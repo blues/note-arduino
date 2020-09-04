@@ -91,6 +91,39 @@ bool Notecard::noteI2CReset() {
 	return true;
 }
 
+J *Notecard::newRequest(const char *request) {
+	return NoteNewRequest(request);
+}
+
+bool Notecard::sendRequest(J *req) {
+	return NoteRequest(req);
+}
+
+J *Notecard::requestAndResponse(J *req) {
+	return NoteRequestResponse(req);
+}
+
+void Notecard::deleteResponse(J *rsp) {
+	NoteDeleteResponse(rsp);
+}
+
+void Notecard::logDebug(const char *message) {
+	NoteDebug(message);
+}
+
+void Notecard::logDebugf(const char *format, ...) {
+	va_list args;
+  NoteDebugf(format, args);
+}
+
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) {
+	return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
+}
+
+bool Notecard::responseError(J *rsp) {
+	return NoteResponseError(rsp);
+}
+
 // Transmits in master mode an amount of data in blocking mode.	 The address
 // is the actual address; the caller should have shifted it right so that the
 // low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
