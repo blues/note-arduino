@@ -68,23 +68,23 @@ function allocates a `"req` request structure using malloc() and initializes its
 "req" field with the type of request.
 
 ```cpp
-J *req = NoteNewRequest("service.set");
-JAddStringToObject(req, "product", "com.mycompany.myproduct");
+J *req = notecard.newRequest("service.set");
+JAddStringToObject(req, "product", "com.[mycompany].[myproduct]");
 JAddStringToObject(req, "mode", "continuous");
-NoteRequest(req);
+notecard.sendRequest(req);
 ```
 
 ### Reading Notecard Responses
 
-If you need to read a response from the Notecard, use the `NoteRequestResponse`
-api and `JGet*` helper methods to read numbers, strings, etc. from the JSON
+If you need to read a response from the Notecard, use the `requestAndResponse()`
+method and `JGet*` helper methods to read numbers, strings, etc. from the JSON
 response.
 
 ```cpp
-J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
+J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
 if (rsp != NULL) {
    temperature = JGetNumber(rsp, "value");
-   NoteDeleteResponse(rsp);
+   notecard.deleteResponse(rsp);
 }
 ```
 
@@ -96,7 +96,7 @@ update this repo with the latest from note-c:
 
 ```sh
 rm -rf src/note-c
-git commit -am'remove note-c before readd'
+git commit -am 'remove note-c before readd'
 git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 
