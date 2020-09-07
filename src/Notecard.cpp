@@ -61,7 +61,6 @@ size_t Notecard::debugSerialOutput(const char *message) {
 
 // Serial port reset
 bool Notecard::noteSerialReset() {
-	_notecardSerial->end();
 	_notecardSerial->begin(_notecardSerialSpeed);
 
 	return true;
