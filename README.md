@@ -54,9 +54,12 @@ notecard.begin(Serial1, 9600);
 
 ### I2C Configuration
 
-For I2C, simply call `begin()` with no parameters.
+For I2C, initialize `Wire` by calling `begin()` and call Notecard `begin()` with
+no parameters.
 
 ```cpp
+Wire.begin();
+
 notecard.begin();
 ```
 
