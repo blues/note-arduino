@@ -46,8 +46,7 @@ int Notecard::_notecardSerialSpeed;
 Stream *Notecard::_debugSerial;
 bool Notecard::_debugSerialInitialized;
 
-// Debugging
-#define I2C_DATA_TRACE false
+#define I2C_DATA_TRACE false ///< Enable Tracing for I2C Reads and Writes
 static const char *i2cerr = "i2c?";
 
 // 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
