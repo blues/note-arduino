@@ -102,8 +102,7 @@ git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git
 
 ## Documentation
 
-The documentation for this library can be found at the Blues Wireless
-[wireless.dev](https//wireless.dev/reference/note-arduino) site.
+The documentation for this library can be found [here](https://blues.github.io/note-arduino/html/index.html).
 
 # Examples
 
