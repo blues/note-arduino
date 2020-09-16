@@ -17,6 +17,7 @@
 // Include the Arduino library for the Notecard
 
 #include <Notecard.h>
+#include <Wire.h>
 
 // If the Notecard is connected to a serial port, define it here.  For example, if you are using
 // the Adafruit Feather NRF52840 Express, the RX/TX pins (and thus the Notecard) are on Serial1.
@@ -65,6 +66,8 @@ void setup() {
 #ifdef serialNotecard
 	notecard.begin(serialNotecard, 9600);
 #else
+	Wire.begin();
+
 	notecard.begin();
 #endif
 
@@ -72,7 +75,7 @@ void setup() {
 	// for the request to which we will then add Request arguments.  The function allocates a "req"
 	// request structure using malloc() and initializes its "req" field with the type of request.
   J *req = notecard.newRequest("hub.set");
-	
+
 	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
 	// this Product ID.  (see above)
 	JAddStringToObject(req, "product", myProductID);

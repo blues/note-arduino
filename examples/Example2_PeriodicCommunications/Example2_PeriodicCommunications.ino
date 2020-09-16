@@ -34,6 +34,7 @@
 
 // Include the Arduino library for the Notecard
 #include <Notecard.h>
+#include <Wire.h>
 
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
@@ -71,6 +72,8 @@ void setup() {
 #ifdef serialNotecard
 	notecard.begin(serialNotecard, 9600);
 #else
+	Wire.begin();
+
 	notecard.begin();
 #endif
 

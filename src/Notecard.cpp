@@ -63,7 +63,7 @@ size_t Notecard::debugSerialOutput(const char *message) {
 bool Notecard::noteSerialReset() {
 	_notecardSerial->begin(_notecardSerialSpeed);
 
-	return true;
+	return (!!_notecardSerial);
 }
 
 // Serial transmit function
@@ -85,8 +85,6 @@ char Notecard::noteSerialReceive() {
 
 // I2C port reset
 bool Notecard::noteI2CReset() {
-	_i2cPort->begin();
-
 	return true;
 }
 
