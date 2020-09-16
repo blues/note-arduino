@@ -1,6 +1,6 @@
 # note-arduino
 
-The note-arduino Arduino library for communicating with [Blues Wireless][blues]
+The note-arduino Arduino library for communicating with the[Blues Wireless][blues] Notecard
 via serial or I²C. Includes example sketches in the
 [examples directory](examples).
 
