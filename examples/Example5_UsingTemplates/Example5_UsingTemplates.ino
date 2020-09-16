@@ -26,12 +26,14 @@
 //
 
 #include <Notecard.h>
+#include <Wire.h>
+
 #include <stdlib.h>
 
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 //  Remove serialDebug if you don't want the Notecard library to output debug information
-#define serialNotecard Serial1
+// #define serialNotecard Serial1
 #define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
@@ -62,6 +64,8 @@ void setup() {
 #ifdef serialNotecard
 	notecard.begin(serialNotecard, 9600);
 #else
+	Wire.begin();
+
 	notecard.begin();
 #endif
 
