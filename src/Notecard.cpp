@@ -1,6 +1,40 @@
-// Copyright 2018 Inca Roads LLC.  All rights reserved.
-// Use of this source code is governed by licenses granted by the
-// copyright holder including that found in the LICENSE file.
+/*!
+ * @file Notecard.cpp
+ *
+ * @mainpage Arduino Library for the Notecard
+ *
+ * @section intro_sec Introduction
+ *
+ * The note-arduino Arduino library for communicating with the
+ * <a href="https://blues.io">Blues Wireless</a>
+ * Notecard via serial or I2C.
+ *
+ * This library allows you to control a Notecard by writing an Arduino sketch in
+ * C or C++. Your sketch may programmatically configure Notecard and send Notes
+ * to <a href="https://notehub.io">Notehub.io</a>.
+ *
+ * @section dependencies Dependencies
+ *
+ * This library is a wrapper around and depends upon the
+ * <a href="https://github.com/blues/note-c">note-c library</a>, which it
+ * includes as a git submodule.
+ *
+ * In addition, this library requires a physical
+ * connection to a Notecard over I2C or Serial to be functional.
+ *
+ * @section author Author
+ *
+ * Written by Ray Ozzie and Brandon Satrom for Blues Inc.
+ *
+ * @section license License
+ *
+ * Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
+ * governed by licenses granted by the copyright holder including that found in
+ * the
+ * <a href="https://github.com/blues/note-arduino/blob/master/LICENSE">LICENSE</a>
+ * file.
+ *
+ */
 
 #include <Arduino.h>
 #include <note-c/note.h>
@@ -20,7 +54,25 @@ static const char *i2cerr = "i2c?";
 // This code enables us to exercise that code path to test the state of the bug.
 int _readLengthAdjustment = 0;
 
-// Initialize for I2C I/O
+/***************************************************************************
+ PUBLIC FUNCTIONS
+ ***************************************************************************/
+
+/**************************************************************************/
+/*!
+    @brief  Initialize the Notecard for I2C.
+            This function configures the Notecard to use the I2C bus
+						for communication with the host.
+    @param    i2caddress
+              The I2C Address to use for the Notecard.
+    @param    i2cmax
+              The max length of each message to send from the host to
+							the Notecard. Used to ensure the messages are sized appropriately
+							for the host.
+		@param    wirePort
+							The TwoWire implementation to use for I2C communication.
+*/
+/**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort) {
 	NoteSetFnDefault(malloc, free, delay, millis);
 	_i2cPort = &wirePort;
@@ -29,7 +81,18 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort) {
 							 Notecard::noteI2CTransmit, Notecard::noteI2CReceive);
 }
 
-// Initialize for serial I/O
+/**************************************************************************/
+/*!
+    @brief  Initialize the Notecard for Serial communication.
+            This function configures the Notecard to use Serial
+						for communication with the host.
+    @param    selectedSerialPort
+              The HardwareSerial bus to use.
+    @param    selectedSpeed
+              The baud rate to use for communicating with the Notecard
+							from the host.
+*/
+/**************************************************************************/
 void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 {
 	NoteSetFnDefault(malloc, free, delay, millis);
@@ -41,90 +104,236 @@ void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 	_notecardSerial->begin(_notecardSerialSpeed);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Set the debug output source.
+            This function takes a Stream object (for example, `Serial`)
+						and configures it as a source for writing debug messages
+						during development.
+    @param    dbgserial
+              The Stream object to use for debug output.
+*/
+/**************************************************************************/
 void Notecard::setDebugOutputStream(Stream &dbgserial) {
 	_debugSerial = &dbgserial;
 	_debugSerialInitialized = true;
 	NoteSetFnDebugOutput(Notecard::debugSerialOutput);
 }
 
-// Method enabling us to test the state of the ST Microelectronics I2C HAL issue
+/**************************************************************************/
+/*!
+    @brief  Adjust the I2C read length.
+            Method enabling a developer to test the state of a known issue
+						with the I2C HAL on some ST Microelectronics boards.
+    @param    Adjustment
+              The read length to override.
+*/
+/**************************************************************************/
 void Notecard::i2cTest(int Adjustment) {
 	_readLengthAdjustment = Adjustment;
 }
 
-// Serial output method
+/**************************************************************************/
+/*!
+    @brief  Creates a new request object for population by the host.
+            This function accepts a request string (for example, `note.add`)
+						and initializes a JSON Object to return to the host.
+    @param    request
+              The request name, for example, `note.add`.
+    @return A `J` JSON Object populated with the request name.
+*/
+/**************************************************************************/
+J *Notecard::newRequest(const char *request) {
+	return NoteNewRequest(request);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard.
+            This function takes a populated `J` JSON request object
+						and sends it to the Notecard.
+    @param    req
+              A `J` JSON request object.
+    @return `True` if the message was successfully sent to the Notecard,
+						`False` if there was an error.
+*/
+/**************************************************************************/
+bool Notecard::sendRequest(J *req) {
+	return NoteRequest(req);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard and return the JSON Response.
+            This function takes a populated `J` JSON request object
+						and sends it to the Notecard.
+    @param    req
+              A `J` JSON request object.
+    @return `J` JSON Object with the response from the Notecard.
+*/
+/**************************************************************************/
+J *Notecard::requestAndResponse(J *req) {
+	return NoteRequestResponse(req);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Deletes a `J` JSON response object from memory.
+    @param    rsp
+              A `J` JSON response object.
+*/
+/**************************************************************************/
+void Notecard::deleteResponse(J *rsp) {
+	NoteDeleteResponse(rsp);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Write a message to the serial debug stream.
+    @param    message
+              A string to log to the serial debug stream.
+*/
+/**************************************************************************/
+void Notecard::logDebug(const char *message) {
+	NoteDebug(message);
+}
+
+
+/**************************************************************************/
+/*!
+    @brief  Write a formatted message to the serial debug stream.
+    @param    format
+              A format string to log to the serial debug stream.
+	  @param    ... one or more values to interpolate into the format string.
+*/
+/**************************************************************************/
+void Notecard::logDebugf(const char *format, ...) {
+	va_list args;
+  NoteDebugf(format, args);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Periodically show Notecard sync status,
+						returning TRUE if something was displayed
+    @param    pollFrequencyMs
+              The frequency to poll the Notecard for sync status.
+		@param		maxLevel
+							The maximum log level to output to the debug console. Pass
+							-1 for all.
+    @return `True` if a pending response was displayed to the debug stream.
+*/
+/**************************************************************************/
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) {
+	return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Determines if there is an error string present in a response object.
+    @param    rsp
+              A `J` JSON Response object.
+    @return `True` if the response object contains an error.
+*/
+/**************************************************************************/
+bool Notecard::responseError(J *rsp) {
+	return NoteResponseError(rsp);
+}
+
+/***************************************************************************
+ PRIVATE FUNCTIONS
+ ***************************************************************************/
+
+/**************************************************************************/
+/*!
+    @brief  Writes a message to the debug Serial stream.
+    @param    message
+              The message to log.
+    @return The number of bytes written.
+*/
+/**************************************************************************/
 size_t Notecard::debugSerialOutput(const char *message) {
 	if (!_debugSerialInitialized)
 		return 0;
 	return(_debugSerial->print(message));
 }
 
-// Serial port reset
+/**************************************************************************/
+/*!
+    @brief  Resets the serial port.
+    @return `True` if the Serial port is available.
+*/
+/**************************************************************************/
 bool Notecard::noteSerialReset() {
 	_notecardSerial->begin(_notecardSerialSpeed);
 
 	return (!!_notecardSerial);
 }
 
-// Serial transmit function
+/**************************************************************************/
+/*!
+    @brief  Writes a message to the Notecard Serial port.
+    @param    text
+              The text to write.
+		@param    len
+              The number of bytes to write.
+		@param    flush
+              `True` to flush to Serial.
+*/
+/**************************************************************************/
 void Notecard::noteSerialTransmit(uint8_t *text, size_t len, bool flush) {
 	_notecardSerial->write(text, len);
 	if (flush)
 		_notecardSerial->flush();
 }
 
-// Serial 'is anything available?' function
+/**************************************************************************/
+/*!
+    @brief  Determines if the Notecard Serial port has data available.
+    @return `True` if there are bytes available to read.
+*/
+/**************************************************************************/
 bool Notecard::noteSerialAvailable() {
 	return (_notecardSerial->available() > 0);
 }
 
-// Serial read a byte function, guaranteed only ever to be called if there is data Available()
+/**************************************************************************/
+/*!
+    @brief  Read a byte from the Notecard Serial port. guaranteed only ever to
+						be called if there is data available.
+    @return a single character byte.
+*/
+/**************************************************************************/
 char Notecard::noteSerialReceive() {
 	return _notecardSerial->read();
 }
 
-// I2C port reset
+
+/**************************************************************************/
+/*!
+    @brief  Resets the I2C port. Required by note-c, but not implemented as
+						the developer should call `Wire.begin()` themselves before
+						initializing the library.
+    @return `True`.
+*/
+/**************************************************************************/
 bool Notecard::noteI2CReset() {
 	return true;
 }
 
-J *Notecard::newRequest(const char *request) {
-	return NoteNewRequest(request);
-}
-
-bool Notecard::sendRequest(J *req) {
-	return NoteRequest(req);
-}
-
-J *Notecard::requestAndResponse(J *req) {
-	return NoteRequestResponse(req);
-}
-
-void Notecard::deleteResponse(J *rsp) {
-	NoteDeleteResponse(rsp);
-}
-
-void Notecard::logDebug(const char *message) {
-	NoteDebug(message);
-}
-
-void Notecard::logDebugf(const char *format, ...) {
-	va_list args;
-  NoteDebugf(format, args);
-}
-
-bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) {
-	return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
-}
-
-bool Notecard::responseError(J *rsp) {
-	return NoteResponseError(rsp);
-}
-
-// Transmits in master mode an amount of data in blocking mode.	 The address
-// is the actual address; the caller should have shifted it right so that the
-// low bit is NOT the read/write bit.  If TimeoutMs == 0, the default timeout is used.
-// An error message is returned, else NULL if success.
+/**************************************************************************/
+/*!
+    @brief  Transmits an amount of data from the host in blocking mode.
+    @param    DevAddress
+              The I2C address.
+		@param    pBuffer
+              The data to transmit over I2C. The caller should have shifted
+							it right so that the low bit is NOT the read/write bit.
+		@param    Size
+              the number of bytes to transmit.
+		@returns A string with an error, or `NULL` if the transmit was successful.
+*/
+/**************************************************************************/
 const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size) {
 #if I2C_DATA_TRACE
 	NoteDebugf("i2c transmit len: \n", Size);
@@ -146,7 +355,22 @@ const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uin
 	return NULL;
 }
 
-// Receives in master mode an amount of data in blocking mode.
+/**************************************************************************/
+/*!
+    @brief  Receives an amount of data from the Notecard in blocking mode.
+    @param    DevAddress
+              The I2C address.
+		@param    pBuffer
+              The data to transmit over I2C. The caller should have shifted
+							it right so that the low bit is NOT the read/write bit.
+		@param    Size
+              the number of bytes to transmit.
+		@param    available
+							The number of bytes available to read, out param,
+							updated by the function.
+		@returns A string with an error, or `NULL` if the receive was successful.
+*/
+/**************************************************************************/
 const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available) {
 #if I2C_DATA_TRACE
 	uint8_t *original = pBuffer;

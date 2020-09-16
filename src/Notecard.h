@@ -1,7 +1,26 @@
-// Copyright 2019 Blues Inc.  All rights reserved.
-// Use of this source code is governed by licenses granted by the
-// copyright holder including that found in the LICENSE file.
-
+/*!
+ * @file Notecard.h
+ *
+ * The note-arduino Arduino library for communicating with the
+ * <a href="https://blues.io">Blues Wireless</a>
+ * Notecard via serial or I2C.
+ *
+ * This library allows you to control a Notecard by writing an Arduino sketch in
+ * C or C++. Your sketch may programmatically configure Notecard and send Notes
+ * to <a href="https://notehub.io">Notehub.io</a>.
+ *
+ * This library is a wrapper around the
+ * <a href="https://github.com/blues/note-c">note-c library</a>, which it
+ * includes as a git submodule.
+ *
+ * Written by Ray Ozzie and Brandon Satrom for Blues Inc.
+ *
+ * MIT License. Use of this source code is governed by licenses granted by the
+ * copyright holder including that found in the
+ * <a href="https://github.com/blues/note-arduino/blob/master/LICENSE">LICENSE</a>
+ * file.
+ *
+ */
 #ifndef Notecard_h
 #define Notecard_h
 
@@ -10,6 +29,12 @@
 #include <Wire.h>
 #include <note-c/note.h>
 
+/**************************************************************************/
+/*!
+    @brief  Class that stores state and functions for interacting with the
+    Blues Wireless Notecard.
+*/
+/**************************************************************************/
 class Notecard
 {
   public:
