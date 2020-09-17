@@ -317,6 +317,8 @@ char Notecard::noteSerialReceive() {
 */
 /**************************************************************************/
 bool Notecard::noteI2CReset() {
+	_i2cPort->begin();
+
 	return true;
 }
 
