@@ -61,7 +61,7 @@ extern const char *c_true;
 extern const char *c_nullstring;
 #define	c_nullstring_len 0
 extern const char *c_newline;
-#define	c_newline_len 1
+#define	c_newline_len 2
 extern const char *c_mem;
 #define	c_mem_len 3
 extern const char *c_timeout;
