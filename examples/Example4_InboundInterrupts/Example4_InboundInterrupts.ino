@@ -25,7 +25,7 @@
 #include <Wire.h>
 
 // GPIO pin definitions
-#define ATTN_INPUT_PIN				5			// Any digital GPIO pin on your board
+#define ATTN_INPUT_PIN  5			// Any digital GPIO pin on your board
 
 // Parameters for this example
 #define	INBOUND_QUEUE_NOTEFILE		"my-inbound.qi"
@@ -72,11 +72,17 @@ void setup() {
 	JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
 	JAddStringToObject(req, "mode", "continuous");
+  JAddBoolToObject(req, "sync", true);
 #else
 	JAddStringToObject(req, "mode", "periodic");
 	JAddNumberToObject(req, "minutes", 60);
 #endif
 	notecard.sendRequest(req);
+
+  // Disarm ATTN To clear any previous state before rearming
+  req = notecard.newRequest("card.attn");
+  JAddStringToObject(req, "mode", "disarm,-files");
+  notecard.sendRequest(req);
 
 	// Configure ATTN to wait for a specific list of files
 	req = notecard.newRequest("card.attn");
@@ -131,8 +137,7 @@ void loop() {
 
 				// Simulate Processing the response here
 				char *myCommandType = JGetString(body, INBOUND_QUEUE_COMMAND_FIELD);
-				notecard.logDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
-
+			  NoteDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
 			}
 
 		}
