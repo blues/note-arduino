@@ -96,7 +96,7 @@ void setup() {
 	// Attach an interrupt pin
 	pinMode(ATTN_INPUT_PIN, INPUT);
 	attachInterrupt(digitalPinToInterrupt(ATTN_INPUT_PIN), attnISR, RISING);
-  
+
 	// Arm the interrupt, so that we are notified whenever ATTN rises
 	attnArm();
 
