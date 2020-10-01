@@ -551,7 +551,7 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
         if (stringReferenceItem != NULL)
             JAddItemToObject(req, "payload", stringReferenceItem);
 		char modestr[64];
-		strlcpy(modestr, "arm", sizeof(modestr));
+		strlcpy(modestr, "sleep", sizeof(modestr));
 		if (modes != NULL) {
 			strlcat(modestr, ",", sizeof(modestr));
 			strlcat(modestr, modes, sizeof(modestr));
