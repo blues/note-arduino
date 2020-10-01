@@ -13,21 +13,13 @@ as a git submodule.
 
 ## Installation
 
-1. Download the library as a .zip file from [here][archive] or use the UI
-   `Clone or download -> Download ZIP`
-2. Start the Arduino IDE
-3. Open a new or existing sketch which will talk to Notecard
-4. Add the library to the Arduino IDE:
-   ```
-   Sketch -> Include Library -> Add .ZIP Library...
-   ```
-   and select the previously downloaded .zip file
-5. Include the library in your sketch:
-   ```
-   Sketch -> Include Library -> Contributed libraries -> Blues Wireless Notecard
-   ```
-   This will have the effect of inserting this line of code at the top of your
-   sketch:
+1. Open the Arduino IDE and click **Tools > Manage Libraries...**.
+2. Search for "Blues" in the input box and click the "Install" button next
+   to the "Blues Wireless Notecard" result.
+
+   ![](https://wireless.dev/images/guides/first-sensor/arduino/install-library.gif)
+
+3. Create a new sketch and select the Sketch > Include Library > Contributed Libraries > Blues Wireless Notecard menu option, to add the following include to your sketch:
    ```
    #include <Notecard.h>
    ```
