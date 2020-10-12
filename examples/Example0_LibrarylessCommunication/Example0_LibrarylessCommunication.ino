@@ -47,7 +47,7 @@ void setup() {
 #if myLiveDemo
 	serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
 #else
-	serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"minutes\":60}");
+	serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"outbound\":60}");
 #endif
 
 }

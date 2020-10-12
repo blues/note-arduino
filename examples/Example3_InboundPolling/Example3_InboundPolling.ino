@@ -71,7 +71,7 @@ void setup() {
 	JAddBoolToObject(req, "sync", true);	// Automatically sync when changes are made on notehub
 #else
 	JAddStringToObject(req, "mode", "periodic");
-	JAddNumberToObject(req, "minutes", 60);
+	JAddNumberToObject(req, "outbound", 60);
 #endif
 	notecard.sendRequest(req);
 

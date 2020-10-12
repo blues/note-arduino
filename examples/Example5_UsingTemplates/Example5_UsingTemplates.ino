@@ -80,7 +80,7 @@ void setup() {
 
 	// This command determines how often the Notecard connects to the service.
 	JAddStringToObject(req, "mode", "periodic");
-	JAddNumberToObject(req, "minutes", 5);
+	JAddNumberToObject(req, "outbound", 5);
 
 	// Issue the request, telling the Notecard how and how often to access the service.
 	// This results in a JSON message to Notecard formatted like:

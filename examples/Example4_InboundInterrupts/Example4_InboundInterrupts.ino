@@ -75,7 +75,7 @@ void setup() {
   JAddBoolToObject(req, "sync", true);
 #else
 	JAddStringToObject(req, "mode", "periodic");
-	JAddNumberToObject(req, "minutes", 60);
+	JAddNumberToObject(req, "outbound", 60);
 #endif
 	notecard.sendRequest(req);
 

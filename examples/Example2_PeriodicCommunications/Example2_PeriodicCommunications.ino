@@ -87,17 +87,17 @@ void setup() {
 	// This sets the notecard's connectivity mode to periodic, rather than being continuously connected
 	JAddStringToObject(req, "mode", "periodic");
 
-	// This parameter establishes how often the Notecard will check for data that is waiting to be
+	// This parameter establishes how often, in minutes, the Notecard will check for data that is waiting to be
 	// uploaded to the service.  Generally this might be something like 60 minutes, or perhaps even
 	// 12 hours * 60 min = 720 min.  For the purpose of this demonstration, however, we'll set the
 	// period such that it checks for outgoing data at most every 2 minutes.
-	JAddNumberToObject(req, "minutes", 2);
+	JAddNumberToObject(req, "outbound", 2);
 
-	// This parameter establishes how often the Notecard will check for data that is waiting on the
+	// This parameter establishes how often, in minutes, the Notecard will check for data that is waiting on the
 	// service to be downloaded to the Notecard.  Generally this might be 12, 24, or even 48 hours,
 	// however for the purpose of this demonstration we will connect to the service to check for
 	// incoming data at least once every hour.
-	JAddNumberToObject(req, "hours", 1);
+	JAddNumberToObject(req, "inbound", 60);
 
 	// Issue the request
 	notecard.sendRequest(req);
