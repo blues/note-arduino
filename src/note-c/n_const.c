@@ -1,6 +1,15 @@
-// Copyright 2018 Inca Roads LLC.  All rights reserved.
-// Use of this source code is governed by licenses granted by the
-// copyright holder including that found in the LICENSE file.
+/*!
+ * @file n_const.c
+ *
+ * Written by Ray Ozzie and Blues Inc. team.
+ *
+ * Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
+ * governed by licenses granted by the copyright holder including that found in
+ * the
+ * <a href="https://github.com/blues/note-c/blob/master/LICENSE">LICENSE</a>
+ * file.
+ *
+ */
 
 #include "n_lib.h"
 

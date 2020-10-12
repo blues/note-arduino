@@ -1,7 +1,7 @@
-/* 
- * atof.c --
+/*!
+ * @file n_atof.c
  *
- *      Derived from the "strtod" library procedure to be locale-independent
+ * Derived from the "strtod" library procedure to be locale-independent
  *
  * Copyright (c) 1988-1993 The Regents of the University of California.
  * Copyright (c) 1994 Sun Microsystems, Inc.

@@ -1,6 +1,15 @@
-// Copyright 2018 Inca Roads LLC.  All rights reserved.
-// Use of this source code is governed by licenses granted by the
-// copyright holder including that found in the LICENSE file.
+/*!
+ * @file n_lib.h
+ *
+ * Written by Ray Ozzie and Blues Inc. team.
+ *
+ * Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
+ * governed by licenses granted by the copyright holder including that found in
+ * the
+ * <a href="https://github.com/blues/note-c/blob/master/LICENSE">LICENSE</a>
+ * file.
+ *
+ */
 
 #pragma once
 
@@ -12,19 +21,53 @@
 extern "C" {
 #endif
 
-// How long to wait for the card for any given transaction
+/**************************************************************************/
+/*!
+    @brief  How long to wait for the card for any given transaction.
+*/
+/**************************************************************************/
 #define NOTECARD_TRANSACTION_TIMEOUT_SEC     10
 
-// The notecard is a real-time device that has a fixed size interrupt buffer.  We can push data
-// at it far, far faster than it can process it, therefore we push it in segments with a pause
-// between each segment.
+// The notecard is a real-time device that has a fixed size interrupt buffer.
+// We can push data at it far, far faster than it can process it, therefore we
+// push it in segments with a pause between each segment.
+
+/**************************************************************************/
+/*!
+    @brief  The max length, in bytes, of each request segment when using I2C.
+*/
+/**************************************************************************/
 #define CARD_REQUEST_I2C_SEGMENT_MAX_LEN 250
+/**************************************************************************/
+/*!
+    @brief  The delay, in miliseconds, of each request when using I2C.
+*/
+/**************************************************************************/
 #define CARD_REQUEST_I2C_SEGMENT_DELAY_MS 250
+/**************************************************************************/
+/*!
+    @brief  The delay, in miliseconds, between each request chunk when using I2C.
+*/
+/**************************************************************************/
 #define CARD_REQUEST_I2C_CHUNK_DELAY_MS 20
+/**************************************************************************/
+/*!
+    @brief  The max length, in bytes, of each request segment when using Serial.
+*/
+/**************************************************************************/
 #define CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN 250
+/**************************************************************************/
+/*!
+    @brief  The delay, in miliseconds, of each request when using Serial.
+*/
+/**************************************************************************/
 #define CARD_REQUEST_SERIAL_SEGMENT_DELAY_MS 250
 
-// Memory allocation chunk size
+/**************************************************************************/
+/*!
+    @brief  Memory allocation chunk size.
+*/
+/**************************************************************************/
 #ifdef NOTE_LOWMEM
 #define ALLOC_CHUNK 64
 #else
@@ -53,27 +96,38 @@ bool NoteIsDebugOutputActive(void);
 
 // Constants, a global optimization to save static string memory
 extern const char *c_null;
+
 #define	c_null_len 4
 extern const char *c_false;
+
 #define	c_false_len 5
 extern const char *c_true;
+
 #define	c_true_len 4
 extern const char *c_nullstring;
+
 #define	c_nullstring_len 0
 extern const char *c_newline;
+
 #define	c_newline_len 2
 extern const char *c_mem;
+
 #define	c_mem_len 3
 extern const char *c_timeout;
+
 #define	c_timeout_len 7
 extern const char *c_err;
+
 #define	c_err_len 3
 extern const char *c_req;
+
 #define	c_req_len 3
 extern const char *c_bad;
+
 #define	c_bad_len 3
 
-// Readability wrappers.  Anything starting with _ is simply calling the wrapper function
+// Readability wrappers.  Anything starting with _ is simply calling the wrapper
+// function.
 #define _LockNote NoteLockNote
 #define _UnlockNote NoteUnlockNote
 #define _SerialReset NoteSerialReset

@@ -1,6 +1,39 @@
-// Copyright 2018 Inca Roads LLC.  All rights reserved. 
-// Use of this source code is governed by licenses granted by the
-// copyright holder including that found in the LICENSE file.
+/*!
+ * @file note.h
+ *
+ * @mainpage C/C++ Library for the Notecard
+ *
+ * @section intro_sec Introduction
+ *
+ * The note-c C/C++ library for communicating with the
+ * <a href="https://blues.io">Blues Wireless</a>
+ * Notecard via serial or I2C.
+ *
+ * This library allows you to control a Notecard by writing a C or C++
+ * program,. Your sketch may programmatically configure Notecard and send Notes
+ * to <a href="https://notehub.io">Notehub.io</a>.
+ *
+ * @section dependencies Dependencies
+ *
+ * This library bundles the <a href="https://github.com/DaveGamble/cJSON">cJSON
+ * JSON parser library</a>.
+ *
+ * In addition, this library requires a physical
+ * connection to a Notecard over I2C or Serial to be functional.
+ *
+ * @section author Author
+ *
+ * Written by Ray Ozzie and Blues Inc. team.
+ *
+ * @section license License
+ *
+ * Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
+ * governed by licenses granted by the copyright holder including that found in
+ * the
+ * <a href="https://github.com/blues/note-c/blob/master/LICENSE">LICENSE</a>
+ * file.
+ *
+ */
 
 #pragma once
 
@@ -164,7 +197,7 @@ bool NoteFactoryReset(bool deleteConfigSettings);
 bool NoteSetSerialNumber(const char *sn);
 bool NoteSetProductID(const char *productID);
 bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align);
-bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downlaodHours, bool align, bool sync);
+bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinutes, bool align, bool sync);
 bool NoteTemplate(const char *target, J *body);
 #define NoteSend NoteAdd
 bool NoteAdd(const char *target, J *body, bool urgent);

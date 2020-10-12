@@ -1,4 +1,7 @@
-/**
+/*!
+ * @file n_ftoa.c
+ *
+ *
  *	stm32tpl --	 STM32 C++ Template Peripheral Library
  *
  *	Copyright (c) 2009-2014 Anton B. Gusev aka AHTOXA
@@ -21,9 +24,7 @@
  *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *	THE SOFTWARE.
  *
- *
- *	file		 : ftoa.c
- *	description	 : convert double to string
+ * 	description	 : convert double to string
  *
  */
 

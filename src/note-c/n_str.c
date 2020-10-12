@@ -1,7 +1,9 @@
-/*      $OpenBSD: strlcpy.c,v 1.10 2005/08/08 08:05:37 espie Exp $      */
-/*      $OpenBSD: strlcat.c,v 1.12 2005/03/30 20:13:52 otto Exp $       */
-
-/*
+/*!
+ * @file n_str.c
+ *
+ *      $OpenBSD: strlcpy.c,v 1.10 2005/08/08 08:05:37 espie Exp $
+ *      $OpenBSD: strlcat.c,v 1.12 2005/03/30 20:13:52 otto Exp $
+ *
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
