@@ -207,8 +207,12 @@ void Notecard::logDebug(const char *message) {
 */
 /**************************************************************************/
 void Notecard::logDebugf(const char *format, ...) {
-	va_list args;
-  NoteDebugf(format, args);
+    char message[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(message, sizeof(message), format, args);
+    va_end(args);
+	NoteDebug(message);
 }
 
 /**************************************************************************/
