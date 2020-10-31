@@ -137,7 +137,7 @@ void loop() {
 
 				// Simulate Processing the response here
 				char *myCommandType = JGetString(body, INBOUND_QUEUE_COMMAND_FIELD);
-			  NoteDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
+			  notecard.logDebugf("INBOUND REQUEST: %s\n\n", myCommandType);
 			}
 
 		}
