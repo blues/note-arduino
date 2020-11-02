@@ -11,7 +11,7 @@
 // Define the pin number of the pushbutton pin
 #if defined(ARDUINO_ARCH_ESP32)
 #define buttonPin			21
-#define	buttonPressedState	HIGH
+#define	buttonPressedState	LOW
 #define ledPin				13
 #elif defined(ARDUINO_ARCH_NRF52)
 #define buttonPin			7
