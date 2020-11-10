@@ -320,9 +320,8 @@ char Notecard::noteSerialReceive() {
     @return `True`.
 */
 /**************************************************************************/
-bool Notecard::noteI2CReset() {
+bool Notecard::noteI2CReset(uint16_t DevAddress) {
 	_i2cPort->begin();
-
 	return true;
 }
 

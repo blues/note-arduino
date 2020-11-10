@@ -64,7 +64,7 @@ class Notecard
     static void noteSerialTransmit(uint8_t *text, size_t len, bool flush);
     static bool noteSerialAvailable(void);
     static char noteSerialReceive(void);
-    static bool noteI2CReset(void);
+    static bool noteI2CReset(uint16_t DevAddress);
     static const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
     static const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
     static size_t debugSerialOutput(const char *message);
