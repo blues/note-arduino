@@ -17,10 +17,6 @@
 #define buttonPin			7
 #define	buttonPressedState	LOW
 #define ledPin				LED_RED
-#elif defined(ARDUINO_ARCH_NRF52)
-#define buttonPin			7
-#define	buttonPressedState	LOW
-#define ledPin				LED_RED
 #elif defined(ARDUINO_ARCH_AVR)
 #define buttonPin			6
 #define	buttonPressedState	LOW
