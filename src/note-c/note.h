@@ -38,25 +38,34 @@
 #pragma once
 
 // In case they're not yet defined
+#include <float.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-// Define our basic floating data type.  In most cases "double" is the right answer, however for
-// very small microcontrollers these libraries are simply too large.  This ensures that we
-// use FLOATs when both are the same, and we don't define constants that are too large.
+// Determine our basic floating data type.  In most cases "double" is the right answer, however for
+// very small microcontrollers we must use single-precision.
+#if defined(FLT_MAX_EXP) && defined(DBL_MAX_EXP)
+#if (FLT_MAX_EXP == DBL_MAX_EXP)
+#define NOTE_FLOAT
+#endif
+#elif defined(__FLT_MAX_EXP__) && defined(__DBL_MAX_EXP__)
 #if (__FLT_MAX_EXP__ == __DBL_MAX_EXP__)
 #define NOTE_FLOAT
+#endif
+#else
+#error What are floating point exponent length symbols for this compiler?
+#endif
+
+// If using a short float, we must be on a VERY small MCU.  In this case, define additional
+// symbols that will save quite a bit of memory in the runtime image.
+#ifdef NOTE_FLOAT
+#define JNUMBER float
 #define	ERRSTR(x,y) (y)
 #define NOTE_LOWMEM
 #else
+#define JNUMBER double
 #define	ERRSTR(x,y) (x)
 #define	ERRDBG
-#endif
-
-#ifdef NOTE_FLOAT
-#define JNUMBER float
-#else
-#define JNUMBER double
 #endif
 
 // UNIX Epoch time (also known as POSIX time) is the  number of seconds that have elapsed since
@@ -83,7 +92,7 @@ typedef bool (*serialResetFn) (void);
 typedef void (*serialTransmitFn) (uint8_t *data, size_t len, bool flush);
 typedef bool (*serialAvailableFn) (void);
 typedef char (*serialReceiveFn) (void);
-typedef bool (*i2cResetFn) (void);
+typedef bool (*i2cResetFn) (uint16_t DevAddress);
 typedef const char * (*i2cTransmitFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
 typedef const char * (*i2cReceiveFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 
@@ -92,6 +101,7 @@ bool NoteReset(void);
 void NoteResetRequired(void);
 #define NoteNewBody JCreateObject
 J *NoteNewRequest(const char *request);
+J *NoteNewCommand(const char *request);
 J *NoteRequestResponse(J *req);
 char *NoteRequestResponseJSON(char *reqJSON);
 void NoteSuspendTransactionDebug(void);

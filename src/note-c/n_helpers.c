@@ -789,9 +789,10 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
 bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
     bool success = false;
 
-    // Put ourselves to sleep
+    // Use a Command rather than a Request so that the Notecard doesn't try to send
+    // a response back to us, which would cause a communications error on that end.
     _Debug("requesting sleep\n");
-    J *req = NoteNewRequest("card.attn");
+    J *req = NoteNewCommand("card.attn");
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
         J *stringReferenceItem = JCreateStringReference(stateb64);

@@ -87,7 +87,7 @@ bool NoteSerialReset(void);
 void NoteSerialTransmit(uint8_t *, size_t, bool);
 bool NoteSerialAvailable(void);
 char NoteSerialReceive(void);
-bool NoteI2CReset(void);
+bool NoteI2CReset(uint16_t DevAddress);
 const char *NoteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
 const char *NoteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 bool NoteHardReset(void);
@@ -96,35 +96,38 @@ bool NoteIsDebugOutputActive(void);
 
 // Constants, a global optimization to save static string memory
 extern const char *c_null;
-
 #define	c_null_len 4
+
 extern const char *c_false;
-
 #define	c_false_len 5
+
 extern const char *c_true;
-
 #define	c_true_len 4
+
 extern const char *c_nullstring;
-
 #define	c_nullstring_len 0
+
 extern const char *c_newline;
-
 #define	c_newline_len 2
+
 extern const char *c_mem;
-
 #define	c_mem_len 3
+
 extern const char *c_timeout;
-
 #define	c_timeout_len 7
+
 extern const char *c_err;
-
 #define	c_err_len 3
+
 extern const char *c_req;
-
 #define	c_req_len 3
-extern const char *c_bad;
 
+extern const char *c_cmd;
+#define	c_cmd_len 3
+
+extern const char *c_bad;
 #define	c_bad_len 3
+
 
 // Readability wrappers.  Anything starting with _ is simply calling the wrapper
 // function.

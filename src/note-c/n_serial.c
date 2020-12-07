@@ -43,6 +43,10 @@ const char *serialNoteTransaction(char *json, char **jsonResponse) {
 		_DelayMs(CARD_REQUEST_SERIAL_SEGMENT_DELAY_MS);
 	}
 
+    // If no reply expected, we're done
+    if (jsonResponse == NULL)
+        return NULL;
+
 	// Wait for something to become available, processing timeout errors up-front
 	// because the json parse operation immediately following is subject to the
 	// serial port timeout. We'd like more flexibility in max timeout and ultimately
