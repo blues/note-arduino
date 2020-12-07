@@ -77,6 +77,23 @@ J *NoteNewRequest(const char *request) {
 
 /**************************************************************************/
 /*!
+    @brief  Create a new command object to populate before sending to the Notecard.
+            Lock for mutual exclusion, not only because access to the card must be serialized, but also because
+            both C++ and ArduinoJSON call malloc() which is not a thread-safe operation.
+    @param   request
+               The name of the command, for example `hub.set`.
+	@returns a `J` cJSON object with the request name pre-populated.
+*/
+/**************************************************************************/
+J *NoteNewCommand(const char *request) {
+    J *reqdoc = JCreateObject();
+    if (reqdoc != NULL)
+        JAddStringToObject(reqdoc, c_cmd, request);
+    return reqdoc;
+}
+
+/**************************************************************************/
+/*!
     @brief  Send a request to the Notecard.
             Frees the request structure from memory after sending the request.
     @param   req
@@ -174,6 +191,13 @@ char *NoteRequestResponseJSON(char *reqJSON) {
 /**************************************************************************/
 J *NoteTransaction(J *req) {
 
+    // Validate in case of memory failure of the requestor
+    if (req == NULL)
+        return NULL;
+
+    // Determine whether or not a response will be expected, by virtue of "cmd" being present
+    bool noResponseExpected = (JGetString(req, "req")[0] == '\0' && JGetString(req, "cmd")[0] != '\0');
+
     // If a reset of the module is required for any reason, do it now.
     // We must do this before acquiring lock.
     if (resetRequired) {
@@ -198,7 +222,11 @@ J *NoteTransaction(J *req) {
 
     // Pertform the transaction
     char *responseJSON;
-    const char *errStr = _Transaction(json, &responseJSON);
+    const char *errStr;
+    if (noResponseExpected)
+        errStr = _Transaction(json, NULL);
+    else
+        errStr = _Transaction(json, &responseJSON);
 
     // Free the json
     JFree(json);
@@ -209,6 +237,12 @@ J *NoteTransaction(J *req) {
         J *rsp = errDoc(errStr);
         _UnlockNote();
         return rsp;
+    }
+
+    // Exit with a blank object (with no err field) if no response expected
+    if (noResponseExpected) {
+        _UnlockNote();
+        return JCreateObject();
     }
 
     // Parse the reply from the card on the input stream

@@ -503,9 +503,9 @@ char NoteSerialReceive() {
     @returns A boolean indicating whether the I2C bus was reset.
 */
 /**************************************************************************/
-bool NoteI2CReset() {
+bool NoteI2CReset(uint16_t DevAddress) {
     if (hookActiveInterface == interfaceI2C && hookI2CReset != NULL) {
-        return hookI2CReset();
+        return hookI2CReset(DevAddress);
 	}
 	return false;
 }
@@ -552,7 +552,7 @@ const char *NoteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 */
 /**************************************************************************/
 uint32_t NoteI2CAddress() {
-    if (i2cAddress == NOTE_I2C_MAX_DEFAULT)
+    if (i2cAddress == NOTE_I2C_ADDR_DEFAULT)
         return 0x17;
     return i2cAddress;
 }

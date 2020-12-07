@@ -22,4 +22,5 @@ const char *c_mem = "mem";
 const char *c_timeout = "timeout";
 const char *c_err = "err";
 const char *c_req = "req";
+const char *c_cmd = "cmd";
 const char *c_bad = "bad";
