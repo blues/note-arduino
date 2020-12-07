@@ -38,7 +38,7 @@
 #define serialDebugOut Serial
 
 // This is the unique Product Identifier for your device.
-#define myProductID "org.coca-cola.soda.vending-machine.v2"
+#define myProductID "com.your-company.your-name:your_project"
 Notecard notecard;
 #define myLiveDemo	true
 
