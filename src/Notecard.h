@@ -43,6 +43,7 @@ class Notecard
                  TwoWire &wirePort = Wire);
     void begin(HardwareSerial &serial, int speed);
     void setDebugOutputStream(Stream &dbgserial);
+    void clearDebugOutputStream(void);
     void i2cTest(int Adjustment);
     J *newRequest(const char *request);
     bool sendRequest(J *req);

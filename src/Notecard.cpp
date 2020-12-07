@@ -121,6 +121,16 @@ void Notecard::setDebugOutputStream(Stream &dbgserial) {
 
 /**************************************************************************/
 /*!
+    @brief  Clear the debug output source.
+*/
+/**************************************************************************/
+void Notecard::clearDebugOutputStream() {
+	_debugSerialInitialized = false;
+	NoteSetFnDebugOutput(NULL);
+}
+
+/**************************************************************************/
+/*!
     @brief  Adjust the I2C read length.
             Method enabling a developer to test the state of a known issue
 						with the I2C HAL on some ST Microelectronics boards.
