@@ -132,7 +132,7 @@ void loop() {
 	// at this on notehub.io you will see the data appearing 'live'.)
     J *req = notecard.newRequest("note.add");
 	if (req != NULL) {
-	    JAddBoolToObject(req, "start", true);
+	    JAddBoolToObject(req, "sync", true);
 		J *body = JCreateObject();
 		if (body != NULL) {
 			JAddNumberToObject(body, "temp", temperature);
