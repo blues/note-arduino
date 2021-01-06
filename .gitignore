@@ -1,5 +1,6 @@
 .vscode/
 .DS_Store
+*.out
 
 Doxyfile*
 doxygen_sqlite3.db

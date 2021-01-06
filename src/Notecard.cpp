@@ -36,9 +36,11 @@
  *
  */
 
-#include <Arduino.h>
-#include <note-c/note.h>
-#include <Notecard.h>
+#include "Notecard.h"
+
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 
 TwoWire *Notecard::_i2cPort;
 HardwareSerial *Notecard::_notecardSerial;
@@ -66,10 +68,10 @@ int _readLengthAdjustment = 0;
               The I2C Address to use for the Notecard.
     @param    i2cmax
               The max length of each message to send from the host to
-							the Notecard. Used to ensure the messages are sized appropriately
-							for the host.
-		@param    wirePort
-							The TwoWire implementation to use for I2C communication.
+				the Notecard. Used to ensure the messages are sized appropriately
+				for the host.
+	@param    wirePort
+			  The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort) {
@@ -99,7 +101,7 @@ void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 	_notecardSerialSpeed = selectedSpeed;
 
 	NoteSetFnSerial(Notecard::noteSerialReset, Notecard::noteSerialTransmit,
-									Notecard::noteSerialAvailable, Notecard::noteSerialReceive);
+					Notecard::noteSerialAvailable, Notecard::noteSerialReceive);
 	_notecardSerial->begin(_notecardSerialSpeed);
 }
 
@@ -126,7 +128,7 @@ void Notecard::setDebugOutputStream(Stream &dbgserial) {
 /**************************************************************************/
 void Notecard::clearDebugOutputStream() {
 	_debugSerialInitialized = false;
-	NoteSetFnDebugOutput(NULL);
+	NoteSetFnDebugOutput(nullptr);
 }
 
 /**************************************************************************/
@@ -145,8 +147,8 @@ void Notecard::i2cTest(int Adjustment) {
 /**************************************************************************/
 /*!
     @brief  Creates a new request object for population by the host.
-            This function accepts a request string (for example, `note.add`)
-						and initializes a JSON Object to return to the host.
+            This function accepts a request string (for example, `"note.add"`)
+			and initializes a JSON Object to return to the host.
     @param    request
               The request name, for example, `note.add`.
     @return A `J` JSON Object populated with the request name.
@@ -160,11 +162,11 @@ J *Notecard::newRequest(const char *request) {
 /*!
     @brief  Sends a request to the Notecard.
             This function takes a populated `J` JSON request object
-						and sends it to the Notecard.
+			and sends it to the Notecard.
     @param    req
               A `J` JSON request object.
     @return `True` if the message was successfully sent to the Notecard,
-						`False` if there was an error.
+			`False` if there was an error.
 */
 /**************************************************************************/
 bool Notecard::sendRequest(J *req) {
@@ -173,7 +175,7 @@ bool Notecard::sendRequest(J *req) {
 
 /**************************************************************************/
 /*!
-    @brief  Sends a request to the Notecard and return the JSON Response.
+    @brief  Sends a request to the Notecard and returns the JSON Response.
             This function takes a populated `J` JSON request object
 						and sends it to the Notecard.
     @param    req
@@ -207,7 +209,6 @@ void Notecard::logDebug(const char *message) {
 	NoteDebug(message);
 }
 
-
 /**************************************************************************/
 /*!
     @brief  Write a formatted message to the serial debug stream.
@@ -228,12 +229,12 @@ void Notecard::logDebugf(const char *format, ...) {
 /**************************************************************************/
 /*!
     @brief  Periodically show Notecard sync status,
-						returning TRUE if something was displayed
+			returning TRUE if something was displayed to the debug stream.
     @param    pollFrequencyMs
               The frequency to poll the Notecard for sync status.
-		@param		maxLevel
-							The maximum log level to output to the debug console. Pass
-							-1 for all.
+	@param	  maxLevel
+			  The maximum log level to output to the debug console. Pass
+			  -1 for all.
     @return `True` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/
