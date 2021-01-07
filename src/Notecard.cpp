@@ -80,6 +80,7 @@ int _readLengthAdjustment = 0;
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort) {
 	NoteSetFnDefault(malloc, free, delay, millis);
 	_i2cPort = &wirePort;
+	_i2cPort->begin();
 
 	NoteSetFnI2C(i2caddress, i2cmax, Notecard::noteI2CReset,
 							 Notecard::noteI2CTransmit, Notecard::noteI2CReceive);
@@ -328,13 +329,12 @@ char Notecard::noteSerialReceive() {
 
 /**************************************************************************/
 /*!
-    @brief  Resets the I2C port. Required by note-c, but not implemented as
-						the developer should call `Wire.begin()` themselves before
-						initializing the library.
+    @brief  Resets the I2C port. Required by note-c.
     @return `True`.
 */
 /**************************************************************************/
 bool Notecard::noteI2CReset(uint16_t DevAddress) {
+	_i2cPort->end();
 	_i2cPort->begin();
 	return true;
 }
