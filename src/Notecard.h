@@ -24,10 +24,17 @@
 #ifndef Notecard_h
 #define Notecard_h
 
-#include <Arduino.h>
-#include <HardwareSerial.h>
-#include <Wire.h>
-#include <note-c/note.h>
+#include <cstddef>
+#include <cstdint>
+#ifndef MOCK
+  #include <Arduino.h>
+  #include <HardwareSerial.h>
+  #include <Wire.h>
+  #include <note-c/note.h>
+#else
+  #include "mock/mock-arduino.hpp"
+  #include "mock/mock-parameters.hpp"
+#endif
 
 /**************************************************************************/
 /*!
