@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#define WIRE_HAS_END 1
+
 void delay (unsigned int);
 size_t millis (void);
 
@@ -30,6 +32,7 @@ struct Stream {
 struct TwoWire {
     void begin(void);
     void beginTransmission(int);
+    void end(void);
     int endTransmission(void);
     unsigned char read(void);
     int requestFrom(int dev_addr, unsigned int read_len);
@@ -37,9 +40,19 @@ struct TwoWire {
     long unsigned int write(unsigned char * msg, long unsigned int len);
 };
 
+struct TwoWireBegin_Parameters {
+    TwoWireBegin_Parameters(
+        void
+    ) :
+        called(false)
+    { }
+    bool called;
+};
+
 extern HardwareSerial Serial;
 extern HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
-extern TwoWire Wire;
 extern Stream dbgserial;
+extern TwoWire Wire;
+extern TwoWireBegin_Parameters twoWireBegin_Parameters;
 
 #endif

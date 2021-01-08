@@ -1,12 +1,12 @@
 #include "mock-arduino.hpp"
 
 HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
+TwoWireBegin_Parameters twoWireBegin_Parameters;
 
 void
 delay (
     unsigned int millis
 ) {
-    // Validate parameter(s)
 
 }
 
@@ -65,12 +65,20 @@ void
 TwoWire::begin (
     void
 ) {
-
+  // Capture call
+  twoWireBegin_Parameters.called = true;
 }
 
 void
 TwoWire::beginTransmission (
     int
+) {
+
+}
+
+void
+TwoWire::end (
+    void
 ) {
 
 }

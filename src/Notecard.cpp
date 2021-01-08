@@ -334,7 +334,9 @@ char Notecard::noteSerialReceive() {
 */
 /**************************************************************************/
 bool Notecard::noteI2CReset(uint16_t DevAddress) {
+#if WIRE_HAS_END
 	_i2cPort->end();
+#endif
 	_i2cPort->begin();
 	return true;
 }
