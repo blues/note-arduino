@@ -940,6 +940,55 @@ int test_notecard_responseError_does_not_modify_note_c_result_value_before_retur
   return result;
 }
 
+int test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called()
+{
+  int result;
+  Notecard notecard;
+
+  // Setup
+  twoWireBegin_Parameters.called = false;
+
+  // Action
+  notecard.begin();
+
+  // Evaluate Result
+  if (true == twoWireBegin_Parameters.called)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = 37;
+  }
+
+  return result;
+}
+
+int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
+{
+  int result;
+  Notecard notecard;
+  TwoWire mockWire;
+
+  // Setup
+  twoWireBegin_Parameters.called = false;
+
+  // Action
+  notecard.begin(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, mockWire);
+
+  // Evaluate Result
+  if (true == twoWireBegin_Parameters.called)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = 38;
+  }
+
+  return result;
+}
+
 struct TestFunction;
 typedef int (*test_fn)(void);
 int runTests(TestFunction *tests_, size_t cnt_);
@@ -1002,7 +1051,10 @@ int main(void)
       {test_notecard_debugSyncStatus_does_not_modify_maxLevel_parameter_before_passing_to_note_c, "test_notecard_debugSyncStatus_does_not_modify_maxLevel_parameter_before_passing_to_note_c"},
       {test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
-      {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"}};
+      {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called"},
+      {test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called"}
+  };
 
   return runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
 }
