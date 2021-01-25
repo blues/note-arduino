@@ -174,6 +174,22 @@ int JB64Encode(char * coded_dst, const char *plain_src,int len_plain_src);
 int JB64DecodeLen(const char * coded_src);
 int JB64Decode(char * plain_dst, const char *coded_src);
 
+// MD5 Helper functions
+typedef struct {
+	unsigned long buf[4];
+	unsigned long bits[2];
+	unsigned char in[64];
+} NoteMD5Context;
+#define NOTE_MD5_HASH_SIZE 16
+#define NOTE_MD5_HASH_STRING_SIZE (((NOTE_MD5_HASH_SIZE)*2)+1)
+void NoteMD5Init(NoteMD5Context *ctx);
+void NoteMD5Update(NoteMD5Context *ctx, unsigned char const *buf, unsigned len);
+void NoteMD5Final(unsigned char *digest, NoteMD5Context *ctx);
+void NoteMD5Transform(unsigned long buf[4], const unsigned char inraw[64]);
+void NoteMD5Hash(unsigned char* data, unsigned long len, unsigned char *retHash);
+void NoteMD5HashString(unsigned char *data, unsigned long len, char *strbuf, unsigned long buflen);
+void NoteMD5HashToString(unsigned char *hash, char *strbuf, unsigned long buflen);
+
 // High-level helper functions that are both useful and serve to show developers how to call the API
 bool NoteTimeValid(void);
 bool NoteTimeValidST(void);
@@ -184,7 +200,7 @@ bool NoteLocationValid(char *errbuf, uint32_t errbuflen);
 bool NoteLocationValidST(char *errbuf, uint32_t errbuflen);
 int NoteGetEnvInt(const char *variable, int defaultVal);
 JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal);
-void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen);
+bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen);
 bool NoteSetEnvDefault(const char *variable, char *buf);
 bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal);
 bool NoteSetEnvDefaultInt(const char *variable, int defaultVal);

@@ -7,13 +7,11 @@ This library allows you to control a Notecard by writing a C
 or C++ program. Your program may programmatically configure Notecard and send
 Notes to [Notehub.io][notehub].
 
-This library is used by the [note-arduino library][note-arduino], which includes
-it as a git submodule.
+This library is used by the [note-arduino library][note-arduino], which includes it as a git submodule.
 
 ## Documentation
 
-The documentation for this library can be found
-[here](https://blues.github.io/note-c/html/index.html).
+The documentation for this library can be found [here](https://blues.github.io/note-c/html/index.html).
 
 ## Contributing
 

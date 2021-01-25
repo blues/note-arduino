@@ -42,6 +42,7 @@ clean up inconsistent whitespace )
   We will happily reopen the issue.
 
 ## Submitting a Pull Request
+
 1. [Fork][fork] the [official repository][repo].
 2. [Create a topic branch.][branch]
 3. Implement your feature or bug fix.
@@ -49,6 +50,7 @@ clean up inconsistent whitespace )
 5. [Submit a pull request.][pr]
 
 ## Notes
+
 * Please add tests if you changed code. Contributions without tests won't be
 * accepted. If you don't know how to add tests, please put in a PR and leave a
 * comment asking for help. We love helping!

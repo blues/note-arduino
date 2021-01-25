@@ -396,9 +396,11 @@ int NoteGetEnvInt(const char *variable, int defaultVal) {
     @param   defaultVal The variable value.
     @param   buf (out) The buffer in which to place the variable value.
     @param   buflen The length of the output buffer.
+	@returns true if there is no error (JSON response with no explicit error)
 */
 /**************************************************************************/
-void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen) {
+bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen) {
+	bool success = false;
     if (defaultVal == NULL)
         buf[0] = '\0';
     else
@@ -409,6 +411,7 @@ void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
         J *rsp = NoteRequestResponse(req);
         if (rsp != NULL) {
             if (!NoteResponseError(rsp)) {
+				success = true;
                 char *val = JGetString(rsp, "text");
                 if (val[0] != '\0')
                     strlcpy(buf, val, buflen);
@@ -416,6 +419,7 @@ void NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
             NoteDeleteResponse(rsp);
         }
     }
+	return success;
 }
 
 //**************************************************************************/
@@ -830,7 +834,7 @@ bool NoteWake(int stateLen, void *state) {
         return false;
 
     // Send it a command to request the saved state
-    JAddBoolToObject(req, "sync", true);
+    JAddBoolToObject(req, "start", true);
     J *rsp = NoteRequestResponse(req);
     if (rsp == NULL)
         return false;
@@ -1074,7 +1078,7 @@ bool NoteAdd(const char *target, J *body, bool urgent) {
 
     // Initiate sync NOW if it's urgent
     if (urgent)
-        JAddBoolToObject(req, "sync", true);
+        JAddBoolToObject(req, "start", true);
 
     // Perform the transaction
     return NoteRequest(req);
@@ -1216,8 +1220,8 @@ bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, 
                 strlcpy(roleBuf, JGetString(rsp, "role"), roleBufLen);
             if (emailBuf != NULL)
                 strlcpy(emailBuf, JGetString(rsp, "email"), emailBufLen);
-            NoteDeleteResponse(rsp);
         }
+        NoteDeleteResponse(rsp);
     }
 
     return success;
