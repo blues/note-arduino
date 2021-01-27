@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.20" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>Arduino Library for the Notecard</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<sect1 id="index_1intro_sec">
+<title>Introduction</title>
+<para>The note-arduino Arduino library for communicating with the <ulink url="https://blues.io">Blues Wireless</ulink> <ref refid="class_notecard" kindref="compound">Notecard</ref> via serial or I2C.</para>
+<para>This library allows you to control a <ref refid="class_notecard" kindref="compound">Notecard</ref> by writing an Arduino sketch in C or C++. Your sketch may programmatically configure <ref refid="class_notecard" kindref="compound">Notecard</ref> and send Notes to <ulink url="https://notehub.io">Notehub.io</ulink>.</para>
+</sect1>
+<sect1 id="index_1dependencies">
+<title>Dependencies</title>
+<para>This library is a wrapper around and depends upon the <ulink url="https://github.com/blues/note-c">note-c library</ulink>, which it includes as a git submodule.</para>
+<para>In addition, this library requires a physical connection to a <ref refid="class_notecard" kindref="compound">Notecard</ref> over I2C or Serial to be functional.</para>
+</sect1>
+<sect1 id="index_1author">
+<title>Author</title>
+<para>Written by Ray Ozzie and Brandon Satrom for Blues Inc.</para>
+</sect1>
+<sect1 id="index_1license">
+<title>License</title>
+<para>Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is governed by licenses granted by the copyright holder including that found in the <ulink url="https://github.com/blues/note-arduino/blob/master/LICENSE">LICENSE</ulink> file. </para>
+</sect1>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.20" xml:lang="en-US">
+  <compound refid="class_notecard" kind="class"><name>Notecard</name>
+    <member refid="class_notecard_1a3e5b6e6f65035ab27851ec771ba61c2e" kind="variable"><name>_i2cPort</name></member>
+    <member refid="class_notecard_1a36d0a0f071c89c50509a38c1e1e6e3b6" kind="variable"><name>_notecardSerial</name></member>
+    <member refid="class_notecard_1aa690ec0dc4a532a4266e87b20e30d872" kind="variable"><name>_notecardSerialSpeed</name></member>
+    <member refid="class_notecard_1add42eeec4911196a6b56912d77cf35a6" kind="variable"><name>_debugSerial</name></member>
+    <member refid="class_notecard_1a85aeb69d70a270394ef665ffeb997b3d" kind="variable"><name>_debugSerialInitialized</name></member>
+    <member refid="class_notecard_1a247db54fb1607e567a2de17f6407cada" kind="function"><name>begin</name></member>
+    <member refid="class_notecard_1a2d660a30d0241db00917d6dac865f7d5" kind="function"><name>begin</name></member>
+    <member refid="class_notecard_1a4f97e66bf4763cb24adfce9bdd2a73cb" kind="function"><name>setDebugOutputStream</name></member>
+    <member refid="class_notecard_1a21b2937a3c8adae0372c1571f737edaa" kind="function"><name>clearDebugOutputStream</name></member>
+    <member refid="class_notecard_1a16127c3032c423753c8b65c4c214ed7a" kind="function"><name>i2cTest</name></member>
+    <member refid="class_notecard_1a424d5ee778ec3e89bf4f408a6ac274d2" kind="function"><name>newRequest</name></member>
+    <member refid="class_notecard_1a8016131b70f6af1e42c3054b577676d2" kind="function"><name>sendRequest</name></member>
+    <member refid="class_notecard_1a67bbafe4ef82a6772404283e4f78bf12" kind="function"><name>requestAndResponse</name></member>
+    <member refid="class_notecard_1a26db6cf767d034900033fd8794dbc8a2" kind="function"><name>deleteResponse</name></member>
+    <member refid="class_notecard_1a083c4738102bbb2b377c4cb4f3fa11ff" kind="function"><name>logDebug</name></member>
+    <member refid="class_notecard_1a4221529c1852f535c9fd09df01c36107" kind="function"><name>logDebugf</name></member>
+    <member refid="class_notecard_1a89b07d345de9ae988ff41ac3f5d1aea5" kind="function"><name>debugSyncStatus</name></member>
+    <member refid="class_notecard_1a1b9d4774c186e11c0bea8050d266fd66" kind="function"><name>responseError</name></member>
+    <member refid="class_notecard_1ad21c881a08419ed0488318a4e02bb1af" kind="function"><name>noteSerialReset</name></member>
+    <member refid="class_notecard_1a258741e32888be55b8bbedc256c7f377" kind="function"><name>noteSerialTransmit</name></member>
+    <member refid="class_notecard_1ab53d54b21b85695424f5a6933036a2ee" kind="function"><name>noteSerialAvailable</name></member>
+    <member refid="class_notecard_1a05a46746e98199c5a69921bf34d59c73" kind="function"><name>noteSerialReceive</name></member>
+    <member refid="class_notecard_1abdf9343d683ef660eaa284eeb9d7f170" kind="function"><name>noteI2CReset</name></member>
+    <member refid="class_notecard_1a026e578ebb48f966795c22a3ef417313" kind="function"><name>noteI2CTransmit</name></member>
+    <member refid="class_notecard_1ac79ec32ae45cfa92d2529a6532bb2618" kind="function"><name>noteI2CReceive</name></member>
+    <member refid="class_notecard_1a7652d09e3836128135346c3991dcd980" kind="function"><name>debugSerialOutput</name></member>
+  </compound>
+  <compound refid="_notecard_8cpp" kind="file"><name>Notecard.cpp</name>
+    <member refid="_notecard_8cpp_1a9488f88c36d4253fd75e4117125c7947" kind="define"><name>I2C_DATA_TRACE</name></member>
+    <member refid="_notecard_8cpp_1a4627ccab40c99177965843f8f0e0251b" kind="variable"><name>_readLengthAdjustment</name></member>
+  </compound>
+  <compound refid="_notecard_8h" kind="file"><name>Notecard.h</name>
+  </compound>
+  <compound refid="dir_68267d1309a1af8e8297ef4c3efbcdba" kind="dir"><name>src</name>
+  </compound>
+  <compound refid="indexpage" kind="page"><name>index</name>
+  </compound>
+</doxygenindex>

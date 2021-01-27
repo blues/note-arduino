@@ -1,0 +1,825 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.20" xml:lang="en-US">
+  <compounddef id="class_notecard" kind="class" language="C++" prot="public">
+    <compoundname>Notecard</compoundname>
+    <includes refid="_notecard_8h" local="no">Notecard.h</includes>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="class_notecard_1a3e5b6e6f65035ab27851ec771ba61c2e" prot="private" static="yes" mutable="no">
+        <type>TwoWire *</type>
+        <definition>TwoWire * Notecard::_i2cPort</definition>
+        <argsstring></argsstring>
+        <name>_i2cPort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="65" column="20" bodyfile="src/Notecard.h" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_notecard_1a36d0a0f071c89c50509a38c1e1e6e3b6" prot="private" static="yes" mutable="no">
+        <type>HardwareSerial *</type>
+        <definition>HardwareSerial * Notecard::_notecardSerial</definition>
+        <argsstring></argsstring>
+        <name>_notecardSerial</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="66" column="27" bodyfile="src/Notecard.h" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_notecard_1aa690ec0dc4a532a4266e87b20e30d872" prot="private" static="yes" mutable="no">
+        <type>int</type>
+        <definition>int Notecard::_notecardSerialSpeed</definition>
+        <argsstring></argsstring>
+        <name>_notecardSerialSpeed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="67" column="16" bodyfile="src/Notecard.h" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_notecard_1add42eeec4911196a6b56912d77cf35a6" prot="private" static="yes" mutable="no">
+        <type>Stream *</type>
+        <definition>Stream * Notecard::_debugSerial</definition>
+        <argsstring></argsstring>
+        <name>_debugSerial</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="68" column="19" bodyfile="src/Notecard.h" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_notecard_1a85aeb69d70a270394ef665ffeb997b3d" prot="private" static="yes" mutable="no">
+        <type>bool</type>
+        <definition>bool Notecard::_debugSerialInitialized</definition>
+        <argsstring></argsstring>
+        <name>_debugSerialInitialized</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="69" column="17" bodyfile="src/Notecard.h" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_notecard_1a247db54fb1607e567a2de17f6407cada" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::begin</definition>
+        <argsstring>(uint32_t i2cAddress=NOTE_I2C_ADDR_DEFAULT, uint32_t i2cMax=NOTE_I2C_MAX_DEFAULT, TwoWire &amp;wirePort=Wire)</argsstring>
+        <name>begin</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>i2cAddress</declname>
+          <defname>i2caddress</defname>
+          <defval>NOTE_I2C_ADDR_DEFAULT</defval>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>i2cMax</declname>
+          <defname>i2cmax</defname>
+          <defval>NOTE_I2C_MAX_DEFAULT</defval>
+        </param>
+        <param>
+          <type>TwoWire &amp;</type>
+          <declname>wirePort</declname>
+          <defval>Wire</defval>
+        </param>
+        <briefdescription>
+<para>Initialize the <ref refid="class_notecard" kindref="compound">Notecard</ref> for I2C. This function configures the <ref refid="class_notecard" kindref="compound">Notecard</ref> to use the I2C bus for communication with the host. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>i2caddress</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The I2C Address to use for the <ref refid="class_notecard" kindref="compound">Notecard</ref>. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>i2cmax</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The max length of each message to send from the host to the <ref refid="class_notecard" kindref="compound">Notecard</ref>. Used to ensure the messages are sized appropriately for the host. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>wirePort</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The TwoWire implementation to use for I2C communication. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="48" column="10" bodyfile="src/Notecard.cpp" bodystart="80" bodyend="87"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a2d660a30d0241db00917d6dac865f7d5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::begin</definition>
+        <argsstring>(HardwareSerial &amp;serial, int speed)</argsstring>
+        <name>begin</name>
+        <param>
+          <type>HardwareSerial &amp;</type>
+          <declname>serial</declname>
+          <defname>selectedSerialPort</defname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>speed</declname>
+          <defname>selectedSpeed</defname>
+        </param>
+        <briefdescription>
+<para>Initialize the <ref refid="class_notecard" kindref="compound">Notecard</ref> for Serial communication. This function configures the <ref refid="class_notecard" kindref="compound">Notecard</ref> to use Serial for communication with the host. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>selectedSerialPort</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HardwareSerial bus to use. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>selectedSpeed</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The baud rate to use for communicating with the <ref refid="class_notecard" kindref="compound">Notecard</ref> from the host. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="51" column="10" bodyfile="src/Notecard.cpp" bodystart="101" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a4f97e66bf4763cb24adfce9bdd2a73cb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::setDebugOutputStream</definition>
+        <argsstring>(Stream &amp;dbgserial)</argsstring>
+        <name>setDebugOutputStream</name>
+        <param>
+          <type>Stream &amp;</type>
+          <declname>dbgserial</declname>
+        </param>
+        <briefdescription>
+<para>Set the debug output source. This function takes a Stream object (for example, <computeroutput>Serial</computeroutput>) and configures it as a source for writing debug messages during development. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>dbgserial</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The Stream object to use for debug output. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="52" column="10" bodyfile="src/Notecard.cpp" bodystart="122" bodyend="126"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a21b2937a3c8adae0372c1571f737edaa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::clearDebugOutputStream</definition>
+        <argsstring>(void)</argsstring>
+        <name>clearDebugOutputStream</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>Clear the debug output source. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="53" column="10" bodyfile="src/Notecard.cpp" bodystart="133" bodyend="136"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a16127c3032c423753c8b65c4c214ed7a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::i2cTest</definition>
+        <argsstring>(int Adjustment)</argsstring>
+        <name>i2cTest</name>
+        <param>
+          <type>int</type>
+          <declname>Adjustment</declname>
+        </param>
+        <briefdescription>
+<para>Adjust the I2C read length. Method enabling a developer to test the state of a known issue with the I2C HAL on some ST Microelectronics boards. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>Adjustment</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The read length to override. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="54" column="10" bodyfile="src/Notecard.cpp" bodystart="147" bodyend="149"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a424d5ee778ec3e89bf4f408a6ac274d2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>J *</type>
+        <definition>J * Notecard::newRequest</definition>
+        <argsstring>(const char *request)</argsstring>
+        <name>newRequest</name>
+        <param>
+          <type>const char *</type>
+          <declname>request</declname>
+        </param>
+        <briefdescription>
+<para>Creates a new request object for population by the host. This function accepts a request string (for example, <computeroutput>&quot;note.add&quot;</computeroutput>) and initializes a JSON Object to return to the host. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>request</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The request name, for example, <computeroutput>note.add</computeroutput>. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A <computeroutput>J</computeroutput> JSON Object populated with the request name. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="55" column="7" bodyfile="src/Notecard.cpp" bodystart="161" bodyend="163"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a8016131b70f6af1e42c3054b577676d2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::sendRequest</definition>
+        <argsstring>(J *req)</argsstring>
+        <name>sendRequest</name>
+        <param>
+          <type>J *</type>
+          <declname>req</declname>
+        </param>
+        <briefdescription>
+<para>Sends a request to the <ref refid="class_notecard" kindref="compound">Notecard</ref>. This function takes a populated <computeroutput>J</computeroutput> JSON request object and sends it to the <ref refid="class_notecard" kindref="compound">Notecard</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>req</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <computeroutput>J</computeroutput> JSON request object. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><computeroutput>True</computeroutput> if the message was successfully sent to the <ref refid="class_notecard" kindref="compound">Notecard</ref>, <computeroutput>False</computeroutput> if there was an error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="56" column="10" bodyfile="src/Notecard.cpp" bodystart="176" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a67bbafe4ef82a6772404283e4f78bf12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>J *</type>
+        <definition>J * Notecard::requestAndResponse</definition>
+        <argsstring>(J *req)</argsstring>
+        <name>requestAndResponse</name>
+        <param>
+          <type>J *</type>
+          <declname>req</declname>
+        </param>
+        <briefdescription>
+<para>Sends a request to the <ref refid="class_notecard" kindref="compound">Notecard</ref> and returns the JSON Response. This function takes a populated <computeroutput>J</computeroutput> JSON request object and sends it to the <ref refid="class_notecard" kindref="compound">Notecard</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>req</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <computeroutput>J</computeroutput> JSON request object. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><computeroutput>J</computeroutput> JSON Object with the response from the <ref refid="class_notecard" kindref="compound">Notecard</ref>. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="57" column="7" bodyfile="src/Notecard.cpp" bodystart="190" bodyend="192"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a26db6cf767d034900033fd8794dbc8a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::deleteResponse</definition>
+        <argsstring>(J *rsp)</argsstring>
+        <name>deleteResponse</name>
+        <param>
+          <type>J *</type>
+          <declname>rsp</declname>
+        </param>
+        <briefdescription>
+<para>Deletes a <computeroutput>J</computeroutput> JSON response object from memory. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>rsp</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <computeroutput>J</computeroutput> JSON response object. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="58" column="10" bodyfile="src/Notecard.cpp" bodystart="201" bodyend="203"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a083c4738102bbb2b377c4cb4f3fa11ff" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::logDebug</definition>
+        <argsstring>(const char *message)</argsstring>
+        <name>logDebug</name>
+        <param>
+          <type>const char *</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+<para>Write a message to the serial debug stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>message</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string to log to the serial debug stream. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="59" column="10" bodyfile="src/Notecard.cpp" bodystart="212" bodyend="214"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a4221529c1852f535c9fd09df01c36107" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::logDebugf</definition>
+        <argsstring>(const char *format,...)</argsstring>
+        <name>logDebugf</name>
+        <param>
+          <type>const char *</type>
+          <declname>format</declname>
+        </param>
+        <param>
+          <type>...</type>
+        </param>
+        <briefdescription>
+<para>Write a formatted message to the serial debug stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>format</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A format string to log to the serial debug stream. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>...</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>one or more values to interpolate into the format string. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="60" column="10" bodyfile="src/Notecard.cpp" bodystart="224" bodyend="231"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a89b07d345de9ae988ff41ac3f5d1aea5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::debugSyncStatus</definition>
+        <argsstring>(int pollFrequencyMs, int maxLevel)</argsstring>
+        <name>debugSyncStatus</name>
+        <param>
+          <type>int</type>
+          <declname>pollFrequencyMs</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>maxLevel</declname>
+        </param>
+        <briefdescription>
+<para>Periodically show <ref refid="class_notecard" kindref="compound">Notecard</ref> sync status, returning TRUE if something was displayed to the debug stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>pollFrequencyMs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The frequency to poll the <ref refid="class_notecard" kindref="compound">Notecard</ref> for sync status. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>maxLevel</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The maximum log level to output to the debug console. Pass -1 for all. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><computeroutput>True</computeroutput> if a pending response was displayed to the debug stream. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="61" column="10" bodyfile="src/Notecard.cpp" bodystart="245" bodyend="247"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a1b9d4774c186e11c0bea8050d266fd66" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::responseError</definition>
+        <argsstring>(J *rsp)</argsstring>
+        <name>responseError</name>
+        <param>
+          <type>J *</type>
+          <declname>rsp</declname>
+        </param>
+        <briefdescription>
+<para>Determines if there is an error string present in a response object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>rsp</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <computeroutput>J</computeroutput> JSON Response object. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><computeroutput>True</computeroutput> if the response object contains an error. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="62" column="10" bodyfile="src/Notecard.cpp" bodystart="257" bodyend="259"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="class_notecard_1ad21c881a08419ed0488318a4e02bb1af" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::noteSerialReset</definition>
+        <argsstring>(void)</argsstring>
+        <name>noteSerialReset</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>Resets the serial port. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><computeroutput>True</computeroutput> if the Serial port is available. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="71" column="17" bodyfile="src/Notecard.cpp" bodystart="285" bodyend="289"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a258741e32888be55b8bbedc256c7f377" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Notecard::noteSerialTransmit</definition>
+        <argsstring>(uint8_t *text, size_t len, bool flush)</argsstring>
+        <name>noteSerialTransmit</name>
+        <param>
+          <type>uint8_t *</type>
+          <declname>text</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>flush</declname>
+        </param>
+        <briefdescription>
+<para>Writes a message to the <ref refid="class_notecard" kindref="compound">Notecard</ref> Serial port. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>text</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The text to write. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>len</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of bytes to write. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>flush</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><computeroutput>True</computeroutput> to flush to Serial. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="72" column="17" bodyfile="src/Notecard.cpp" bodystart="302" bodyend="306"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1ab53d54b21b85695424f5a6933036a2ee" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::noteSerialAvailable</definition>
+        <argsstring>(void)</argsstring>
+        <name>noteSerialAvailable</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>Determines if the <ref refid="class_notecard" kindref="compound">Notecard</ref> Serial port has data available. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><computeroutput>True</computeroutput> if there are bytes available to read. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="73" column="17" bodyfile="src/Notecard.cpp" bodystart="314" bodyend="316"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a05a46746e98199c5a69921bf34d59c73" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>char</type>
+        <definition>char Notecard::noteSerialReceive</definition>
+        <argsstring>(void)</argsstring>
+        <name>noteSerialReceive</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>Read a byte from the <ref refid="class_notecard" kindref="compound">Notecard</ref> Serial port. guaranteed only ever to be called if there is data available. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>a single character byte. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="74" column="17" bodyfile="src/Notecard.cpp" bodystart="325" bodyend="327"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1abdf9343d683ef660eaa284eeb9d7f170" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool Notecard::noteI2CReset</definition>
+        <argsstring>(uint16_t DevAddress)</argsstring>
+        <name>noteI2CReset</name>
+        <param>
+          <type>uint16_t</type>
+          <declname>DevAddress</declname>
+        </param>
+        <briefdescription>
+<para>Resets the I2C port. Required by note-c. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><computeroutput>True</computeroutput>. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="75" column="17" bodyfile="src/Notecard.cpp" bodystart="336" bodyend="342"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a026e578ebb48f966795c22a3ef417313" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * Notecard::noteI2CTransmit</definition>
+        <argsstring>(uint16_t DevAddress, uint8_t *pBuffer, uint16_t Size)</argsstring>
+        <name>noteI2CTransmit</name>
+        <param>
+          <type>uint16_t</type>
+          <declname>DevAddress</declname>
+        </param>
+        <param>
+          <type>uint8_t *</type>
+          <declname>pBuffer</declname>
+        </param>
+        <param>
+          <type>uint16_t</type>
+          <declname>Size</declname>
+        </param>
+        <briefdescription>
+<para>Transmits an amount of data from the host in blocking mode. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>DevAddress</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The I2C address. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>pBuffer</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The data to transmit over I2C. The caller should have shifted it right so that the low bit is NOT the read/write bit. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>Size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the number of bytes to transmit. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A string with an error, or <computeroutput>NULL</computeroutput> if the transmit was successful. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="76" column="23" bodyfile="src/Notecard.cpp" bodystart="357" bodyend="376"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1ac79ec32ae45cfa92d2529a6532bb2618" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * Notecard::noteI2CReceive</definition>
+        <argsstring>(uint16_t DevAddress, uint8_t *pBuffer, uint16_t Size, uint32_t *avail)</argsstring>
+        <name>noteI2CReceive</name>
+        <param>
+          <type>uint16_t</type>
+          <declname>DevAddress</declname>
+        </param>
+        <param>
+          <type>uint8_t *</type>
+          <declname>pBuffer</declname>
+        </param>
+        <param>
+          <type>uint16_t</type>
+          <declname>Size</declname>
+        </param>
+        <param>
+          <type>uint32_t *</type>
+          <declname>avail</declname>
+          <defname>available</defname>
+        </param>
+        <briefdescription>
+<para>Receives an amount of data from the <ref refid="class_notecard" kindref="compound">Notecard</ref> in blocking mode. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>DevAddress</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The I2C address. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>pBuffer</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The data to transmit over I2C. The caller should have shifted it right so that the low bit is NOT the read/write bit. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>Size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the number of bytes to transmit. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>available</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of bytes available to read, out param, updated by the function. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A string with an error, or <computeroutput>NULL</computeroutput> if the receive was successful. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="77" column="23" bodyfile="src/Notecard.cpp" bodystart="394" bodyend="481"/>
+      </memberdef>
+      <memberdef kind="function" id="class_notecard_1a7652d09e3836128135346c3991dcd980" prot="private" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t Notecard::debugSerialOutput</definition>
+        <argsstring>(const char *message)</argsstring>
+        <name>debugSerialOutput</name>
+        <param>
+          <type>const char *</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+<para>Writes a message to the debug Serial stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>message</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The message to log. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The number of bytes written. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="src/Notecard.h" line="78" column="19" bodyfile="src/Notecard.cpp" bodystart="273" bodyend="277"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class that stores state and functions for interacting with the Blues Wireless <ref refid="class_notecard" kindref="compound">Notecard</ref>. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="src/Notecard.h" line="45" column="1" bodyfile="src/Notecard.h" bodystart="46" bodyend="79"/>
+    <listofallmembers>
+      <member refid="class_notecard_1add42eeec4911196a6b56912d77cf35a6" prot="private" virt="non-virtual"><scope>Notecard</scope><name>_debugSerial</name></member>
+      <member refid="class_notecard_1a85aeb69d70a270394ef665ffeb997b3d" prot="private" virt="non-virtual"><scope>Notecard</scope><name>_debugSerialInitialized</name></member>
+      <member refid="class_notecard_1a3e5b6e6f65035ab27851ec771ba61c2e" prot="private" virt="non-virtual"><scope>Notecard</scope><name>_i2cPort</name></member>
+      <member refid="class_notecard_1a36d0a0f071c89c50509a38c1e1e6e3b6" prot="private" virt="non-virtual"><scope>Notecard</scope><name>_notecardSerial</name></member>
+      <member refid="class_notecard_1aa690ec0dc4a532a4266e87b20e30d872" prot="private" virt="non-virtual"><scope>Notecard</scope><name>_notecardSerialSpeed</name></member>
+      <member refid="class_notecard_1a247db54fb1607e567a2de17f6407cada" prot="public" virt="non-virtual"><scope>Notecard</scope><name>begin</name></member>
+      <member refid="class_notecard_1a2d660a30d0241db00917d6dac865f7d5" prot="public" virt="non-virtual"><scope>Notecard</scope><name>begin</name></member>
+      <member refid="class_notecard_1a21b2937a3c8adae0372c1571f737edaa" prot="public" virt="non-virtual"><scope>Notecard</scope><name>clearDebugOutputStream</name></member>
+      <member refid="class_notecard_1a7652d09e3836128135346c3991dcd980" prot="private" virt="non-virtual"><scope>Notecard</scope><name>debugSerialOutput</name></member>
+      <member refid="class_notecard_1a89b07d345de9ae988ff41ac3f5d1aea5" prot="public" virt="non-virtual"><scope>Notecard</scope><name>debugSyncStatus</name></member>
+      <member refid="class_notecard_1a26db6cf767d034900033fd8794dbc8a2" prot="public" virt="non-virtual"><scope>Notecard</scope><name>deleteResponse</name></member>
+      <member refid="class_notecard_1a16127c3032c423753c8b65c4c214ed7a" prot="public" virt="non-virtual"><scope>Notecard</scope><name>i2cTest</name></member>
+      <member refid="class_notecard_1a083c4738102bbb2b377c4cb4f3fa11ff" prot="public" virt="non-virtual"><scope>Notecard</scope><name>logDebug</name></member>
+      <member refid="class_notecard_1a4221529c1852f535c9fd09df01c36107" prot="public" virt="non-virtual"><scope>Notecard</scope><name>logDebugf</name></member>
+      <member refid="class_notecard_1a424d5ee778ec3e89bf4f408a6ac274d2" prot="public" virt="non-virtual"><scope>Notecard</scope><name>newRequest</name></member>
+      <member refid="class_notecard_1ac79ec32ae45cfa92d2529a6532bb2618" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteI2CReceive</name></member>
+      <member refid="class_notecard_1abdf9343d683ef660eaa284eeb9d7f170" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteI2CReset</name></member>
+      <member refid="class_notecard_1a026e578ebb48f966795c22a3ef417313" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteI2CTransmit</name></member>
+      <member refid="class_notecard_1ab53d54b21b85695424f5a6933036a2ee" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteSerialAvailable</name></member>
+      <member refid="class_notecard_1a05a46746e98199c5a69921bf34d59c73" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteSerialReceive</name></member>
+      <member refid="class_notecard_1ad21c881a08419ed0488318a4e02bb1af" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteSerialReset</name></member>
+      <member refid="class_notecard_1a258741e32888be55b8bbedc256c7f377" prot="private" virt="non-virtual"><scope>Notecard</scope><name>noteSerialTransmit</name></member>
+      <member refid="class_notecard_1a67bbafe4ef82a6772404283e4f78bf12" prot="public" virt="non-virtual"><scope>Notecard</scope><name>requestAndResponse</name></member>
+      <member refid="class_notecard_1a1b9d4774c186e11c0bea8050d266fd66" prot="public" virt="non-virtual"><scope>Notecard</scope><name>responseError</name></member>
+      <member refid="class_notecard_1a8016131b70f6af1e42c3054b577676d2" prot="public" virt="non-virtual"><scope>Notecard</scope><name>sendRequest</name></member>
+      <member refid="class_notecard_1a4f97e66bf4763cb24adfce9bdd2a73cb" prot="public" virt="non-virtual"><scope>Notecard</scope><name>setDebugOutputStream</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

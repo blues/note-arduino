@@ -1,0 +1,5 @@
+var searchData=
+[
+  ['logdebug_22',['logDebug',['../class_notecard.html#a083c4738102bbb2b377c4cb4f3fa11ff',1,'Notecard']]],
+  ['logdebugf_23',['logDebugf',['../class_notecard.html#a4221529c1852f535c9fd09df01c36107',1,'Notecard']]]
+];
