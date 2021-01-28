@@ -27,13 +27,13 @@
 #include <cstddef>
 #include <cstdint>
 #ifndef MOCK
-  #include <Arduino.h>
-  #include <HardwareSerial.h>
-  #include <Wire.h>
-  #include <note-c/note.h>
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include <Wire.h>
+#include <note-c/note.h>
 #else
-  #include "mock/mock-arduino.hpp"
-  #include "mock/mock-parameters.hpp"
+#include "mock/mock-arduino.hpp"
+#include "mock/mock-parameters.hpp"
 #endif
 
 /**************************************************************************/
@@ -44,10 +44,10 @@
 /**************************************************************************/
 class Notecard
 {
-  public:
+public:
     void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-                 uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
-                 TwoWire &wirePort = Wire);
+               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
+               TwoWire &wirePort = Wire);
     void begin(HardwareSerial &serial, int speed);
     void setDebugOutputStream(Stream &dbgserial);
     void clearDebugOutputStream(void);
@@ -61,7 +61,7 @@ class Notecard
     bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
     bool responseError(J *rsp);
 
-  private:
+private:
     static TwoWire *_i2cPort;
     static HardwareSerial *_notecardSerial;
     static int _notecardSerialSpeed;

@@ -22,9 +22,9 @@
 #include <Wire.h>
 
 // Parameters for this example
-#define	INBOUND_QUEUE_POLL_SECS		10
-#define	INBOUND_QUEUE_NOTEFILE		"my-inbound.qi"
-#define	INBOUND_QUEUE_COMMAND_FIELD	"my-request-type"
+#define INBOUND_QUEUE_POLL_SECS   10
+#define INBOUND_QUEUE_NOTEFILE    "my-inbound.qi"
+#define INBOUND_QUEUE_COMMAND_FIELD "my-request-type"
 
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
@@ -38,87 +38,89 @@ Notecard notecard;
 #define myLiveDemo  true
 
 // One-time Arduino initialization
-void setup() {
+void setup()
+{
 
-	// Set up for debug output.
+    // Set up for debug output.
 #ifdef serialDebugOut
     delay(2500);
     serialDebugOut.begin(115200);
     notecard.setDebugOutputStream(serialDebugOut);
 #endif
 
-	// Initialize the physical I/O channel to the Notecard
+    // Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	notecard.begin(serialNotecard, 9600);
+    notecard.begin(serialNotecard, 9600);
 #else
-	Wire.begin();
+    Wire.begin();
 
-	notecard.begin();
+    notecard.begin();
 #endif
 
-	// This request marks this device as a "development device".  For development devices, the service
-	// accepts inbound HTTP requests in an open, unauthenticated manner for developer convenience.
-	// No devices should ever be deployed in this mode, for obvious reasons!
-	J *req = notecard.newRequest("card.io");
-	JAddStringToObject(req, "mode", "development-on");
-	notecard.sendRequest(req);
+    // This request marks this device as a "development device".  For development devices, the service
+    // accepts inbound HTTP requests in an open, unauthenticated manner for developer convenience.
+    // No devices should ever be deployed in this mode, for obvious reasons!
+    J *req = notecard.newRequest("card.io");
+    JAddStringToObject(req, "mode", "development-on");
+    notecard.sendRequest(req);
 
-	// Configure the productUID, and instruct the Notecard to stay connected to the service
-	req = notecard.newRequest("hub.set");
-	JAddStringToObject(req, "product", myProductID);
+    // Configure the productUID, and instruct the Notecard to stay connected to the service
+    req = notecard.newRequest("hub.set");
+    JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
-	JAddStringToObject(req, "mode", "continuous");
-	JAddBoolToObject(req, "sync", true);	// Automatically sync when changes are made on notehub
+    JAddStringToObject(req, "mode", "continuous");
+    JAddBoolToObject(req, "sync", true);  // Automatically sync when changes are made on notehub
 #else
-	JAddStringToObject(req, "mode", "periodic");
-	JAddNumberToObject(req, "outbound", 60);
+    JAddStringToObject(req, "mode", "periodic");
+    JAddNumberToObject(req, "outbound", 60);
 #endif
-	notecard.sendRequest(req);
+    notecard.sendRequest(req);
 
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
-void loop() {
+void loop()
+{
 
-	// On a periodic basis, check the inbound queue for messages.  In a real-world application,
-	// this would be checked using a frequency commensurate with the required inbound responsiveness.
-	// For the most common "periodic" mode applications, this might be daily or weekly.  In this
-	// example, where we are using "continuous" mode, we check quite often for demonstratio purposes.
-	static unsigned long nextPollMs = 0;
-	if (millis() > nextPollMs) {
-		nextPollMs = millis() + (INBOUND_QUEUE_POLL_SECS * 1000);
+    // On a periodic basis, check the inbound queue for messages.  In a real-world application,
+    // this would be checked using a frequency commensurate with the required inbound responsiveness.
+    // For the most common "periodic" mode applications, this might be daily or weekly.  In this
+    // example, where we are using "continuous" mode, we check quite often for demonstratio purposes.
+    static unsigned long nextPollMs = 0;
+    if (millis() > nextPollMs) {
+        nextPollMs = millis() + (INBOUND_QUEUE_POLL_SECS * 1000);
 
-		// Process all pending inbound requests
-		while (true) {
+        // Process all pending inbound requests
+        while (true) {
 
-			// Get the next available note from our inbound queue notefile, deleting it
-			J *req = notecard.newRequest("note.get");
-			JAddStringToObject(req, "file", INBOUND_QUEUE_NOTEFILE);
-			JAddBoolToObject(req, "delete", true);
-			J *rsp = notecard.requestAndResponse(req);
-			if (rsp != NULL) {
+            // Get the next available note from our inbound queue notefile, deleting it
+            J *req = notecard.newRequest("note.get");
+            JAddStringToObject(req, "file", INBOUND_QUEUE_NOTEFILE);
+            JAddBoolToObject(req, "delete", true);
+            J *rsp = notecard.requestAndResponse(req);
+            if (rsp != NULL) {
 
-				// If an error is returned, this means that no response is pending.  Note
-				// that it's expected that this might return either a "note does not exist"
-				// error if there are no pending inbound notes, or a "file does not exist" error
-				// if the inbound queue hasn't yet been created on the service.
-				if (notecard.responseError(rsp)) {
-					notecard.deleteResponse(rsp);
-					break;
-				}
+                // If an error is returned, this means that no response is pending.  Note
+                // that it's expected that this might return either a "note does not exist"
+                // error if there are no pending inbound notes, or a "file does not exist" error
+                // if the inbound queue hasn't yet been created on the service.
+                if (notecard.responseError(rsp)) {
+                    notecard.deleteResponse(rsp);
+                    break;
+                }
 
-				// Get the note's body
-				J *body = JGetObject(rsp, "body");
-				if (body != NULL) {
+                // Get the note's body
+                J *body = JGetObject(rsp, "body");
+                if (body != NULL) {
 
-					// Simulate Processing the response here
-					notecard.logDebug("INBOUND REQUEST: ");
-					notecard.logDebug(JGetString(body, INBOUND_QUEUE_COMMAND_FIELD));
-					notecard.logDebug("\n\n");
-				}
+                    // Simulate Processing the response here
+                    notecard.logDebug("INBOUND REQUEST: ");
+                    notecard.logDebug(JGetString(body, INBOUND_QUEUE_COMMAND_FIELD));
+                    notecard.logDebug("\n\n");
+                }
 
-			}
-	        notecard.deleteResponse(rsp);
-		}
-	}
+            }
+            notecard.deleteResponse(rsp);
+        }
+    }
 }

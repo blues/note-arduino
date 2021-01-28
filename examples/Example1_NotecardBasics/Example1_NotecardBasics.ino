@@ -46,104 +46,107 @@
 Notecard notecard;
 
 // One-time Arduino initialization
-void setup() {
+void setup()
+{
 
-	// Set up for debug output.	 If you open Arduino's serial terminal window, you'll be able to
-	// watch JSON objects being transferred to and from the Notecard for each request.  On most
-	// Arduino devices, Arduino's serial debug output is on the "Serial" device at 115200.
-	// If you don't wish to see the Notecard's debug output, or if your device doesn't have
-	// any debug output port, just comment out these lines by preceding them with //
-	// Note that the initial 2.5s delay is required by some Arduino cards before debug
-	// UART output can be successfully displayed in the Arduino IDE, including the
-	// Adafruit Feather nRF52840 Express.
+    // Set up for debug output.  If you open Arduino's serial terminal window, you'll be able to
+    // watch JSON objects being transferred to and from the Notecard for each request.  On most
+    // Arduino devices, Arduino's serial debug output is on the "Serial" device at 115200.
+    // If you don't wish to see the Notecard's debug output, or if your device doesn't have
+    // any debug output port, just comment out these lines by preceding them with //
+    // Note that the initial 2.5s delay is required by some Arduino cards before debug
+    // UART output can be successfully displayed in the Arduino IDE, including the
+    // Adafruit Feather nRF52840 Express.
 #ifdef serialDebugOut
     delay(2500);
     serialDebugOut.begin(115200);
     notecard.setDebugOutputStream(serialDebugOut);
 #endif
 
-	// Initialize the physical I/O channel to the Notecard
+    // Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	notecard.begin(serialNotecard, 9600);
+    notecard.begin(serialNotecard, 9600);
 #else
-	Wire.begin();
+    Wire.begin();
 
-	notecard.begin();
+    notecard.begin();
 #endif
 
-	// "newRequest()" uses the bundled "J" json package to allocate a "req", which is a JSON object
-	// for the request to which we will then add Request arguments.  The function allocates a "req"
-	// request structure using malloc() and initializes its "req" field with the type of request.
-  J *req = notecard.newRequest("hub.set");
+    // "newRequest()" uses the bundled "J" json package to allocate a "req", which is a JSON object
+    // for the request to which we will then add Request arguments.  The function allocates a "req"
+    // request structure using malloc() and initializes its "req" field with the type of request.
+    J *req = notecard.newRequest("hub.set");
 
-	// This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
-	// this Product ID.  (see above)
-	JAddStringToObject(req, "product", myProductID);
+    // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
+    // this Product ID.  (see above)
+    JAddStringToObject(req, "product", myProductID);
 
-	// This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
+    // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
-	JAddStringToObject(req, "mode", "continuous");
+    JAddStringToObject(req, "mode", "continuous");
 
-	// Issue the request, telling the Notecard how and how often to access the service.
-	// This results in a JSON message to Notecard formatted like:
-	//	   { "req"	   : "service.set",
-	//		 "product" : myProductID,
-	//		 "mode"	   : "continuous"
-	//	   }
-	// Note that sendRequest() always uses free() to release the request data structure, and it
-	// returns "true" if success and "false" if there is any failure.
-  notecard.sendRequest(req);
+    // Issue the request, telling the Notecard how and how often to access the service.
+    // This results in a JSON message to Notecard formatted like:
+    //     { "req"     : "service.set",
+    //     "product" : myProductID,
+    //     "mode"    : "continuous"
+    //     }
+    // Note that sendRequest() always uses free() to release the request data structure, and it
+    // returns "true" if success and "false" if there is any failure.
+    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
-void loop() {
+void loop()
+{
 
-	// Count the simulated measurements that we send to the cloud, and stop the demo before long.
-	static unsigned eventCounter = 0;
-	if (eventCounter++ > 25)
-		return;
+    // Count the simulated measurements that we send to the cloud, and stop the demo before long.
+    static unsigned eventCounter = 0;
+    if (eventCounter++ > 25) {
+        return;
+    }
 
-	// Rather than simulating a temperature reading, use a Notecard request to read the temp
-	// from the Notecard's built-in temperature sensor.  We use requestAndResponse() to indicate
-	// that we would like to examine the response of the transaction.  This method takes a "request" JSON
-	// data structure as input, then processes it and returns a "response" JSON data structure with
-	// the response.  Note that because the Notecard library uses malloc(), developers must always
-	// check for NULL to ensure that there was enough memory available on the microcontroller to
-	// satisfy the allocation request.
-	double temperature = 0;
+    // Rather than simulating a temperature reading, use a Notecard request to read the temp
+    // from the Notecard's built-in temperature sensor.  We use requestAndResponse() to indicate
+    // that we would like to examine the response of the transaction.  This method takes a "request" JSON
+    // data structure as input, then processes it and returns a "response" JSON data structure with
+    // the response.  Note that because the Notecard library uses malloc(), developers must always
+    // check for NULL to ensure that there was enough memory available on the microcontroller to
+    // satisfy the allocation request.
+    double temperature = 0;
     J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
     if (rsp != NULL) {
         temperature = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
 
-	// Do the same to retrieve the voltage that is detected by the Notecard on its V+ pin.
-	double voltage = 0;
+    // Do the same to retrieve the voltage that is detected by the Notecard on its V+ pin.
+    double voltage = 0;
     rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
     if (rsp != NULL) {
         voltage = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
 
-	// Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "start"
-	// flag for demonstration purposes to upload the data instantaneously, so that if you are looking
-	// at this on notehub.io you will see the data appearing 'live'.)
+    // Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "start"
+    // flag for demonstration purposes to upload the data instantaneously, so that if you are looking
+    // at this on notehub.io you will see the data appearing 'live'.)
     J *req = notecard.newRequest("note.add");
-	if (req != NULL) {
-	    JAddBoolToObject(req, "sync", true);
-		J *body = JCreateObject();
-		if (body != NULL) {
-			JAddNumberToObject(body, "temp", temperature);
-			JAddNumberToObject(body, "voltage", voltage);
-			JAddNumberToObject(body, "count", eventCounter);
-		    JAddItemToObject(req, "body", body);
-		}
-	    notecard.sendRequest(req);
-	}
+    if (req != NULL) {
+        JAddBoolToObject(req, "sync", true);
+        J *body = JCreateObject();
+        if (body != NULL) {
+            JAddNumberToObject(body, "temp", temperature);
+            JAddNumberToObject(body, "voltage", voltage);
+            JAddNumberToObject(body, "count", eventCounter);
+            JAddItemToObject(req, "body", body);
+        }
+        notecard.sendRequest(req);
+    }
 
-	// Delay between measurements
-	delay(15*1000);     // 15 seconds
+    // Delay between measurements
+    delay(15*1000);     // 15 seconds
 
 }

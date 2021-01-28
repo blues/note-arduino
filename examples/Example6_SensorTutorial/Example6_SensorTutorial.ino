@@ -24,66 +24,68 @@ Adafruit_BME680 bmeSensor;
 Notecard notecard;
 
 // One-time Arduino initialization
-void setup() {
+void setup()
+{
 #ifdef serialDebug
     delay(2500);
     serialDebug.begin(115200);
     notecard.setDebugOutputStream(serialDebug);
 #endif
 
-	// Initialize the physical I/O channel to the Notecard
+    // Initialize the physical I/O channel to the Notecard
 #ifdef serialNotecard
-	notecard.begin(serialNotecard, 9600);
+    notecard.begin(serialNotecard, 9600);
 #else
-	Wire.begin();
+    Wire.begin();
 
-	notecard.begin();
+    notecard.begin();
 #endif
 
-  J *req = notecard.newRequest("hub.set");
-  JAddStringToObject(req, "product", productUID);
-  JAddStringToObject(req, "mode", "continuous");
-  notecard.sendRequest(req);
+    J *req = notecard.newRequest("hub.set");
+    JAddStringToObject(req, "product", productUID);
+    JAddStringToObject(req, "mode", "continuous");
+    notecard.sendRequest(req);
 
-  if (!bmeSensor.begin()) {
-    serialDebug.println("Could not find a valid BME680 sensor...");
-  } else {
-    serialDebug.println("BME680 Connected...");
-  }
-
-  bmeSensor.setTemperatureOversampling(BME680_OS_8X);
-  bmeSensor.setHumidityOversampling(BME680_OS_2X);
-}
-
-void loop() {
-  if (! bmeSensor.performReading()) {
-    serialDebug.println("Failed to obtain a reading...");
-    delay(15000);
-    return;
-  }
-
-  serialDebug.print("Temperature = ");
-  serialDebug.print(bmeSensor.temperature);
-  serialDebug.println(" *C");
-
-  serialDebug.print("Humidity = ");
-  serialDebug.print(bmeSensor.humidity);
-  serialDebug.println(" %");
-
-  J *req = notecard.newRequest("note.add");
-  if (req != NULL) {
-    JAddStringToObject(req, "file", "sensors.qo");
-    JAddBoolToObject(req, "sync", true);
-
-    J *body = JCreateObject();
-    if (body != NULL) {
-      JAddNumberToObject(body, "temp", bmeSensor.temperature);
-      JAddNumberToObject(body, "humidity", bmeSensor.humidity);
-       JAddItemToObject(req, "body", body);
+    if (!bmeSensor.begin()) {
+        serialDebug.println("Could not find a valid BME680 sensor...");
+    } else {
+        serialDebug.println("BME680 Connected...");
     }
 
-    notecard.sendRequest(req);
-  }
+    bmeSensor.setTemperatureOversampling(BME680_OS_8X);
+    bmeSensor.setHumidityOversampling(BME680_OS_2X);
+}
 
-  delay(15000);
+void loop()
+{
+    if (! bmeSensor.performReading()) {
+        serialDebug.println("Failed to obtain a reading...");
+        delay(15000);
+        return;
+    }
+
+    serialDebug.print("Temperature = ");
+    serialDebug.print(bmeSensor.temperature);
+    serialDebug.println(" *C");
+
+    serialDebug.print("Humidity = ");
+    serialDebug.print(bmeSensor.humidity);
+    serialDebug.println(" %");
+
+    J *req = notecard.newRequest("note.add");
+    if (req != NULL) {
+        JAddStringToObject(req, "file", "sensors.qo");
+        JAddBoolToObject(req, "sync", true);
+
+        J *body = JCreateObject();
+        if (body != NULL) {
+            JAddNumberToObject(body, "temp", bmeSensor.temperature);
+            JAddNumberToObject(body, "humidity", bmeSensor.humidity);
+            JAddItemToObject(req, "body", body);
+        }
+
+        notecard.sendRequest(req);
+    }
+
+    delay(15000);
 }
