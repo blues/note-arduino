@@ -989,6 +989,31 @@ int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
   return result;
 }
 
+int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c()
+{
+  int result;
+  Notecard notecard;
+  const unsigned int baud = 9600;
+
+  // Setup
+  hardwareSerialBegin_Parameters.baud = (baud - 1);
+
+  // Action
+  notecard.begin(Serial);
+
+  // Evaluate Result
+  if (baud == hardwareSerialBegin_Parameters.baud)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = 39;
+  }
+
+  return result;
+}
+
 struct TestFunction;
 typedef int (*test_fn)(void);
 int runTests(TestFunction *tests_, size_t cnt_);
@@ -1053,7 +1078,8 @@ int main(void)
       {test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
       {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called"},
-      {test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called"}
+      {test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called"},
+      {test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c, "test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c"}
   };
 
   return runTests(tests, (sizeof(tests) / sizeof(TestFunction)));

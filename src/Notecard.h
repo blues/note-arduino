@@ -48,7 +48,7 @@ public:
     void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
                uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
                TwoWire &wirePort = Wire);
-    void begin(HardwareSerial &serial, int speed);
+    void begin(HardwareSerial &serial, int speed = 9600);
     void setDebugOutputStream(Stream &dbgserial);
     void clearDebugOutputStream(void);
     void i2cTest(int Adjustment);
