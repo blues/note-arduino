@@ -179,9 +179,9 @@ array, before adding your new entry._
 
 For additional Notecard SDKs and Libraries, see:
 
-* [note-c](note-c) for Standard C support
-* [note-go](note-go) for Go
-* [note-python](note-python) for Python
+* [note-c][note-c] for Standard C support
+* [note-go][note-go] for Go
+* [note-python][note-python] for Python
 
 ## To learn more about Blues Wireless, the Notecard and Notehub, see:
 
