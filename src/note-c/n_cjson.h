@@ -70,8 +70,7 @@ extern "C"
 #define JStringIsConst 512
 
 /* The J structure: */
-typedef struct J
-{
+typedef struct J {
     /* next/prev allow you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
     struct J *next;
     struct J *prev;
@@ -84,17 +83,16 @@ typedef struct J
     /* The item's string, if type==JString  and type == JRaw */
     char *valuestring;
     /* writing to valueint is DEPRECATED, use JSetNumberValue instead */
-    int valueint;
+    long int valueint;
     /* The item's number, if type==JNumber */
     JNUMBER valuenumber;
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
     char *string;
 } J;
 
-typedef struct JHooks
-{
-      void *(*malloc_fn)(size_t sz);
-      void (*free_fn)(void *ptr);
+typedef struct JHooks {
+    void *(*malloc_fn)(size_t sz);
+    void (*free_fn)(void *ptr);
 } JHooks;
 
 typedef int Jbool;
@@ -220,7 +218,7 @@ N_CJSON_PUBLIC(J *) JCreateObjectReference(const J *child);
 N_CJSON_PUBLIC(J *) JCreateArrayReference(const J *child);
 
 /* These utilities create an Array of count items. */
-N_CJSON_PUBLIC(J *) JCreateIntArray(const int *numbers, int count);
+N_CJSON_PUBLIC(J *) JCreateIntArray(const long int *numbers, int count);
 N_CJSON_PUBLIC(J *) JCreateNumberArray(const JNUMBER *numbers, int count);
 N_CJSON_PUBLIC(J *) JCreateStringArray(const char **strings, int count);
 

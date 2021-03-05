@@ -89,17 +89,18 @@ This library depends on the blues [note-c repo][note-c] and utilizes
 git subtrees to include those files in the src/note-c folder. To
 update this repo with the latest from note-c:
 
-```sh
+```none
 rm -rf src/note-c
-git commit -am 'remove note-c before readd'
+git commit -am 'remove note-c before re-add'
 git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
 ```
 
 ## Documentation
 
-The documentation for this library can be found [here](https://blues.github.io/note-arduino/html/index.html).
+The documentation for this library can be found
+[here](https://dev.blues.io/tools-and-sdks/arduino-library/).
 
-# Examples
+## Examples
 
 The [examples](examples/) directory contains examples for using this library
 with:

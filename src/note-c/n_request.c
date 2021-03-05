@@ -24,19 +24,20 @@ static bool resetRequired = true;
     @brief  Create an error response document.
     @param   errmsg
                The error message from the Notecard
-	@returns a `J` cJSON object with the error response.
+  @returns a `J` cJSON object with the error response.
 */
 /**************************************************************************/
-static J *errDoc(const char *errmsg) {
+static J *errDoc(const char *errmsg)
+{
     J *rspdoc = JCreateObject();
     if (rspdoc != NULL) {
         JAddStringToObject(rspdoc, c_err, errmsg);
-	}
-	if (suppressShowTransactions == 0) {
-	    _Debug("{\"err\":\"");
-		_Debug(errmsg);
-		_Debug("\"}\n");
-	}
+    }
+    if (suppressShowTransactions == 0) {
+        _Debug("{\"err\":\"");
+        _Debug(errmsg);
+        _Debug("\"}\n");
+    }
     return rspdoc;
 }
 
@@ -45,8 +46,9 @@ static J *errDoc(const char *errmsg) {
     @brief  Suppress showing transaction details.
 */
 /**************************************************************************/
-void NoteSuspendTransactionDebug() {
-	suppressShowTransactions++;
+void NoteSuspendTransactionDebug()
+{
+    suppressShowTransactions++;
 }
 
 /**************************************************************************/
@@ -54,41 +56,40 @@ void NoteSuspendTransactionDebug() {
     @brief  Resume showing transaction details.
 */
 /**************************************************************************/
-void NoteResumeTransactionDebug() {
-	suppressShowTransactions--;
+void NoteResumeTransactionDebug()
+{
+    suppressShowTransactions--;
 }
 
 /**************************************************************************/
 /*!
     @brief  Create a new request object to populate before sending to the Notecard.
-            Lock for mutual exclusion, not only because access to the card must be serialized, but also because
-            both C++ and ArduinoJSON call malloc() which is not a thread-safe operation.
-    @param   request
-               The name of the request, for example `hub.set`.
-	@returns a `J` cJSON object with the request name pre-populated.
+    @param   request is The name of the request, for example `hub.set`.
+  @returns a `J` cJSON object with the request name pre-populated.
 */
 /**************************************************************************/
-J *NoteNewRequest(const char *request) {
+J *NoteNewRequest(const char *request)
+{
     J *reqdoc = JCreateObject();
-    if (reqdoc != NULL)
+    if (reqdoc != NULL) {
         JAddStringToObject(reqdoc, c_req, request);
+    }
     return reqdoc;
 }
 
 /**************************************************************************/
 /*!
     @brief  Create a new command object to populate before sending to the Notecard.
-            Lock for mutual exclusion, not only because access to the card must be serialized, but also because
-            both C++ and ArduinoJSON call malloc() which is not a thread-safe operation.
-    @param   request
-               The name of the command, for example `hub.set`.
-	@returns a `J` cJSON object with the request name pre-populated.
+    @param   request is the name of the command, for example `hub.set`.
+  @returns a `J` cJSON object with the request name pre-populated.
 */
 /**************************************************************************/
-J *NoteNewCommand(const char *request) {
+J *NoteNewCommand(const char *request)
+{
     J *reqdoc = JCreateObject();
-    if (reqdoc != NULL)
+    if (reqdoc != NULL) {
         JAddStringToObject(reqdoc, c_cmd, request);
+    }
     return reqdoc;
 }
 
@@ -98,15 +99,17 @@ J *NoteNewCommand(const char *request) {
             Frees the request structure from memory after sending the request.
     @param   req
                The `J` cJSON request object.
-	@returns a boolean. Returns `true` if successful or `false` if an error
+  @returns a boolean. Returns `true` if successful or `false` if an error
             occurs, such as an out-of-memory or if an error was returned from
             the transaction in the c_err field.
 */
 /**************************************************************************/
-bool NoteRequest(J *req) {
+bool NoteRequest(J *req)
+{
     // Exit if null request.  This allows safe execution of the form NoteRequest(NoteNewRequest("xxx"))
-    if (req == NULL)
+    if (req == NULL) {
         return false;
+    }
     // Execute the transaction
     J *rsp = NoteTransaction(req);
     if (rsp == NULL) {
@@ -126,14 +129,16 @@ bool NoteRequest(J *req) {
             Frees the request structure from memory after sending the request.
     @param   req
                The `J` cJSON request object.
-	@returns a `J` cJSON object with the response, or NULL if there is
+  @returns a `J` cJSON object with the response, or NULL if there is
              insufficient memory.
 */
 /**************************************************************************/
-J *NoteRequestResponse(J *req) {
+J *NoteRequestResponse(J *req)
+{
     // Exit if null request.  This allows safe execution of the form NoteRequestResponse(NoteNewRequest("xxx"))
-    if (req == NULL)
+    if (req == NULL) {
         return NULL;
+    }
     // Execute the transaction
     J *rsp = NoteTransaction(req);
     if (rsp == NULL) {
@@ -151,27 +156,31 @@ J *NoteRequestResponse(J *req) {
             Frees the request structure from memory after sending the request.
     @param   reqJSON
                A c-string containing the JSON request object.
-	@returns a c-string with the JSON response from the Notecard. After
+  @returns a c-string with the JSON response from the Notecard. After
              parsed by the developer, should be freed with `JFree`.
 */
 /**************************************************************************/
-char *NoteRequestResponseJSON(char *reqJSON) {
+char *NoteRequestResponseJSON(char *reqJSON)
+{
 
     // Parse the incoming JSON string
     J *req = JParse(reqJSON);
-    if (req == NULL)
+    if (req == NULL) {
         return NULL;
+    }
 
     // Perform the transaction and free the req
     J *rsp = NoteRequestResponse(req);
-    if (rsp == NULL)
+    if (rsp == NULL) {
         return NULL;
+    }
 
     // Convert response back to JSON and delete it
     char *json = JPrintUnformatted(rsp);
     NoteDeleteResponse(rsp);
-    if (json == NULL)
+    if (json == NULL) {
         return NULL;
+    }
 
     // Done
     return json;
@@ -185,15 +194,17 @@ char *NoteRequestResponseJSON(char *reqJSON) {
             the request.
     @param   req
                The `J` cJSON request object.
-	@returns a `J` cJSON object with the response, or NULL if there is
+  @returns a `J` cJSON object with the response, or NULL if there is
              insufficient memory.
 */
 /**************************************************************************/
-J *NoteTransaction(J *req) {
+J *NoteTransaction(J *req)
+{
 
     // Validate in case of memory failure of the requestor
-    if (req == NULL)
+    if (req == NULL) {
         return NULL;
+    }
 
     // Determine whether or not a response will be expected, by virtue of "cmd" being present
     bool noResponseExpected = (JGetString(req, "req")[0] == '\0' && JGetString(req, "cmd")[0] != '\0');
@@ -201,8 +212,9 @@ J *NoteTransaction(J *req) {
     // If a reset of the module is required for any reason, do it now.
     // We must do this before acquiring lock.
     if (resetRequired) {
-        if (!NoteReset())
+        if (!NoteReset()) {
             return NULL;
+        }
     }
 
     // Lock
@@ -215,25 +227,26 @@ J *NoteTransaction(J *req) {
         _UnlockNote();
         return rsp;
     }
-    
-	if (suppressShowTransactions == 0) {
-	    _Debugln(json);
-	}
+
+    if (suppressShowTransactions == 0) {
+        _Debugln(json);
+    }
 
     // Pertform the transaction
     char *responseJSON;
     const char *errStr;
-    if (noResponseExpected)
+    if (noResponseExpected) {
         errStr = _Transaction(json, NULL);
-    else
+    } else {
         errStr = _Transaction(json, &responseJSON);
+    }
 
     // Free the json
     JFree(json);
 
     // If error, queue up a reset
     if (errStr != NULL) {
-		NoteResetRequired();
+        NoteResetRequired();
         J *rsp = errDoc(errStr);
         _UnlockNote();
         return rsp;
@@ -249,7 +262,7 @@ J *NoteTransaction(J *req) {
     J *rspdoc = JParse(responseJSON);
     if (rspdoc == NULL) {
         _Debug("invalid JSON: ");
-		_Debug(responseJSON);
+        _Debug(responseJSON);
         _Free(responseJSON);
         J *rsp = errDoc(ERRSTR("unrecognized response from card",c_bad));
         _UnlockNote();
@@ -257,9 +270,13 @@ J *NoteTransaction(J *req) {
     }
 
     // Debug
-	if (suppressShowTransactions == 0) {
-	    _Debugln(responseJSON);
-	}
+    if (suppressShowTransactions == 0) {
+        if (responseJSON[strlen(responseJSON)-1] == '\n') {
+            _Debug(responseJSON);
+        } else {
+            _Debugln(responseJSON);
+        }
+    }
 
     // Discard the buffer now that it's parsed
     _Free(responseJSON);
@@ -269,7 +286,7 @@ J *NoteTransaction(J *req) {
 
     // Done
     return rspdoc;
-    
+
 }
 
 /**************************************************************************/
@@ -278,7 +295,8 @@ J *NoteTransaction(J *req) {
             a given port.
 */
 /**************************************************************************/
-void NoteResetRequired() {
+void NoteResetRequired()
+{
     resetRequired = true;
 }
 
@@ -289,7 +307,8 @@ void NoteResetRequired() {
     @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
-bool NoteReset() {
+bool NoteReset()
+{
     _LockNote();
     resetRequired = !_Reset();
     _UnlockNote();
@@ -303,11 +322,12 @@ bool NoteReset() {
                The error string.
     @param   errtype
                The error type string.
-	@returns boolean. `true` if the string contains the error provided, `false`
+  @returns boolean. `true` if the string contains the error provided, `false`
              if not.
 */
 /**************************************************************************/
-bool NoteErrorContains(const char *errstr, const char *errtype) {
+bool NoteErrorContains(const char *errstr, const char *errtype)
+{
     return (strstr(errstr, errtype) != NULL);
 }
 
@@ -318,17 +338,21 @@ bool NoteErrorContains(const char *errstr, const char *errtype) {
                The string buffer to clear of error strings.
 */
 /**************************************************************************/
-void NoteErrorClean(char *begin) {
+void NoteErrorClean(char *begin)
+{
     while (true) {
         char *end = &begin[strlen(begin)+1];
         char *beginBrace = strchr(begin, '{');
-        if (beginBrace == NULL)
+        if (beginBrace == NULL) {
             break;
-        if (beginBrace>begin && *(beginBrace-1) == ' ')
+        }
+        if (beginBrace>begin && *(beginBrace-1) == ' ') {
             beginBrace--;
+        }
         char *endBrace = strchr(beginBrace, '}');
-        if (endBrace == NULL)
+        if (endBrace == NULL) {
             break;
+        }
         char *afterBrace = endBrace + 1;
         memmove(beginBrace, afterBrace, end-afterBrace);
     }

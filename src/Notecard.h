@@ -24,8 +24,8 @@
 #ifndef Notecard_h
 #define Notecard_h
 
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
 #ifndef MOCK
 #include <Arduino.h>
 #include <HardwareSerial.h>

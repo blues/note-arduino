@@ -83,8 +83,7 @@
 #include "n_lib.h"
 
 /* aaaack but it's fast and const should make it shared text page. */
-static const unsigned char pr2six[256] =
-{
+static const unsigned char pr2six[256] = {
     /* ASCII table */
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
@@ -135,28 +134,28 @@ int JB64Decode(char *bufplain, const char *bufcoded)
     bufin = (const unsigned char *) bufcoded;
 
     while (nprbytes > 4) {
-    *(bufout++) =
-        (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
-    bufin += 4;
-    nprbytes -= 4;
+        *(bufout++) =
+            (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        bufin += 4;
+        nprbytes -= 4;
     }
 
     /* Note: (nprbytes == 1) would be an error, so just ingore that case */
     if (nprbytes > 1) {
-    *(bufout++) =
-        (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) =
+            (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
     }
     if (nprbytes > 2) {
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
     }
     if (nprbytes > 3) {
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
     }
 
     *(bufout++) = '\0';
@@ -179,25 +178,21 @@ int JB64Encode(char *encoded, const char *string, int len)
 
     p = encoded;
     for (i = 0; i < len - 2; i += 3) {
-    *p++ = basis_64[(string[i] >> 2) & 0x3F];
-    *p++ = basis_64[((string[i] & 0x3) << 4) |
-                    ((int) (string[i + 1] & 0xF0) >> 4)];
-    *p++ = basis_64[((string[i + 1] & 0xF) << 2) |
-                    ((int) (string[i + 2] & 0xC0) >> 6)];
-    *p++ = basis_64[string[i + 2] & 0x3F];
+        *p++ = basis_64[(string[i] >> 2) & 0x3F];
+        *p++ = basis_64[((string[i] & 0x3) << 4) | ((int) (string[i + 1] & 0xF0) >> 4)];
+        *p++ = basis_64[((string[i + 1] & 0xF) << 2) | ((int) (string[i + 2] & 0xC0) >> 6)];
+        *p++ = basis_64[string[i + 2] & 0x3F];
     }
     if (i < len) {
-    *p++ = basis_64[(string[i] >> 2) & 0x3F];
-    if (i == (len - 1)) {
-        *p++ = basis_64[((string[i] & 0x3) << 4)];
+        *p++ = basis_64[(string[i] >> 2) & 0x3F];
+        if (i == (len - 1)) {
+            *p++ = basis_64[((string[i] & 0x3) << 4)];
+            *p++ = '=';
+        } else {
+            *p++ = basis_64[((string[i] & 0x3) << 4) | ((int) (string[i + 1] & 0xF0) >> 4)];
+            *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
+        }
         *p++ = '=';
-    }
-    else {
-        *p++ = basis_64[((string[i] & 0x3) << 4) |
-                        ((int) (string[i + 1] & 0xF0) >> 4)];
-        *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
-    }
-    *p++ = '=';
     }
 
     *p++ = '\0';

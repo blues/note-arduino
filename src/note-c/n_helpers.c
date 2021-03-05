@@ -27,9 +27,12 @@
 // Time-related suppression timer and cache
 static uint32_t timeBaseSetAtMs = 0;
 static JTIME timeBaseSec = 0;
+static bool timeBaseSetManually = false;
+static uint32_t suppressionTimerSecs = 10;
 static uint32_t timeTimer = 0;
 static bool zoneStillUnavailable = true;
-static char curZone[48] = {0};
+static bool zoneForceRefresh = false;
+static char curZone[10] = {0};
 static char curArea[64] = {0};
 static char curCountry[8] = "";
 static int curZoneOffsetMins = 0;
@@ -50,121 +53,158 @@ static char scSN[128] = {0};
 static char scProduct[128] = {0};
 static char scService[128] = {0};
 
+// For date conversions
+#define daysByMonth(y) ((y)&03||(y)==0?normalYearDaysByMonth:leapYearDaysByMonth)
+static short leapYearDaysByMonth[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
+static short normalYearDaysByMonth[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+static char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
 // Forwards
 static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
+static int ytodays(int year);
 
 //**************************************************************************/
 /*!
-    @brief  Determine if the card time is "real" calendar/clock time, or if
-            it is simply the millisecond clock since boot.
-    @returns  A boolean indicating whether the current time is valid.
+  @brief  Determine if the card time is "real" calendar/clock time, or if
+  it is simply the millisecond clock since boot.
+  @returns  A boolean indicating whether the current time is valid.
 */
 /**************************************************************************/
-bool NoteTimeValid() {
+bool NoteTimeValid()
+{
     timeTimer = 0;
     return NoteTimeValidST();
 }
 
 //**************************************************************************/
 /*!
-    @brief  Determine if if the suppression-timer card time is valid.
-    @returns  A boolean indicating whether the current time is valid.
+  @brief  Determine if if the suppression-timer card time is valid.
+  @returns  A boolean indicating whether the current time is valid.
 */
 /**************************************************************************/
-bool NoteTimeValidST() {
+bool NoteTimeValidST()
+{
     NoteTimeST();
     return (timeBaseSec != 0);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get the current epoch time, unsuppressed.
-    @returns  The current time.
+  @brief  Get the current epoch time, unsuppressed.
+  @returns  The current time.
 */
 /**************************************************************************/
-JTIME NoteTime() {
+JTIME NoteTime()
+{
     timeTimer = 0;
     return NoteTimeST();
 }
 
 //**************************************************************************/
 /*!
-    @brief  Set the time.
-    @param   seconds The UNIX Epoch time.
+  @brief  Set the time.
+  @param   seconds The UNIX Epoch time.
 */
 /**************************************************************************/
-static void setTime(JTIME seconds) {
+static void setTime(JTIME seconds)
+{
     timeBaseSec = seconds;
     timeBaseSetAtMs = _GetMs();
-    _Debug("setting time\n");
 }
 
 //**************************************************************************/
 /*!
-    @brief  Print a full, newline-terminated line.
-    @param   line The c-string line to print.
+  @brief  Set the time from a source that is NOT the Notecard
+  @param   seconds The UNIX Epoch time, or 0 to set back to automatic Notecard time
+  @param   offset The local time zone offset, in minutes, to adjust UTC
+  @param   zone The optional local time zone name (3 character c-string)
+  @param   zone The optional country
+  @param   area The optional region
 */
 /**************************************************************************/
-void NotePrintln(const char *line) {
-	NotePrint(line);
-	NotePrint(c_newline);
+void NoteTimeSet(JTIME secondsUTC, int offset, char *zone, char *country, char *area)
+{
+    if (secondsUTC == 0) {
+        timeBaseSec = 0;
+        timeBaseSetAtMs = 0;
+        timeBaseSetManually = false;
+        zoneStillUnavailable = true;
+        zoneForceRefresh = false;
+    } else {
+        timeBaseSec = secondsUTC;
+        timeBaseSetAtMs = _GetMs();
+        timeBaseSetManually = true;
+        zoneStillUnavailable = false;
+        curZoneOffsetMins = offset;
+        strlcpy(curZone, zone == NULL ? "UTC" : zone, sizeof(curZone));
+        strlcpy(curArea, area == NULL ? "" : area, sizeof(curArea));
+        strlcpy(curCountry, country == NULL ? "" : country, sizeof(curCountry));
+    }
 }
 
 //**************************************************************************/
 /*!
-    @brief  Log text "raw" to either the active debug console or to the
-            Notecard's USB console.
-    @param   text  A debug string for output.
+  @brief  Print a full, newline-terminated line.
+  @param   line The c-string line to print.
 */
 /**************************************************************************/
-bool NotePrint(const char *text) {
-	bool success = false;
-	if (NoteIsDebugOutputActive()) {
-		NoteDebug(text);
-		return true;
-	}
+void NotePrintln(const char *line)
+{
+    NotePrint(line);
+    NotePrint(c_newline);
+}
+
+//**************************************************************************/
+/*!
+  @brief  Log text "raw" to either the active debug console or to the
+  Notecard's USB console.
+  @param   text  A debug string for output.
+*/
+/**************************************************************************/
+bool NotePrint(const char *text)
+{
+    bool success = false;
+    if (NoteIsDebugOutputActive()) {
+        NoteDebug(text);
+        return true;
+    }
     int inLog = 0;
-	if (inLog++ != 0) {
-		inLog--;
-		return false;
-	}
+    if (inLog++ != 0) {
+        inLog--;
+        return false;
+    }
     J *req = NoteNewRequest("card.log");
     JAddStringToObject(req, "text", text);
     success = NoteRequest(req);
-	inLog--;
-	return success;
+    inLog--;
+    return success;
 }
 
 //**************************************************************************/
 /*!
-    @brief  Write a formatted string to the debug output.
-    @param   format  A format string for output.
-    @param   ...  One or more values to interpolate into the format string.
+  @brief  Get the current epoch time as known by the module. If it isn't known
+  by the module, just return the time since boot as indicated by the
+  millisecond clock.
+  @returns  The current time, or the time since boot.
 */
 /**************************************************************************/
-bool NotePrintf(const char *format, ...) {
-    char line[256];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(line, sizeof(line), format, args);
-    va_end(args);
-	return NotePrint(line);
-}
+JTIME NoteTimeST()
+{
 
-//**************************************************************************/
-/*!
-    @brief  Get the current epoch time as known by the module. If it isn't known
-            by the module, just return the time since boot as indicated by the
-            millisecond clock.
-    @returns  The current time, or the time since boot.
-*/
-/**************************************************************************/
-JTIME NoteTimeST() {
+    // Handle timer tick wrap by resetting the base
+    uint32_t nowMs = _GetMs();
+    if (timeBaseSec != 0 && nowMs < timeBaseSetAtMs) {
+        int64_t actualTimeMs = 0x100000000LL + (int64_t) nowMs;
+        int64_t elapsedTimeMs = actualTimeMs - (int64_t) timeBaseSetAtMs;
+        uint32_t elapsedTimeSecs = (uint32_t) (elapsedTimeMs / 1000);
+        timeBaseSec += elapsedTimeSecs;
+        timeBaseSetAtMs = nowMs;
+    }
 
     // If we haven't yet fetched the time, or if we still need the timezone, do so with a suppression
     // timer so that we don't hammer the module before it's had a chance to connect to the network to fetch time.
-    if (timeBaseSec == 0 || zoneStillUnavailable) {
-        if (timerExpiredSecs(&timeTimer, 10)) {
+    if (!timeBaseSetManually && (timeBaseSec == 0 || zoneStillUnavailable || zoneForceRefresh)) {
+        if (timerExpiredSecs(&timeTimer, suppressionTimerSecs)) {
 
             // Request time and zone info from the card
             J *rsp = NoteRequestResponse(NoteNewRequest("card.time"));
@@ -174,8 +214,9 @@ JTIME NoteTimeST() {
                     if (seconds != 0) {
 
                         // Set the time if it hasn't yet been set
-						if (timeBaseSec == 0)
-	                        setTime(seconds);
+                        if (timeBaseSec == 0) {
+                            setTime(seconds);
+                        }
 
                         // Get the zone
                         char *z = JGetString(rsp, "zone");
@@ -184,11 +225,13 @@ JTIME NoteTimeST() {
                             strlcpy(zone, z, sizeof(zone));
                             // Only use the 3-letter abbrev
                             char *sep = strchr(zone, ',');
-                            if (sep == NULL)
+                            if (sep == NULL) {
                                 zone[0] = '\0';
-                            else
+                            } else {
                                 *sep = '\0';
+                            }
                             zoneStillUnavailable = (memcmp(zone, "UTC", 3) == 0);
+                            zoneForceRefresh = false;
                             strlcpy(curZone, zone, sizeof(curZone));
                             curZoneOffsetMins = JGetInt(rsp, "minutes");
                             strlcpy(curCountry, JGetString(rsp, "country"), sizeof(curCountry));
@@ -203,7 +246,7 @@ JTIME NoteTimeST() {
     }
 
     // Adjust the base time by the number of seconds that have elapsed since the base.
-    JTIME adjustedTime = timeBaseSec + ((_GetMs() - timeBaseSetAtMs) / 1000);
+    JTIME adjustedTime = timeBaseSec + ((nowMs - timeBaseSetAtMs) / 1000);
 
     // Done
     return adjustedTime;
@@ -212,47 +255,193 @@ JTIME NoteTimeST() {
 
 //**************************************************************************/
 /*!
-    @brief  Return local region info, if known. Returns true if valid.
-    @param   retCountry (out) The country.
-    @param   retArea (out) The area value.
-    @param   retZone (out) The timezone value.
-    @param   retZoneOffset (out) The timezone offset.
-    @returns boolean indicating if the region information is valid.
+  @brief  Set suppression timer secs, returning the previous value
+  @param   New suppression timer seconds
+  @returns Previous suppression timer seconds
 */
 /**************************************************************************/
-bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneOffset) {
+uint32_t NoteSetSTSecs(uint32_t secs)
+{
+    uint32_t prev = suppressionTimerSecs;
+    suppressionTimerSecs = secs;
+    return prev;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Return local region info, if known. Returns true if valid.
+  @param   retCountry (out) The country.
+  @param   retArea (out) The area value.
+  @param   retZone (out) The timezone value.
+  @param   retZoneOffset (out) The timezone offset.
+  @returns boolean indicating if the region information is valid.
+*/
+/**************************************************************************/
+bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneOffset)
+{
+    NoteTimeST();
     if (zoneStillUnavailable) {
-        if (retCountry != NULL)
+        if (retCountry != NULL) {
             *retCountry = (char *) "";
-        if (retArea != NULL)
+        }
+        if (retArea != NULL) {
             *retArea = (char *) "";
-        if (retZone != NULL)
-            *retZone = curZone;
-        if (retZoneOffset != NULL)
+        }
+        if (retZone != NULL) {
+            *retZone = "UTC";
+        }
+        if (retZoneOffset != NULL) {
             *retZoneOffset = 0;
+        }
         return false;
     }
-    if (retCountry != NULL)
+    if (retCountry != NULL) {
         *retCountry = curCountry;
-    if (retArea != NULL)
+    }
+    if (retArea != NULL) {
         *retArea = curArea;
-    if (retZone != NULL)
+    }
+    if (retZone != NULL) {
         *retZone = curZone;
-    if (retZoneOffset != NULL)
+    }
+    if (retZoneOffset != NULL) {
         *retZoneOffset = curZoneOffsetMins;
+    }
     return true;;
 }
 
 //**************************************************************************/
 /*!
-    @brief  See if the card location is valid.  If it is OFF, it is
-            treated as valid.
-    @param   errbuf (out) A buffer with any error information to return.
-    @param   errbuflen The length of the error buffer.
-    @returns boolean indicating if the location information is valid.
+  @brief  Return local region info, if known. Returns true if valid.
+  @param   year, month, day, hour, minute, second - pointers to where to return time/date
+  @param   retZone (in-out) if NULL, local time will be returned in UTC, else returns pointer to zone string
+  @returns boolean indicating if either the zone or DST have changed since last call
+  @note    only call this if time is valid
 */
 /**************************************************************************/
-bool NoteLocationValid(char *errbuf, uint32_t errbuflen) {
+bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint8_t *retHour, uint8_t *retMinute, uint8_t *retSecond, char **retWeekday, char **retZone)
+{
+
+    // Preset
+    if (retYear != NULL) {
+        *retYear = 0;
+    }
+    if (retMonth != NULL) {
+        *retMonth = 0;
+    }
+    if (retDay != NULL) {
+        *retDay = 0;
+    }
+    if (retHour != NULL) {
+        *retHour = 0;
+    }
+    if (retMinute != NULL) {
+        *retMinute = 0;
+    }
+    if (retSecond != NULL) {
+        *retSecond = 0;
+    }
+    if (retWeekday != NULL) {
+        *retWeekday = "";
+    }
+    if (retZone != NULL) {
+        *retZone = "";
+    }
+
+    // Exit if time isn't yet valid
+    if (!NoteTimeValidST()) {
+        return false;
+    }
+
+    // Get the current time and region, and compute local time
+    char  *currentZone;
+    int currentOffsetMins;
+    JTIME currentEpochTime = NoteTimeST();
+    bool regionAvailable = NoteRegion(NULL, NULL, &currentZone, &currentOffsetMins);
+
+    // Offset the epoch time by time zone offset
+    currentEpochTime += currentOffsetMins * 60;
+
+    // Convert from unix epoch time to local date/time
+    int i, year, mon;
+    int32_t days;
+    uint32_t secs;
+    secs = (uint32_t) currentEpochTime + ((70*365L+17)*86400LU);
+    days = secs / 86400;
+    if (retWeekday != NULL) {
+        *retWeekday = daynames[(days + 1) % 7];
+    }
+    for (year = days / 365; days < (i = ytodays(year) + 365L * year); ) {
+        --year;
+    }
+    days -= i;
+    if (retYear != NULL) {
+        *retYear = (uint16_t) year+1900;
+    }
+    short *pm = daysByMonth(year);
+    for (mon = 12; days < pm[--mon]; ) ;
+    if (retMonth != NULL) {
+        *retMonth = (uint8_t) mon+1;
+    }
+    if (retDay != NULL) {
+        *retDay = days - pm[mon] + 1;
+    }
+    secs = secs % 86400;
+    uint8_t currentHour = (uint8_t) (secs / 3600);
+    if (retHour != NULL) {
+        *retHour = currentHour;
+    }
+    secs %= 3600;
+    if (retMinute != NULL) {
+        *retMinute = (uint8_t) (secs/60);
+    }
+    if (retSecond != NULL) {
+        *retSecond = (uint8_t) (secs % 60);
+    }
+    if (retZone != NULL) {
+        *retZone = currentZone;
+    }
+
+    // Determine whether or not we should refresh to check whether DST offset has changed, which
+    // is between midnight and 3am local time (if available).
+    static uint8_t lastHour;
+    static bool lastInfoIsKnown = false;
+    if (regionAvailable && lastInfoIsKnown) {
+        if ((lastHour != 1 && currentHour == 1) || (lastHour != 2 && currentHour == 2) || (lastHour != 3 && currentHour == 3)) {
+            zoneForceRefresh = true;
+        }
+    }
+    lastInfoIsKnown = true;
+    lastHour = currentHour;
+
+    // Done
+    return regionAvailable;
+
+}
+
+// Figure out how many days at start of the year
+static int ytodays(int year)
+{
+    int days = 0;
+    if (0 < year) {
+        days = (year - 1) / 4;
+    } else if (year <= -4) {
+        days = year / 4;
+    }
+    return days + daysByMonth(year)[0];
+}
+
+//**************************************************************************/
+/*!
+  @brief  See if the card location is valid.  If it is OFF, it is
+  treated as valid.
+  @param   errbuf (out) A buffer with any error information to return.
+  @param   errbuflen The length of the error buffer.
+  @returns boolean indicating if the location information is valid.
+*/
+/**************************************************************************/
+bool NoteLocationValid(char *errbuf, uint32_t errbuflen)
+{
     locationTimer = 0;
     locationValid = false;
     locationLastErr[0] = '\0';
@@ -261,52 +450,59 @@ bool NoteLocationValid(char *errbuf, uint32_t errbuflen) {
 
 //**************************************************************************/
 /*!
-    @brief  See if the card location is valid, time-suppressed.  If it is OFF,
-            it is treated as valid.
-    @param   errbuf (out) A buffer with any error information to return.
-    @param   errbuflen The length of the error buffer.
-    @returns boolean indicating if the location information is valid.
+  @brief  See if the card location is valid, time-suppressed.  If it is OFF,
+  it is treated as valid.
+  @param   errbuf (out) A buffer with any error information to return.
+  @param   errbuflen The length of the error buffer.
+  @returns boolean indicating if the location information is valid.
 */
 /**************************************************************************/
-bool NoteLocationValidST(char *errbuf, uint32_t errbuflen) {
+bool NoteLocationValidST(char *errbuf, uint32_t errbuflen)
+{
 
     // Preset
-    if (errbuf != NULL)
+    if (errbuf != NULL) {
         strlcpy(errbuf, locationLastErr, errbuflen);
+    }
 
     // If it was ever valid, return true
     if (locationValid) {
         locationLastErr[0] = '\0';
-        if (errbuf != NULL)
+        if (errbuf != NULL) {
             *errbuf = '\0';
+        }
         return true;
     }
 
     // If we haven't yet fetched the location, do so with a suppression
     // timer so that we don't hammer the module before it's had a chance to
     // connect to the gps to fetch location.
-    if (!timerExpiredSecs(&locationTimer, 5))
+    if (!timerExpiredSecs(&locationTimer, suppressionTimerSecs)) {
         return false;
+    }
 
     // Request location from the card
     J *rsp = NoteRequestResponse(NoteNewRequest("card.location"));
-    if (rsp == NULL)
+    if (rsp == NULL) {
         return false;
+    }
 
     // If valid, or the location mode is OFF, we're done
     if (!NoteResponseError(rsp) || strcmp(JGetString(rsp, "mode"), "off") == 0) {
         NoteDeleteResponse(rsp);
         locationValid = true;
         locationLastErr[0] = '\0';
-        if (errbuf != NULL)
+        if (errbuf != NULL) {
             *errbuf = '\0';
+        }
         return true;
     }
 
     // Remember the error for next iteration
     strlcpy(locationLastErr, JGetString(rsp, "err"), sizeof(locationLastErr));
-    if (errbuf != NULL)
+    if (errbuf != NULL) {
         strlcpy(errbuf, locationLastErr, errbuflen);
+    }
     NoteDeleteResponse(rsp);
     return false;
 
@@ -314,137 +510,148 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen) {
 
 //**************************************************************************/
 /*!
-    @brief  Set a service environment variable default string.
-    @param   variable The variable key.
-    @param   buf The variable value.
-    @returns boolean indicating if variable was set.
+  @brief  Set a service environment variable default string.
+  @param   variable The variable key.
+  @param   buf The variable value.
+  @returns boolean indicating if variable was set.
 */
 /**************************************************************************/
-bool NoteSetEnvDefault(const char *variable, char *buf) {
-	bool success = false;
+bool NoteSetEnvDefault(const char *variable, char *buf)
+{
+    bool success = false;
     J *req = NoteNewRequest("env.default");
     if (req != NULL) {
         JAddStringToObject(req, "name", variable);
-		JAddStringToObject(req, "text", buf);
+        JAddStringToObject(req, "text", buf);
         success = NoteRequest(req);
     }
-	return success;
+    return success;
 }
 
 //**************************************************************************/
 /*!
-    @brief  Set a service environment variable default integer.
-    @param   variable The variable key.
-    @param   defaultVal The variable value.
-    @returns boolean indicating if variable was set.
+  @brief  Set a service environment variable default integer.
+  @param   variable The variable key.
+  @param   defaultVal The variable value.
+  @returns boolean indicating if variable was set.
 */
 /**************************************************************************/
-bool NoteSetEnvDefaultInt(const char *variable, int defaultVal) {
+bool NoteSetEnvDefaultInt(const char *variable, long int defaultVal)
+{
     char buf[32];
-	snprintf(buf, sizeof(buf), "%d", defaultVal);
+    JItoA(defaultVal, buf);
     return NoteSetEnvDefault(variable, buf);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Set a service environment variable default number.
-    @param   variable The variable key.
-    @param   defaultVal The variable value.
-    @returns boolean indicating if variable was set.
+  @brief  Set a service environment variable default number.
+  @param   variable The variable key.
+  @param   defaultVal The variable value.
+  @returns boolean indicating if variable was set.
 */
 /**************************************************************************/
-bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal) {
+bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal)
+{
     char buf[32];
-	JNtoA(defaultVal, buf, -1);
+    JNtoA(defaultVal, buf, -1);
     return NoteSetEnvDefault(variable, buf);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get a service environment variable number.
-    @param   variable The variable key.
-    @param   defaultVal The default variable value.
-    @returns environment variable value.
+  @brief  Get a service environment variable number.
+  @param   variable The variable key.
+  @param   defaultVal The default variable value.
+  @returns environment variable value.
 */
 /**************************************************************************/
-JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal) {
+JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal)
+{
     char buf[32], buf2[32];;
-	snprintf(buf2, sizeof(buf2), "%f", defaultVal);
+    JNtoA(defaultVal, buf2, -1);
     NoteGetEnv(variable, buf2, buf, sizeof(buf));
     return JAtoN(buf, NULL);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get a service environment variable integer.
-    @param   variable The variable key.
-    @param   defaultVal The default variable value.
-    @returns environment variable value.
+  @brief  Get a service environment variable integer.
+  @param   variable The variable key.
+  @param   defaultVal The default variable value.
+  @returns environment variable value.
 */
 /**************************************************************************/
-int NoteGetEnvInt(const char *variable, int defaultVal) {
+long int NoteGetEnvInt(const char *variable, long int defaultVal)
+{
     char buf[32], buf2[32];;
-	snprintf(buf2, sizeof(buf2), "%d", defaultVal);
+    JItoA(defaultVal, buf2);
     NoteGetEnv(variable, buf2, buf, sizeof(buf));
     return atoi(buf);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get a service environment variable.
-    @param   variable The variable key.
-    @param   defaultVal The variable value.
-    @param   buf (out) The buffer in which to place the variable value.
-    @param   buflen The length of the output buffer.
-	@returns true if there is no error (JSON response with no explicit error)
+  @brief  Get a service environment variable.
+  @param   variable The variable key.
+  @param   defaultVal The variable value.
+  @param   buf (out) The buffer in which to place the variable value.
+  @param   buflen The length of the output buffer.
+  @returns true if there is no error (JSON response with no explicit error)
 */
 /**************************************************************************/
-bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen) {
-	bool success = false;
-    if (defaultVal == NULL)
+bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen)
+{
+    bool success = false;
+    if (defaultVal == NULL) {
         buf[0] = '\0';
-    else
+    } else {
         strlcpy(buf, defaultVal, buflen);
+    }
     J *req = NoteNewRequest("env.get");
     if (req != NULL) {
         JAddStringToObject(req, "name", variable);
         J *rsp = NoteRequestResponse(req);
         if (rsp != NULL) {
             if (!NoteResponseError(rsp)) {
-				success = true;
+                success = true;
                 char *val = JGetString(rsp, "text");
-                if (val[0] != '\0')
+                if (val[0] != '\0') {
                     strlcpy(buf, val, buflen);
+                }
             }
             NoteDeleteResponse(rsp);
         }
     }
-	return success;
+    return success;
 }
 
 //**************************************************************************/
 /*!
-    @brief  Determine if the Notecard is connected to the network.
-    @returns boolean. `true` if connected.
+  @brief  Determine if the Notecard is connected to the network.
+  @returns boolean. `true` if connected.
 */
 /**************************************************************************/
-bool NoteIsConnected() {
+bool NoteIsConnected()
+{
     connectivityTimer = 0;
     return NoteIsConnectedST();
 }
 
 //**************************************************************************/
 /*!
-    @brief  Determine if the Notecard is connected to the network.
-    @returns boolean. `true` if connected.
+  @brief  Determine if the Notecard is connected to the network.
+  @returns boolean. `true` if connected.
 */
 /**************************************************************************/
-bool NoteIsConnectedST() {
-    if (timerExpiredSecs(&connectivityTimer, 10)) {
+bool NoteIsConnectedST()
+{
+    if (timerExpiredSecs(&connectivityTimer, suppressionTimerSecs)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
         if (rsp != NULL) {
-            if (!NoteResponseError(rsp))
+            if (!NoteResponseError(rsp)) {
                 cardConnected = JGetBool(rsp, "connected");
+            }
             NoteDeleteResponse(rsp);
         }
     }
@@ -453,13 +660,14 @@ bool NoteIsConnectedST() {
 
 //**************************************************************************/
 /*!
-    @brief  Get Full Network Status via `hub.status`.
-    @param  statusBuf (out) a buffer to populate with the status response.
-    @param  statusBufLen The length of the status buffer
-    @returns boolean. `true` if the status was retrieved.
+  @brief  Get Full Network Status via `hub.status`.
+  @param  statusBuf (out) a buffer to populate with the status response.
+  @param  statusBufLen The length of the status buffer
+  @returns boolean. `true` if the status was retrieved.
 */
 /**************************************************************************/
-bool NoteGetNetStatus(char *statusBuf, int statusBufLen) {
+bool NoteGetNetStatus(char *statusBuf, int statusBufLen)
+{
     bool success = false;
     statusBuf[0] = '\0';
     J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
@@ -475,13 +683,14 @@ bool NoteGetNetStatus(char *statusBuf, int statusBufLen) {
 
 //**************************************************************************/
 /*!
-    @brief  Make a `card.version` request
-    @param  versionBuf (out) a buffer to populate with the version response.
-    @param  versionBufLen The length of the version buffer
-    @returns boolean. `true` if the version information was retrieved.
+  @brief  Make a `card.version` request
+  @param  versionBuf (out) a buffer to populate with the version response.
+  @param  versionBufLen The length of the version buffer
+  @returns boolean. `true` if the version information was retrieved.
 */
 /**************************************************************************/
-bool NoteGetVersion(char *versionBuf, int versionBufLen) {
+bool NoteGetVersion(char *versionBuf, int versionBufLen)
+{
     bool success = false;
     versionBuf[0] = '\0';
     J *rsp = NoteRequestResponse(NoteNewRequest("card.version"));
@@ -497,39 +706,48 @@ bool NoteGetVersion(char *versionBuf, int versionBufLen) {
 
 //**************************************************************************/
 /*!
-    @brief  Make a `card.location` request
-    @param  retLat (out) The retrieved latitude value.
-    @param  retLon (out) The retrieved longitude value.
-    @param  time (out) The retrieved time.
-    @param  statusBuf (out) a buffer to populate with the location response.
-    @param  statusBufLen The length of the location buffer
-    @returns boolean. `true` if the location information was retrieved.
+  @brief  Make a `card.location` request
+  @param  retLat (out) The retrieved latitude value.
+  @param  retLon (out) The retrieved longitude value.
+  @param  time (out) The retrieved time.
+  @param  statusBuf (out) a buffer to populate with the location response.
+  @param  statusBufLen The length of the location buffer
+  @returns boolean. `true` if the location information was retrieved.
 */
 /**************************************************************************/
-bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *statusBuf, int statusBufLen) {
+bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *statusBuf, int statusBufLen)
+{
     bool locValid = false;
-    if (statusBuf != NULL)
+    if (statusBuf != NULL) {
         *statusBuf = '\0';
-    if (retLat != NULL)
+    }
+    if (retLat != NULL) {
         *retLat = 0.0;
-    if (retLon != NULL)
+    }
+    if (retLon != NULL) {
         *retLon = 0.0;
-    if (time != NULL)
+    }
+    if (time != NULL) {
         *time = 0;
+    }
     J *rsp = NoteRequestResponse(NoteNewRequest("card.location"));
     if (rsp != NULL) {
-        if (statusBuf != NULL)
+        if (statusBuf != NULL) {
             strlcpy(statusBuf, JGetString(rsp, "err"), statusBufLen);
+        }
         if (JIsPresent(rsp, "lat") && JIsPresent(rsp, "lon")) {
-            if (retLat != NULL)
+            if (retLat != NULL) {
                 *retLat = JGetNumber(rsp, "lat");
-            if (retLon != NULL)
+            }
+            if (retLon != NULL) {
                 *retLon = JGetNumber(rsp, "lon");
+            }
             locValid = true;
         }
         JTIME seconds = JGetInt(rsp, "time");
-        if (seconds != 0 && time != NULL)
+        if (seconds != 0 && time != NULL) {
             *time = seconds;
+        }
         NoteDeleteResponse(rsp);
     }
     return locValid;
@@ -537,13 +755,14 @@ bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *status
 
 //**************************************************************************/
 /*!
-    @brief  Set the card location to a static value.
-    @param  lat The latitude value to set on the Notecard.
-    @param  lon The longitude value to set on the Notecard.
-    @returns boolean. `true` if the location information was set.
+  @brief  Set the card location to a static value.
+  @param  lat The latitude value to set on the Notecard.
+  @param  lon The longitude value to set on the Notecard.
+  @returns boolean. `true` if the location information was set.
 */
 /**************************************************************************/
-bool NoteSetLocation(JNUMBER lat, JNUMBER lon) {
+bool NoteSetLocation(JNUMBER lat, JNUMBER lon)
+{
     bool success = false;
     J *req = NoteNewRequest("card.location.mode");
     if (req != NULL) {
@@ -557,11 +776,12 @@ bool NoteSetLocation(JNUMBER lat, JNUMBER lon) {
 
 //**************************************************************************/
 /*!
-    @brief  Clear last known Location.
-    @returns boolean. `true` if the location information was cleared.
+  @brief  Clear last known Location.
+  @returns boolean. `true` if the location information was cleared.
 */
 /**************************************************************************/
-bool NoteClearLocation() {
+bool NoteClearLocation()
+{
     bool success = false;
     J *req = NoteNewRequest("card.location.mode");
     if (req != NULL) {
@@ -573,20 +793,22 @@ bool NoteClearLocation() {
 
 //**************************************************************************/
 /*!
-    @brief  Get the current location Mode.
-    @param  modeBuf (out) a buffer to populate with the location mode response.
-    @param  modeBufLen The length of the mode buffer
-    @returns boolean. `true` if the mode information was retrieved.
+  @brief  Get the current location Mode.
+  @param  modeBuf (out) a buffer to populate with the location mode response.
+  @param  modeBufLen The length of the mode buffer
+  @returns boolean. `true` if the mode information was retrieved.
 */
 /**************************************************************************/
-bool NoteGetLocationMode(char *modeBuf, int modeBufLen) {
+bool NoteGetLocationMode(char *modeBuf, int modeBufLen)
+{
     bool success = false;
     modeBuf[0] = '\0';
     J *rsp = NoteRequestResponse(NoteNewRequest("card.location.mode"));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
-        if (success)
+        if (success) {
             strlcpy(modeBuf, JGetString(rsp, "mode"), modeBufLen);
+        }
         NoteDeleteResponse(rsp);
     }
     return success;
@@ -594,18 +816,20 @@ bool NoteGetLocationMode(char *modeBuf, int modeBufLen) {
 
 //**************************************************************************/
 /*!
-    @brief  Make a `card.location.mode` request.
-    @param  mode the Notecard location mode to set.
-    @param  seconds The value of the `seconds` field for the request.
-    @returns boolean. `true` if the mode was set.
+  @brief  Make a `card.location.mode` request.
+  @param  mode the Notecard location mode to set.
+  @param  seconds The value of the `seconds` field for the request.
+  @returns boolean. `true` if the mode was set.
 */
 /**************************************************************************/
-bool NoteSetLocationMode(const char *mode, uint32_t seconds) {
+bool NoteSetLocationMode(const char *mode, uint32_t seconds)
+{
     bool success = false;
     J *req = NoteNewRequest("card.location.mode");
     if (req != NULL) {
-        if (mode[0] == '\0')
+        if (mode[0] == '\0') {
             mode = "-";
+        }
         JAddStringToObject(req, "mode", mode);
         JAddNumberToObject(req, "seconds", seconds);
         success = NoteRequest(req);
@@ -615,47 +839,49 @@ bool NoteSetLocationMode(const char *mode, uint32_t seconds) {
 
 //**************************************************************************/
 /*!
-    @brief  Get the current service configuration information, unsuppressed.
-    @param  productBuf (out) a buffer to populate with the ProductUID from the
-                       response.
-    @param  productBufLen The length of the ProductUID buffer.
-    @param  serviceBuf (out) a buffer to populate with the host url from the
-                       response.
-    @param  serviceBufLen The length of the host buffer.
-    @param  deviceBuf (out) a buffer to populate with the DeviceUID from the
-                      response.
-    @param  deviceBufLen The length of the DeviceUID buffer.
-    @param  snBuf (out) a buffer to populate with the Product Serial Number
-                      from the response.
-    @param  snBufLen The length of the Serial Number buffer.
-    @returns boolean. `true` if the service configuration was obtained.
+  @brief  Get the current service configuration information, unsuppressed.
+  @param  productBuf (out) a buffer to populate with the ProductUID from the
+  response.
+  @param  productBufLen The length of the ProductUID buffer.
+  @param  serviceBuf (out) a buffer to populate with the host url from the
+  response.
+  @param  serviceBufLen The length of the host buffer.
+  @param  deviceBuf (out) a buffer to populate with the DeviceUID from the
+  response.
+  @param  deviceBufLen The length of the DeviceUID buffer.
+  @param  snBuf (out) a buffer to populate with the Product Serial Number
+  from the response.
+  @param  snBufLen The length of the Serial Number buffer.
+  @returns boolean. `true` if the service configuration was obtained.
 */
 /**************************************************************************/
-bool NoteGetServiceConfig(char *productBuf, int productBufLen, char *serviceBuf, int serviceBufLen, char *deviceBuf, int deviceBufLen, char *snBuf, int snBufLen) {
+bool NoteGetServiceConfig(char *productBuf, int productBufLen, char *serviceBuf, int serviceBufLen, char *deviceBuf, int deviceBufLen, char *snBuf, int snBufLen)
+{
     serviceConfigTimer = 0;
     return NoteGetServiceConfigST(productBuf, productBufLen, serviceBuf, serviceBufLen, deviceBuf, deviceBufLen, snBuf, snBufLen);
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get the current service configuration information, with
-            a supression timer.
-    @param  productBuf (out) a buffer to populate with the ProductUID from the
-                       response.
-    @param  productBufLen The length of the ProductUID buffer.
-    @param  serviceBuf (out) a buffer to populate with the host url from the
-                       response.
-    @param  serviceBufLen The length of the host buffer.
-    @param  deviceBuf (out) a buffer to populate with the DeviceUID from the
-                      response.
-    @param  deviceBufLen The length of the DeviceUID buffer.
-    @param  snBuf (out) a buffer to populate with the Product Serial Number
-                      from the response.
-    @param  snBufLen The length of the Serial Number buffer.
-    @returns boolean. `true` if the service configuration was obtained.
+  @brief  Get the current service configuration information, with
+  a supression timer.
+  @param  productBuf (out) a buffer to populate with the ProductUID from the
+  response.
+  @param  productBufLen The length of the ProductUID buffer.
+  @param  serviceBuf (out) a buffer to populate with the host url from the
+  response.
+  @param  serviceBufLen The length of the host buffer.
+  @param  deviceBuf (out) a buffer to populate with the DeviceUID from the
+  response.
+  @param  deviceBufLen The length of the DeviceUID buffer.
+  @param  snBuf (out) a buffer to populate with the Product Serial Number
+  from the response.
+  @param  snBufLen The length of the Serial Number buffer.
+  @returns boolean. `true` if the service configuration was obtained.
 */
 /**************************************************************************/
-bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBuf, int serviceBufLen, char *deviceBuf, int deviceBufLen, char *snBuf, int snBufLen) {
+bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBuf, int serviceBufLen, char *deviceBuf, int deviceBufLen, char *snBuf, int snBufLen)
+{
     bool success = false;
 
     // Use cache except for a rare refresh
@@ -676,51 +902,64 @@ bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBu
     }
 
     // Done
-    if (productBuf != NULL)
+    if (productBuf != NULL) {
         strlcpy(productBuf, scProduct, productBufLen);
-    if (serviceBuf != NULL)
+    }
+    if (serviceBuf != NULL) {
         strlcpy(serviceBuf, scService, serviceBufLen);
-    if (deviceBuf != NULL)
+    }
+    if (deviceBuf != NULL) {
         strlcpy(deviceBuf, scDevice, deviceBufLen);
-    if (snBuf != NULL)
+    }
+    if (snBuf != NULL) {
         strlcpy(snBuf, scSN, snBufLen);
+    }
     return success;
 }
 
 //**************************************************************************/
 /*!
-    @brief  Get Status of the Notecard, unsuppressed.
-    @param  statusBuf (out) a buffer to populate with the Notecard status
-                      from the response.
-    @param  statusBufLen The length of the status buffer.
-    @param  bootTime (out) The Notecard boot time.
-    @param  retUSB (out) Whether the Notecard is powered over USB.
-    @param  retSignals (out) Whether the Notecard has a network signal.
-    @returns boolean. `true` if the card status was obtained.
+  @brief  Get Status of the Notecard, unsuppressed.
+  @param  statusBuf (out) a buffer to populate with the Notecard status
+  from the response.
+  @param  statusBufLen The length of the status buffer.
+  @param  bootTime (out) The Notecard boot time.
+  @param  retUSB (out) Whether the Notecard is powered over USB.
+  @param  retSignals (out) Whether the Notecard has a network signal.
+  @returns boolean. `true` if the card status was obtained.
 */
 /**************************************************************************/
-bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals) {
+bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals)
+{
     bool success = false;
-    if (statusBuf != NULL)
+    if (statusBuf != NULL) {
         statusBuf[0] = '\0';
-    if (bootTime != NULL)
+    }
+    if (bootTime != NULL) {
         *bootTime = 0;
-    if (retUSB != NULL)
+    }
+    if (retUSB != NULL) {
         *retUSB = false;
-    if (retSignals != NULL)
+    }
+    if (retSignals != NULL) {
         *retSignals = false;
+    }
     J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
-            if (statusBuf != NULL)
+            if (statusBuf != NULL) {
                 strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
-            if (bootTime != NULL)
+            }
+            if (bootTime != NULL) {
                 *bootTime = JGetInt(rsp, "time");
-            if (retUSB != NULL)
+            }
+            if (retUSB != NULL) {
                 *retUSB = JGetBool(rsp, "usb");
-            if (retSignals != NULL && JGetBool(rsp, "connected"))
+            }
+            if (retSignals != NULL && JGetBool(rsp, "connected")) {
                 *retSignals = (JGetInt(rsp, "signals") > 0);
+            }
         }
         NoteDeleteResponse(rsp);
     }
@@ -729,17 +968,18 @@ bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *ret
 
 //**************************************************************************/
 /*!
-    @brief  Get Status of the Notecard, with a supression timer.
-    @param  statusBuf (out) a buffer to populate with the Notecard status
-                      from the response.
-    @param  statusBufLen The length of the status buffer.
-    @param  bootTime (out) The Notecard boot time.
-    @param  retUSB (out) Whether the Notecard is powered over USB.
-    @param  retSignals (out) Whether the Notecard has a network signal.
-    @returns boolean. `true` if the card status was obtained.
+  @brief  Get Status of the Notecard, with a supression timer.
+  @param  statusBuf (out) a buffer to populate with the Notecard status
+  from the response.
+  @param  statusBufLen The length of the status buffer.
+  @param  bootTime (out) The Notecard boot time.
+  @param  retUSB (out) Whether the Notecard is powered over USB.
+  @param  retSignals (out) Whether the Notecard has a network signal.
+  @returns boolean. `true` if the card status was obtained.
 */
 /**************************************************************************/
-bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals) {
+bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals)
+{
     bool success = false;
     static char lastStatus[128] = {0};
     static JTIME lastBootTime = 0;
@@ -748,7 +988,7 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
     static uint32_t statusTimer = 0;
 
     // Refresh if it's time to do so
-    if (timerExpiredSecs(&statusTimer, 10)) {
+    if (timerExpiredSecs(&statusTimer, suppressionTimerSecs)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
         if (rsp != NULL) {
             success = !NoteResponseError(rsp);
@@ -756,10 +996,11 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
                 strlcpy(lastStatus, JGetString(rsp, "status"), sizeof(lastStatus));
                 lastBootTime = JGetInt(rsp, "time");
                 lastUSB = JGetBool(rsp, "usb");
-                if (JGetBool(rsp, "connected"))
+                if (JGetBool(rsp, "connected")) {
                     lastSignals = (JGetInt(rsp, "signals") > 0);
-                else
+                } else {
                     lastSignals = false;
+                }
             }
             NoteDeleteResponse(rsp);
         }
@@ -768,29 +1009,34 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
     }
 
     // Done
-    if (statusBuf != NULL)
+    if (statusBuf != NULL) {
         strlcpy(statusBuf, lastStatus, statusBufLen);
-    if (bootTime != NULL)
+    }
+    if (bootTime != NULL) {
         *bootTime = lastBootTime;
-    if (retUSB != NULL)
+    }
+    if (retUSB != NULL) {
         *retUSB = lastUSB;
-    if (retSignals != NULL)
+    }
+    if (retSignals != NULL) {
         *retSignals = lastSignals;
+    }
 
     return success;
 }
 
 //**************************************************************************/
 /*!
-    @brief  Save the current state and use `card.attn` to set a host
-            sleep interval.
-    @param  stateb64 A base64 payload to keep in memory while the host sleeps.
-    @param  seconds The duration to sleep.
-    @param  modes A list of `card.attn` modes.
-    @returns boolean. `true` if request was successful.
+  @brief  Save the current state and use `card.attn` to set a host
+  sleep interval.
+  @param  stateb64 A base64 payload to keep in memory while the host sleeps.
+  @param  seconds The duration to sleep.
+  @param  modes A list of `card.attn` modes.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
+bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
+{
     bool success = false;
 
     // Use a Command rather than a Request so that the Notecard doesn't try to send
@@ -800,14 +1046,15 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
         J *stringReferenceItem = JCreateStringReference(stateb64);
-        if (stringReferenceItem != NULL)
+        if (stringReferenceItem != NULL) {
             JAddItemToObject(req, "payload", stringReferenceItem);
-		char modestr[64];
-		strlcpy(modestr, "sleep", sizeof(modestr));
-		if (modes != NULL) {
-			strlcat(modestr, ",", sizeof(modestr));
-			strlcat(modestr, modes, sizeof(modestr));
-		}
+        }
+        char modestr[64];
+        strlcpy(modestr, "sleep", sizeof(modestr));
+        if (modes != NULL) {
+            strlcat(modestr, ",", sizeof(modestr));
+            strlcat(modestr, modes, sizeof(modestr));
+        }
         JAddStringToObject(req, "mode", modestr);
         JAddNumberToObject(req, "seconds", seconds);
         success = NoteRequest(req);
@@ -819,25 +1066,28 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes) {
 
 //**************************************************************************/
 /*!
-    @brief  Wake the module by restoring state into a state buffer of a
-            specified length, and fail if it isn't available or isn't that
-            length.
-    @param  stateLen A length of the state payload buffer to return to the host.
-    @param  state (out) The in-memory payload to return to the host.
-    @returns boolean. `true` if request was successful.
+  @brief  Wake the module by restoring state into a state buffer of a
+  specified length, and fail if it isn't available or isn't that
+  length.
+  @param  stateLen A length of the state payload buffer to return to the host.
+  @param  state (out) The in-memory payload to return to the host.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteWake(int stateLen, void *state) {
+bool NoteWake(int stateLen, void *state)
+{
 
     J *req = NoteNewRequest("card.attn");
-    if (req == NULL)
+    if (req == NULL) {
         return false;
+    }
 
     // Send it a command to request the saved state
     JAddBoolToObject(req, "start", true);
     J *rsp = NoteRequestResponse(req);
-    if (rsp == NULL)
+    if (rsp == NULL) {
         return false;
+    }
     if (NoteResponseError(rsp)) {
         NoteDeleteResponse(rsp);
         return false;
@@ -845,8 +1095,9 @@ bool NoteWake(int stateLen, void *state) {
 
     // Note the current time, if the field is present
     JTIME seconds = JGetInt(rsp, "time");
-    if (seconds != 0)
+    if (seconds != 0) {
         setTime(seconds);
+    }
 
     // Exit if no payload
     char *payload = JGetString(rsp, "payload");
@@ -887,13 +1138,14 @@ bool NoteWake(int stateLen, void *state) {
 
 //**************************************************************************/
 /*!
-    @brief  Restore the module to factory settings.
-    @param  deleteConfigSettings Whether to delete current configuration
-            settings on the Notecard during the reset.
-    @returns boolean. `true` if reset was successful.
+  @brief  Restore the module to factory settings.
+  @param  deleteConfigSettings Whether to delete current configuration
+  settings on the Notecard during the reset.
+  @returns boolean. `true` if reset was successful.
 */
 /**************************************************************************/
-bool NoteFactoryReset(bool deleteConfigSettings) {
+bool NoteFactoryReset(bool deleteConfigSettings)
+{
     bool success = false;
 
     // Perform the restore-to-factor-settings transaction
@@ -904,16 +1156,18 @@ bool NoteFactoryReset(bool deleteConfigSettings) {
     }
 
     // Exit if it didn't work
-    if (!success)
+    if (!success) {
         return false;
+    }
 
     // Wait for serial to stabilize after it reboots
     _DelayMs(5000);
     _Debug("CARD RESTORED\n");
 
     // Reset the Notecard
-    while (!NoteReset())
+    while (!NoteReset()) {
         _DelayMs(5000);
+    }
 
     // Success
     return true;
@@ -922,19 +1176,21 @@ bool NoteFactoryReset(bool deleteConfigSettings) {
 
 //**************************************************************************/
 /*!
-    @brief  Set the Notecard Product UID.
-    @param  productID The ProductUID to set on the Notecard.
-    @returns boolean. `true` if request was successful.
+  @brief  Set the Notecard Product UID.
+  @param  productID The ProductUID to set on the Notecard.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSetProductID(const char *productID) {
+bool NoteSetProductID(const char *productID)
+{
     bool success = false;
     J *req = NoteNewRequest("hub.set");
     if (req != NULL) {
-        if (productID[0] == '\0')
+        if (productID[0] == '\0') {
             JAddStringToObject(req, "product", "-");
-        else
+        } else {
             JAddStringToObject(req, "product", productID);
+        }
         success = NoteRequest(req);
     }
     // Flush cache so that service config is re-fetched
@@ -944,19 +1200,21 @@ bool NoteSetProductID(const char *productID) {
 
 //**************************************************************************/
 /*!
-    @brief  Set the Notecard Serial Number.
-    @param  sn The Serial Number to set on the Notecard.
-    @returns boolean. `true` if request was successful.
+  @brief  Set the Notecard Serial Number.
+  @param  sn The Serial Number to set on the Notecard.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSetSerialNumber(const char *sn) {
+bool NoteSetSerialNumber(const char *sn)
+{
     bool success = false;
     J *req = NoteNewRequest("hub.set");
     if (req != NULL) {
-        if (sn[0] == '\0')
+        if (sn[0] == '\0') {
             JAddStringToObject(req, "sn", "-");
-        else
+        } else {
             JAddStringToObject(req, "sn", sn);
+        }
         success = NoteRequest(req);
     }
     // Flush cache so that service config is re-fetched
@@ -966,18 +1224,19 @@ bool NoteSetSerialNumber(const char *sn) {
 
 //**************************************************************************/
 /*!
-    @brief  Set the Notecard upload mode and interval.
-    @param   uploadMode The upload mode (for instance, `continuous`,
-             or `periodic`).
-    @param   uploadMinutes The max number of minutes to wait between Notehub
-             uploads.
-    @param   align Flag to specify that uploads should be grouped within the
-             specified period, rather than counting the number of minutes
-             from first modified.
-    @returns boolean. `true` if request was successful.
+  @brief  Set the Notecard upload mode and interval.
+  @param   uploadMode The upload mode (for instance, `continuous`,
+  or `periodic`).
+  @param   uploadMinutes The max number of minutes to wait between Notehub
+  uploads.
+  @param   align Flag to specify that uploads should be grouped within the
+  specified period, rather than counting the number of minutes
+  from first modified.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align) {
+bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align)
+{
     bool success = false;
     J *req = NoteNewRequest("hub.set");
     if (req != NULL) {
@@ -996,22 +1255,23 @@ bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align) {
 
 //**************************************************************************/
 /*!
-    @brief  Set the Notecard upload mode, download mode and interval.
-    @param   uploadMode The upload mode (for instance, `continuous`,
-             or `periodic`).
-    @param   uploadMinutes The max number of minutes to wait between Notehub
-             uploads.
-    @param   downloadMinutes The max number of minutes to wait between Notehub
-             downloads.
-    @param   align Flag to specify that uploads should be grouped within the
-             specified period, rather than counting the number of minutes
-             from first modified.
-    @param   sync Setting this flag when mode is `continuous` causes an
-             immediate sync when a file is modified on the service side.
-    @returns boolean. `true` if request was successful.
+  @brief  Set the Notecard upload mode, download mode and interval.
+  @param   uploadMode The upload mode (for instance, `continuous`,
+  or `periodic`).
+  @param   uploadMinutes The max number of minutes to wait between Notehub
+  uploads.
+  @param   downloadMinutes The max number of minutes to wait between Notehub
+  downloads.
+  @param   align Flag to specify that uploads should be grouped within the
+  specified period, rather than counting the number of minutes
+  from first modified.
+  @param   sync Setting this flag when mode is `continuous` causes an
+  immediate sync when a file is modified on the service side.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinutes, bool align, bool sync) {
+bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinutes, bool align, bool sync)
+{
     bool success = false;
     J *req = NoteNewRequest("hub.set");
     if (req != NULL) {
@@ -1022,8 +1282,9 @@ bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinu
             // rather than counting the number of minutes from "first modified".
             JAddBoolToObject(req, "align", align);
         }
-        if (downloadMinutes != 0)
+        if (downloadMinutes != 0) {
             JAddNumberToObject(req, "inbound", downloadMinutes);
+        }
         // Setting this flag when mode is "continuous" causes an immediate sync
         // when a file is modified on the service side via HTTP
         JAddBoolToObject(req, "sync", sync);
@@ -1035,13 +1296,14 @@ bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinu
 
 //**************************************************************************/
 /*!
-    @brief  Set a template for a Notefile.
-    @param   target The Notefile on which to set a template.
-    @param   body The template body.
-    @returns boolean. `true` if request was successful.
+  @brief  Set a template for a Notefile.
+  @param   target The Notefile on which to set a template.
+  @param   body The template body.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteTemplate(const char *target, J *body) {
+bool NoteTemplate(const char *target, J *body)
+{
     J *req = NoteNewRequest("note.template");
     if (req == NULL) {
         JDelete(body);
@@ -1054,15 +1316,16 @@ bool NoteTemplate(const char *target, J *body) {
 
 //**************************************************************************/
 /*!
-    @brief  Add a Note to a Notefile with `note.add`.
-    @param   target The Notefile on which to set a template.
-    @param   body The template body.
-    @param   urgent Whether to perform an immediate sync after the Note
-             is added.
-    @returns boolean. `true` if request was successful.
+  @brief  Add a Note to a Notefile with `note.add`.
+  @param   target The Notefile on which to set a template.
+  @param   body The template body.
+  @param   urgent Whether to perform an immediate sync after the Note
+  is added.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteAdd(const char *target, J *body, bool urgent) {
+bool NoteAdd(const char *target, J *body, bool urgent)
+{
 
     // Initiate the request
     J *req = NoteNewRequest("note.add");
@@ -1077,8 +1340,9 @@ bool NoteAdd(const char *target, J *body, bool urgent) {
     JAddItemToObject(req, "body", body);
 
     // Initiate sync NOW if it's urgent
-    if (urgent)
+    if (urgent) {
         JAddBoolToObject(req, "start", true);
+    }
 
     // Perform the transaction
     return NoteRequest(req);
@@ -1087,16 +1351,17 @@ bool NoteAdd(const char *target, J *body, bool urgent) {
 
 //**************************************************************************/
 /*!
-    @brief  Send a body to a route using an HTTP request.
-            Body is freed, regardless of success.
-    @param   method HTTP method to use, `get`, `post` or `put`.
-    @param   routeAlias The Notehub Route alias.
-    @param   notefile The Notefile name.
-    @param   body The request JSON body.
-    @returns boolean. `true` if request was successful.
+  @brief  Send a body to a route using an HTTP request.
+  Body is freed, regardless of success.
+  @param   method HTTP method to use, `get`, `post` or `put`.
+  @param   routeAlias The Notehub Route alias.
+  @param   notefile The Notefile name.
+  @param   body The request JSON body.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile, J *body) {
+bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile, J *body)
+{
 
     // Create the new event
     J *req = NoteNewRequest("note.event");
@@ -1142,20 +1407,21 @@ bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile,
 
 //**************************************************************************/
 /*!
-    @brief  Get the voltage of the Notecard.
-    @param   voltage (out) The Notecard voltage.
-    @returns boolean. `true` if request was successful.
+  @brief  Get the voltage of the Notecard.
+  @param   voltage (out) The Notecard voltage.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteGetVoltage(JNUMBER *voltage) {
+bool NoteGetVoltage(JNUMBER *voltage)
+{
     bool success = false;
     *voltage = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
     if (rsp != NULL) {
         if (!NoteResponseError(rsp)) {
             *voltage = JGetNumber(rsp, "value");
-			success = true;
-		}
+            success = true;
+        }
         NoteDeleteResponse(rsp);
     }
     return success;
@@ -1163,20 +1429,21 @@ bool NoteGetVoltage(JNUMBER *voltage) {
 
 //**************************************************************************/
 /*!
-    @brief  Get the temperature of the Notecard.
-    @param   temp (out) The Notecard temperature.
-    @returns boolean. `true` if request was successful.
+  @brief  Get the temperature of the Notecard.
+  @param   temp (out) The Notecard temperature.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteGetTemperature(JNUMBER *temp) {
+bool NoteGetTemperature(JNUMBER *temp)
+{
     bool success = false;
     *temp = 0.0;
     J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
     if (rsp != NULL) {
         if (!NoteResponseError(rsp)) {
             *temp = JGetNumber(rsp, "value");
-			success = true;
-		}
+            success = true;
+        }
         NoteDeleteResponse(rsp);
     }
     return success;
@@ -1184,42 +1451,51 @@ bool NoteGetTemperature(JNUMBER *temp) {
 
 //**************************************************************************/
 /*!
-    @brief  Get the Notecard contact info.
-    @param   nameBuf (out) The contact name buffer.
-    @param   nameBufLen The length of the contact name buffer.
-    @param   orgBuf (out) The contact organization buffer.
-    @param   orgBufLen The length of the contact organization buffer.
-    @param   roleBuf (out) The contact role buffer.
-    @param   roleBufLen The length of the contact role buffer.
-    @param   emailBuf (out) The contact email buffer.
-    @param   emailBufLen The length of the contact email buffer.
-    @returns boolean. `true` if request was successful.
+  @brief  Get the Notecard contact info.
+  @param   nameBuf (out) The contact name buffer.
+  @param   nameBufLen The length of the contact name buffer.
+  @param   orgBuf (out) The contact organization buffer.
+  @param   orgBufLen The length of the contact organization buffer.
+  @param   roleBuf (out) The contact role buffer.
+  @param   roleBufLen The length of the contact role buffer.
+  @param   emailBuf (out) The contact email buffer.
+  @param   emailBufLen The length of the contact email buffer.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, char *roleBuf, int roleBufLen, char *emailBuf, int emailBufLen) {
+bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, char *roleBuf, int roleBufLen, char *emailBuf, int emailBufLen)
+{
     bool success = false;
 
-    if (nameBuf != NULL)
+    if (nameBuf != NULL) {
         *nameBuf = '\0';
-    if (orgBuf != NULL)
+    }
+    if (orgBuf != NULL) {
         *orgBuf = '\0';
-    if (roleBuf != NULL)
+    }
+    if (roleBuf != NULL) {
         *roleBuf = '\0';
-    if (emailBuf != NULL)
+    }
+    if (emailBuf != NULL) {
         *emailBuf = '\0';
+    }
 
     J *rsp = NoteRequestResponse(NoteNewRequest("card.contact"));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
-            if (nameBuf != NULL)
+            if (nameBuf != NULL) {
                 strlcpy(nameBuf, JGetString(rsp, "name"), nameBufLen);
-            if (orgBuf != NULL)
+            }
+            if (orgBuf != NULL) {
                 strlcpy(orgBuf, JGetString(rsp, "org"), orgBufLen);
-            if (roleBuf != NULL)
+            }
+            if (roleBuf != NULL) {
                 strlcpy(roleBuf, JGetString(rsp, "role"), roleBufLen);
-            if (emailBuf != NULL)
+            }
+            if (emailBuf != NULL) {
                 strlcpy(emailBuf, JGetString(rsp, "email"), emailBufLen);
+            }
         }
         NoteDeleteResponse(rsp);
     }
@@ -1229,40 +1505,48 @@ bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, 
 
 //**************************************************************************/
 /*!
-    @brief  Set the Notecard contact info.
-    @param   nameBuf (out) The contact name buffer.
-    @param   orgBuf (out) The contact organization buffer.
-    @param   roleBuf (out) The contact role buffer.
-    @param   emailBuf (out) The contact email buffer.
-    @returns boolean. `true` if request was successful.
+  @brief  Set the Notecard contact info.
+  @param   nameBuf (out) The contact name buffer.
+  @param   orgBuf (out) The contact organization buffer.
+  @param   roleBuf (out) The contact role buffer.
+  @param   emailBuf (out) The contact email buffer.
+  @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
-bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf) {
+bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf)
+{
     J *req = NoteNewRequest("card.contact");
-    if (req == NULL)
+    if (req == NULL) {
         return false;
-    if (nameBuf != NULL)
+    }
+    if (nameBuf != NULL) {
         JAddStringToObject(req, "name", nameBuf);
-    if (orgBuf != NULL)
+    }
+    if (orgBuf != NULL) {
         JAddStringToObject(req, "org", orgBuf);
-    if (roleBuf != NULL)
+    }
+    if (roleBuf != NULL) {
         JAddStringToObject(req, "role", roleBuf);
-    if (emailBuf != NULL)
+    }
+    if (emailBuf != NULL) {
         JAddStringToObject(req, "email", emailBuf);
+    }
     return NoteRequest(req);
 }
 
 // A simple suppression timer based on a millisecond system clock.  This clock is reset to 0
 // after boot and every wake.  This returns true if the specified interval has elapsed, in seconds,
 // and it updates the timer if it expires so that we will go another period.
-static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs) {
+static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs)
+{
     bool expired = false;
 
     // If the timer went backward, we've expired regardless of the interval
     uint32_t prev = *timer;
     uint32_t now = _GetMs();
-    if (now < prev)
+    if (now < prev) {
         prev = 0;
+    }
 
     // If never initialized, it's expired
     if (prev == 0 || now >= prev+(periodSecs*1000)) {
@@ -1276,61 +1560,64 @@ static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs) {
 
 //**************************************************************************/
 /*!
-    @brief  Periodically show Notecard sync status, returning `true` if
-            something was displayed
-    @param   pollFrequencyMs The time to wait, in milliseconds, between
-             polling for sync status.
-    @param   maxLevel The Synclog level to monitor.
-    @returns boolean. `true` if a sync status message was displayed.
+  @brief  Periodically show Notecard sync status, returning `true` if
+  something was displayed
+  @param   pollFrequencyMs The time to wait, in milliseconds, between
+  polling for sync status.
+  @param   maxLevel The Synclog level to monitor.
+  @returns boolean. `true` if a sync status message was displayed.
 */
 /**************************************************************************/
-bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel) {
+bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
+{
 
-	// Suppress polls so as to not overwhelm the notecard
-	static uint32_t lastCommStatusPollMs = 0;
-	if (lastCommStatusPollMs != 0 && _GetMs() < (lastCommStatusPollMs + pollFrequencyMs))
-		return false;
+    // Suppress polls so as to not overwhelm the notecard
+    static uint32_t lastCommStatusPollMs = 0;
+    if (lastCommStatusPollMs != 0 && _GetMs() < (lastCommStatusPollMs + pollFrequencyMs)) {
+        return false;
+    }
 
-	// Get the next queued status note
-	J *req = NoteNewRequest("note.get");
-	if (req == NULL)
-		return false;
-	JAddStringToObject(req, "file", "_synclog.qi");
-	JAddBoolToObject(req, "delete", true);
-	NoteSuspendTransactionDebug();
-	J *rsp = NoteRequestResponse(req);
-	NoteResumeTransactionDebug();
-	if (rsp != NULL) {
+    // Get the next queued status note
+    J *req = NoteNewRequest("note.get");
+    if (req == NULL) {
+        return false;
+    }
+    JAddStringToObject(req, "file", "_synclog.qi");
+    JAddBoolToObject(req, "delete", true);
+    NoteSuspendTransactionDebug();
+    J *rsp = NoteRequestResponse(req);
+    NoteResumeTransactionDebug();
+    if (rsp != NULL) {
 
-		// If an error is returned, this means that no response is pending.	 Note
-		// that it's expected that this might return either a "note does not exist"
-		// error if there are no pending inbound notes, or a "file does not exist" error
-		// if the inbound queue hasn't yet been created on the service.
-		if (NoteResponseError(rsp)) {
-			// Only stop polling quickly if we don't receive anything
-			lastCommStatusPollMs = _GetMs();
-			NoteDeleteResponse(rsp);
-			return false;
-		}
+        // If an error is returned, this means that no response is pending.  Note
+        // that it's expected that this might return either a "note does not exist"
+        // error if there are no pending inbound notes, or a "file does not exist" error
+        // if the inbound queue hasn't yet been created on the service.
+        if (NoteResponseError(rsp)) {
+            // Only stop polling quickly if we don't receive anything
+            lastCommStatusPollMs = _GetMs();
+            NoteDeleteResponse(rsp);
+            return false;
+        }
 
-		// Get the note's body
-		J *body = JGetObject(rsp, "body");
-		if (body != NULL) {
-			if (maxLevel < 0 || JGetInt(body, "level") <= maxLevel) {
-				_Debug("sync: ");
-				_Debug(JGetString(body, "subsystem"));
-				_Debug(" ");
-				_Debug(JGetString(body, "text"));
-				_Debug("\n");
-			}
-		}
+        // Get the note's body
+        J *body = JGetObject(rsp, "body");
+        if (body != NULL) {
+            if (maxLevel < 0 || JGetInt(body, "level") <= maxLevel) {
+                _Debug("sync: ");
+                _Debug(JGetString(body, "subsystem"));
+                _Debug(" ");
+                _Debug(JGetString(body, "text"));
+                _Debug("\n");
+            }
+        }
 
-		// Done with this response
-		NoteDeleteResponse(rsp);
-		return true;
-	}
+        // Done with this response
+        NoteDeleteResponse(rsp);
+        return true;
+    }
 
-	return false;
+    return false;
 
 }
 
@@ -1344,21 +1631,23 @@ typedef struct objHeader_s {
 
 //**************************************************************************/
 /*!
-    @brief  Obtain the amount of free memory available on the Notecard.
-    @returns The number of bytes of memory available on the Notecard.
+  @brief  Obtain the amount of free memory available on the Notecard.
+  @returns The number of bytes of memory available on the Notecard.
 */
 /**************************************************************************/
-uint32_t NoteMemAvailable() {
+uint32_t NoteMemAvailable()
+{
 
     // Allocate progressively smaller and smaller chunks
     objHeader *lastObj = NULL;
-    static int maxsize = 35000;
-    for (int i=maxsize; i>=sizeof(objHeader); i=i-sizeof(objHeader)) {
-        for (int j=0;;j++) {
+    static long int maxsize = 35000;
+    for (long int i=maxsize; i>=sizeof(objHeader); i=i-sizeof(objHeader)) {
+        for (long int j=0;; j++) {
             objHeader *thisObj;
-            thisObj = (objHeader *) malloc(i);
-            if (thisObj == NULL)
+            thisObj = (objHeader *) _Malloc(i);
+            if (thisObj == NULL) {
                 break;
+            }
             thisObj->prev = lastObj;
             thisObj->length = i;
             lastObj = thisObj;
@@ -1366,8 +1655,8 @@ uint32_t NoteMemAvailable() {
     }
 
     // Free the objects backwards
-    int lastLength = 0;
-    int lastLengthCount = 0;
+    long int lastLength = 0;
+    long int lastLengthCount = 0;
     uint32_t total = 0;
     while (lastObj != NULL) {
         if (lastObj->length != lastLength) {
@@ -1379,9 +1668,9 @@ uint32_t NoteMemAvailable() {
         objHeader *thisObj = lastObj;
         lastObj = lastObj->prev;
         total += thisObj->length;
-        free(thisObj);
+        _Free(thisObj);
     }
 
-	return total;
-  
+    return total;
+
 }

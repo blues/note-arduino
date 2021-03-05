@@ -40,7 +40,7 @@
 #define NULL 0
 #endif
 
-#define MAX_EXPONENT 511		/* Largest possible base 10 exponent.  Any
+#define MAX_EXPONENT 511    /* Largest possible base 10 exponent.  Any
                                  * exponent larger than this will already
                                  * produce underflow or overflow, so there's
                                  * no need to worry about additional digits.
@@ -69,7 +69,7 @@
 
 JNUMBER
 JAtoN(string, endPtr)
-    const char *string;         /* A decimal ASCII floating-point number,
+const char *string;         /* A decimal ASCII floating-point number,
                                  * optionally preceded by white space.
                                  * Must have form "-I.FE-X", where I is the
                                  * integer part of the mantissa, F is the
@@ -81,7 +81,7 @@ JAtoN(string, endPtr)
                                  * The "E" may actually be an "e".  E and X
                                  * may both be omitted (but not just one).
                                  */
-    char **endPtr;              /* If non-NULL, store terminating character's
+char **endPtr;              /* If non-NULL, store terminating character's
                                  * address here. */
 {
     int sign, expSign = FALSE;
@@ -128,8 +128,7 @@ JAtoN(string, endPtr)
      */
 
     decPt = -1;
-    for (mantSize = 0; ; mantSize += 1)
-    {
+    for (mantSize = 0; ; mantSize += 1) {
         c = *p;
         if (c < '0' || c > '9') {
             if ((c != '.') || (decPt >= 0)) {
@@ -146,7 +145,7 @@ JAtoN(string, endPtr)
      * If the mantissa has more than 18 digits, ignore the extras, since
      * they can't affect the value anyway.
      */
-    
+
     pExp  = p;
     p -= mantSize;
     if (decPt < 0) {
@@ -167,8 +166,7 @@ JAtoN(string, endPtr)
     } else {
         long frac1, frac2;
         frac1 = 0L;
-        for ( ; mantSize > 9; mantSize -= 1)
-        {
+        for ( ; mantSize > 9; mantSize -= 1) {
             c = *p;
             p += 1;
             if (c == '.') {
@@ -178,8 +176,7 @@ JAtoN(string, endPtr)
             frac1 = 10*frac1 + (c - '0');
         }
         frac2 = 0L;
-        for (; mantSize > 0; mantSize -= 1)
-        {
+        for (; mantSize > 0; mantSize -= 1) {
             c = *p;
             p += 1;
             if (c == '.') {
@@ -224,7 +221,7 @@ JAtoN(string, endPtr)
      * many powers of 2 of 10. Then combine the exponent with the
      * fraction.
      */
-    
+
     if (exp < 0) {
         expSign = TRUE;
         exp = -exp;
@@ -235,45 +232,46 @@ JAtoN(string, endPtr)
         exp = MAX_EXPONENT;
     }
     dblExp = 1.0;
-	int d;
+    int d;
     for (d = 0; exp != 0; exp >>= 1, d += 1) {
-		/* Table giving binary powers of 10.  Entry */
-		/* is 10^2^i.  Used to convert decimal */
-		/* exponents into floating-point numbers. */
-		JNUMBER p10 = 0.0;
-		switch (d) {
-		case 0:
-			p10 = 10.0;
-			break;
-		case 1:
-			p10 = 100.0;
-			break;
-		case 2:
-			p10 = 1.0e4;
-			break;
-		case 3:
-			p10 = 1.0e8;
-			break;
-		case 4:
-			p10 = 1.0e16;
-			break;
-		case 5:
-			p10 = 1.0e32;
-			break;
+        /* Table giving binary powers of 10.  Entry */
+        /* is 10^2^i.  Used to convert decimal */
+        /* exponents into floating-point numbers. */
+        JNUMBER p10 = 0.0;
+        switch (d) {
+        case 0:
+            p10 = 10.0;
+            break;
+        case 1:
+            p10 = 100.0;
+            break;
+        case 2:
+            p10 = 1.0e4;
+            break;
+        case 3:
+            p10 = 1.0e8;
+            break;
+        case 4:
+            p10 = 1.0e16;
+            break;
+        case 5:
+            p10 = 1.0e32;
+            break;
 #ifndef NOTE_FLOAT
-		case 6:
-			p10 = 1.0e64;
-			break;
-		case 7:
-			p10 = 1.0e128;
-			break;
-		case 8:
-			p10 = 1.0e256;
-			break;
+        case 6:
+            p10 = 1.0e64;
+            break;
+        case 7:
+            p10 = 1.0e128;
+            break;
+        case 8:
+            p10 = 1.0e256;
+            break;
 #endif
-		}
-		if (p10 == 0.0)
-			break;
+        }
+        if (p10 == 0.0) {
+            break;
+        }
         if (exp & 01) {
             dblExp *= p10;
         }
