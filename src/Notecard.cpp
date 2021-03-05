@@ -38,9 +38,9 @@
 
 #include "Notecard.h"
 
-#include <cstdarg>
-#include <cstdio>
-#include <cstdlib>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 TwoWire *Notecard::_i2cPort;
 HardwareSerial *Notecard::_notecardSerial;
@@ -354,6 +354,7 @@ char Notecard::noteSerialReceive()
 /**************************************************************************/
 bool Notecard::noteI2CReset(uint16_t DevAddress)
 {
+    (void)DevAddress;
 #if WIRE_HAS_END
     _i2cPort->end();
 #endif
@@ -480,14 +481,14 @@ const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint
             if (goodbyte != Size) {
 #if I2C_DATA_TRACE
                 NoteDebugf("%d != %d, received:\n", goodbyte, Size);
-                for (int i=0; i<Size; i++) {
+                for (size_t i=0; i<Size; i++) {
                     NoteDebugf("%c", _i2cPort.read());
                 }
                 NoteDebugf("\n");
 #endif
                 errstr = ERRSTR("i2c: incorrect amount of data",i2cerr);
             } else {
-                for (int i=0; i<Size; i++) {
+                for (size_t i=0; i<Size; i++) {
                     *pBuffer++ = _i2cPort->read();
                 }
             }
