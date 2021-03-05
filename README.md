@@ -98,7 +98,7 @@ git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git
 ## Documentation
 
 The documentation for this library can be found
-[here](https://blues.github.io/note-arduino/html/index.html).
+[here](https://dev.blues.io/tools-and-sdks/arduino-library/).
 
 ## Examples
 
