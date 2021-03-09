@@ -78,6 +78,36 @@
 #endif
 #define D13 13
 
+#else
+
+#ifndef D5
+#define D5 5
+#endif
+
+#ifndef D6
+#define D6 6
+#endif
+
+#ifndef D9
+#define D9 9
+#endif
+
+#ifndef D10
+#define D10 10
+#endif
+
+#ifndef D11
+#define D11 11
+#endif
+
+#ifndef D12
+#define D12 12
+#endif
+
+#ifndef D13
+#define D13 13
+#endif
+
 #endif
 
 /**************************************************************************/

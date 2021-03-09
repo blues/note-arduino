@@ -1641,7 +1641,7 @@ uint32_t NoteMemAvailable()
     // Allocate progressively smaller and smaller chunks
     objHeader *lastObj = NULL;
     static long int maxsize = 35000;
-    for (long int i=maxsize; i>=sizeof(objHeader); i=i-sizeof(objHeader)) {
+    for (long int i=maxsize; i>=(long int)sizeof(objHeader); i=i-sizeof(objHeader)) {
         for (long int j=0;; j++) {
             objHeader *thisObj;
             thisObj = (objHeader *) _Malloc(i);
