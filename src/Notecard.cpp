@@ -42,9 +42,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "NoteSerial.hpp"
+
 TwoWire *Notecard::_i2cPort;
-HardwareSerial *Notecard::_notecardSerial;
-int Notecard::_notecardSerialSpeed;
 Stream *Notecard::_debugSerial;
 bool Notecard::_debugSerialInitialized;
 
@@ -53,6 +53,46 @@ bool Notecard::_debugSerialInitialized;
 #if defined(NOTE_FLOAT) || not defined(ERRDBG)
 static const char *i2cerr = "i2c?";
 #endif
+
+namespace {
+    NoteSerial * noteSerial(nullptr);
+
+    bool noteSerialAvailable (void) {
+        bool result;
+        if (noteSerial) {
+            result = noteSerial->available();
+        } else {
+            result = false;
+        }
+        return result;
+    }
+
+    char noteSerialReceive (void) {
+        char result;
+        if (noteSerial) {
+            result = noteSerial->receive();
+        } else {
+            result = '\0';
+        }
+        return result;
+    }
+
+    bool noteSerialReset (void) {
+        bool result;
+        if (noteSerial) {
+            result = noteSerial->reset();
+        } else {
+            result = false;
+        }
+        return result;
+    }
+
+    void noteSerialTransmit (uint8_t *text_, size_t len_, bool flush_) {
+        if (noteSerial) {
+            noteSerial->transmit(text_, len_, flush_);
+        }
+    }
+}
 
 // 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
 // This code enables us to exercise that code path to test the state of the bug.
@@ -102,12 +142,10 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 {
     NoteSetFnDefault(malloc, free, delay, millis);
-    _notecardSerial = &selectedSerialPort;
-    _notecardSerialSpeed = selectedSpeed;
+    noteSerial = make_note_serial(&selectedSerialPort, selectedSpeed);
 
-    NoteSetFnSerial(Notecard::noteSerialReset, Notecard::noteSerialTransmit,
-                    Notecard::noteSerialAvailable, Notecard::noteSerialReceive);
-    _notecardSerial->begin(_notecardSerialSpeed);
+    NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
+                    noteSerialAvailable, noteSerialReceive);
 }
 
 /**************************************************************************/
@@ -289,62 +327,6 @@ size_t Notecard::debugSerialOutput(const char *message)
     }
     return(_debugSerial->print(message));
 }
-
-/**************************************************************************/
-/*!
-    @brief  Resets the serial port.
-    @return `True` if the Serial port is available.
-*/
-/**************************************************************************/
-bool Notecard::noteSerialReset()
-{
-    _notecardSerial->begin(_notecardSerialSpeed);
-
-    return (!!_notecardSerial);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Writes a message to the Notecard Serial port.
-    @param    text
-              The text to write.
-    @param    len
-              The number of bytes to write.
-    @param    flush
-              `True` to flush to Serial.
-*/
-/**************************************************************************/
-void Notecard::noteSerialTransmit(uint8_t *text, size_t len, bool flush)
-{
-    _notecardSerial->write(text, len);
-    if (flush) {
-        _notecardSerial->flush();
-    }
-}
-
-/**************************************************************************/
-/*!
-    @brief  Determines if the Notecard Serial port has data available.
-    @return `True` if there are bytes available to read.
-*/
-/**************************************************************************/
-bool Notecard::noteSerialAvailable()
-{
-    return (_notecardSerial->available() > 0);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Read a byte from the Notecard Serial port. guaranteed only ever to
-            be called if there is data available.
-    @return a single character byte.
-*/
-/**************************************************************************/
-char Notecard::noteSerialReceive()
-{
-    return _notecardSerial->read();
-}
-
 
 /**************************************************************************/
 /*!

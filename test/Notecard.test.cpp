@@ -4,8 +4,11 @@
 #include <iostream>
 
 #include "Notecard.h"
+#include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
+
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note.c ../src/Notecard.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++17 -I. -I../src -DMOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
@@ -1014,30 +1017,6 @@ int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note
   return result;
 }
 
-struct TestFunction;
-typedef int (*test_fn)(void);
-int runTests(TestFunction *tests_, size_t cnt_);
-
-struct TestFunction
-{
-  TestFunction(
-      test_fn fn_,
-      const char *name_) : fn(fn_),
-                           name(name_)
-  {
-  }
-
-  int operator()()
-  {
-    return fn();
-  }
-
-  const char *name;
-
-private:
-  const test_fn fn;
-};
-
 int main(void)
 {
   TestFunction tests[] = {
@@ -1082,33 +1061,5 @@ int main(void)
       {test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c, "test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c"}
   };
 
-  return runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
-}
-
-int runTests(TestFunction *tests_, size_t cnt_)
-{
-  int result = 0;
-
-  std::cout << "Running " << cnt_ << " tests..." << std::endl
-            << std::endl;
-  for (size_t i = 0; i < cnt_; ++i)
-  {
-    std::cout << "[";
-    if (0 == (result = tests_[i]()))
-    {
-      std::cout << "passed";
-    }
-    else
-    {
-      std::cout << "FAILED";
-    }
-
-    std::cout << "] " << tests_[i].name << std::endl;
-    if (result)
-    {
-      break;
-    }
-  }
-
-  return result;
+  return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
 }

@@ -42,6 +42,7 @@ void
 NoteDebugln(
     const char *message
 ) {
+    (void)message;
     // Validate parameter(s)
 
 }

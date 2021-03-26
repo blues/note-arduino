@@ -26,6 +26,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #ifndef MOCK
 #include <Arduino.h>
 #include <HardwareSerial.h>
@@ -137,15 +138,9 @@ public:
 
 private:
     static TwoWire *_i2cPort;
-    static HardwareSerial *_notecardSerial;
-    static int _notecardSerialSpeed;
     static Stream *_debugSerial;
     static bool _debugSerialInitialized;
 
-    static bool noteSerialReset(void);
-    static void noteSerialTransmit(uint8_t *text, size_t len, bool flush);
-    static bool noteSerialAvailable(void);
-    static char noteSerialReceive(void);
     static bool noteI2CReset(uint16_t DevAddress);
     static const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
     static const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
