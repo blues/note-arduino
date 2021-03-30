@@ -2,7 +2,7 @@
 
 all_tests_result=0
 
-g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note.c ../src/Notecard.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++17 -I. -I../src -DMOCK
+g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/Notecard.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++17 -I. -I../src -DMOCK
 if [ 0 -eq $? ]; then
   echo
   ./a.out
