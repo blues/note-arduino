@@ -51,9 +51,9 @@ clean up inconsistent whitespace )
 
 ## Notes
 
-* Please add tests if you changed code. Contributions without tests won't be
-* accepted. If you don't know how to add tests, please put in a PR and leave a
-* comment asking for help. We love helping!
+* Please add tests if you changed code. Contributions without tests won't be accepted. 
+* If you don't know how to add tests, please put in a PR and leave a comment asking for help. 
+We love helping!
 
 [repo]: https://github.com/blues/note-arduino/tree/master
 [fork]: https://help.github.com/articles/fork-a-repo/
