@@ -86,7 +86,7 @@ TwoWire::begin (
     void
 ) {
   // Capture call
-  twoWireBegin_Parameters.called = true;
+  ++twoWireBegin_Parameters.invoked;
 }
 
 void

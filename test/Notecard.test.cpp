@@ -949,13 +949,13 @@ int test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_call
   Notecard notecard;
 
   // Setup
-  twoWireBegin_Parameters.called = false;
+  twoWireBegin_Parameters.invoked = 0;
 
   // Action
   notecard.begin();
 
   // Evaluate Result
-  if (true == twoWireBegin_Parameters.called)
+  if (twoWireBegin_Parameters.invoked)
   {
     result = 0;
   }
@@ -974,13 +974,13 @@ int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
   TwoWire mockWire;
 
   // Setup
-  twoWireBegin_Parameters.called = false;
+  twoWireBegin_Parameters.invoked = 0;
 
   // Action
   notecard.begin(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, mockWire);
 
   // Evaluate Result
-  if (true == twoWireBegin_Parameters.called)
+  if (twoWireBegin_Parameters.invoked)
   {
     result = 0;
   }

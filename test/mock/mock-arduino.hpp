@@ -90,9 +90,9 @@ struct TwoWireBegin_Parameters {
     TwoWireBegin_Parameters(
         void
     ) :
-        called(false)
+        invoked(0)
     { }
-    bool called;
+    size_t invoked;
 };
 
 extern HardwareSerial Serial;
