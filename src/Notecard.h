@@ -128,6 +128,7 @@ public:
     void clearDebugOutputStream(void);
     void i2cTest(int Adjustment);
     J *newRequest(const char *request);
+    J *newCommand(const char *request);
     bool sendRequest(J *req);
     J *requestAndResponse(J *req);
     void deleteResponse(J *rsp);

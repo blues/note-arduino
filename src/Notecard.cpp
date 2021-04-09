@@ -207,6 +207,21 @@ J *Notecard::newRequest(const char *request)
 
 /**************************************************************************/
 /*!
+    @brief  Creates a new command object for population by the host.
+            This function accepts a command string (for example, `"note.add"`)
+      and initializes a JSON Object to return to the host.
+    @param    request
+              The command name, for example, `note.add`.
+    @return A `J` JSON Object populated with the request name.
+*/
+/**************************************************************************/
+J *Notecard::newCommand(const char *request)
+{
+    return NoteNewCommand(request);
+}
+
+/**************************************************************************/
+/*!
     @brief  Sends a request to the Notecard.
             This function takes a populated `J` JSON request object
       and sends it to the Notecard.
