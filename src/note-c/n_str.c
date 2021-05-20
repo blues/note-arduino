@@ -27,7 +27,11 @@
  * will be copied.  Always NUL terminates (unless siz == 0).
  * Returns strlen(src); if retval >= siz, truncation occurred.
  */
+#if defined(_MSC_VER)
+size_t strlcpy(char *dst, const char *src, size_t siz)
+#else
 __attribute__((weak)) size_t strlcpy(char *dst, const char *src, size_t siz)
+#endif
 {
     char *d = dst;
     const char *s = src;
@@ -61,7 +65,11 @@ __attribute__((weak)) size_t strlcpy(char *dst, const char *src, size_t siz)
  * Returns strlen(src) + MIN(siz, strlen(initial dst)).
  * If retval >= siz, truncation occurred.
  */
+#if defined(_MSC_VER)
+size_t strlcat(char *dst, const char *src, size_t siz)
+#else
 __attribute__((weak)) size_t strlcat(char *dst, const char *src, size_t siz)
+#endif
 {
     char *d = dst;
     const char *s = src;

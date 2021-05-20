@@ -175,7 +175,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 #ifdef ERRDBG
             _Debug("reply to request didn't arrive from module in time\n");
 #endif
-            return ERRSTR("notecard request or response was lost",c_timeout);
+            return ERRSTR("request or response was lost {io}",c_iotimeout);
         }
 
         // Delay, simply waiting for the Note to process the request

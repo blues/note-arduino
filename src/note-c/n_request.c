@@ -125,6 +125,70 @@ bool NoteRequest(J *req)
 
 /**************************************************************************/
 /*!
+    @brief  Send a request to the Notecard.
+            Frees the request structure from memory after sending the request.
+            Retries the request for up to the specified timeoutSeconds if there is
+            no response, or if the response indicates an io error.
+    @param   req
+               The `J` cJSON request object.
+             timeoutSeconds
+               Upper limit for retries if there is no response, or if the
+               response contains an io error.
+  @returns a boolean. Returns `true` if successful or `false` if an error
+            occurs, such as an out-of-memory or if an error was returned from
+            the transaction in the c_err field.
+*/
+/**************************************************************************/
+bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    // Exit if null request.  This allows safe execution of the form NoteRequest(NoteNewRequest("xxx"))
+    if (req == NULL) {
+        return false;
+    }
+
+    J *rsp;
+
+    // Calculate expiry time in milliseconds
+    uint32_t expiresMs = _GetMs() + (timeoutSeconds * 1000);
+
+    while(true) {
+        // Execute the transaction
+        rsp = NoteTransaction(req);
+
+        // Loop if there is no response, or if there is an io error
+        if ( (rsp == NULL) || JContainsString(rsp, c_err, c_ioerr)) {
+
+            // Free error response
+            if (rsp != NULL) {
+                JDelete(rsp);
+            }
+        } else {
+
+            // Exit loop on non-null response without io error
+            break;
+        }
+
+        // Exit loop on timeout
+        if (_GetMs() >= expiresMs) {
+            break;
+        }
+    }
+
+    // Free the request
+    JDelete(req);
+
+    // If there is no response return false
+    if (rsp == NULL) {
+        return false;
+    }
+    // Check for a transaction error, and exit
+    bool success = JIsNullString(rsp, c_err);
+    JDelete(rsp);
+    return success;
+}
+
+/**************************************************************************/
+/*!
     @brief  Send a request to the Notecard and return the response.
             Frees the request structure from memory after sending the request.
     @param   req
@@ -147,6 +211,67 @@ J *NoteRequestResponse(J *req)
     }
     // Free the request and exit
     JDelete(req);
+    return rsp;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Send a request to the Notecard and return the response.
+            Frees the request structure from memory after sending the request.
+            Retries the request for up to the specified timeoutSeconds if there is
+            no response, or if the response indicates an io error.
+    @param   req
+               The `J` cJSON request object.
+             timeoutSeconds
+               Upper limit for retries if there is no response, or if the
+               response contains an io error.
+  @returns a `J` cJSON object with the response, or NULL if there is
+             insufficient memory.
+*/
+/**************************************************************************/
+J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    // Exit if null request.  This allows safe execution of the form NoteRequestResponse(NoteNewRequest("xxx"))
+    if (req == NULL) {
+        return NULL;
+    }
+
+    J *rsp;
+
+    // Calculate expiry time in milliseconds
+    uint32_t expiresMs = _GetMs() + (timeoutSeconds * 1000);
+
+    while(true) {
+        // Execute the transaction
+        rsp = NoteTransaction(req);
+
+        // Loop if there is no response, or if there is an io error
+        if ( (rsp == NULL) || JContainsString(rsp, c_err, c_ioerr)) {
+
+            // Free error response
+            if (rsp != NULL) {
+                JDelete(rsp);
+            }
+        } else {
+
+            // Exit loop on non-null response without io error
+            break;
+        }
+
+        // Exit loop on timeout
+        if (_GetMs() >= expiresMs) {
+            break;
+        }
+    }
+
+    // Free the request
+    JDelete(req);
+
+    if (rsp == NULL) {
+        return NULL;
+    }
+
+    // Return the response
     return rsp;
 }
 
@@ -264,7 +389,7 @@ J *NoteTransaction(J *req)
         _Debug("invalid JSON: ");
         _Debug(responseJSON);
         _Free(responseJSON);
-        J *rsp = errDoc(ERRSTR("unrecognized response from card",c_bad));
+        J *rsp = errDoc(ERRSTR("unrecognized response from card {io}",c_iobad));
         _UnlockNote();
         return rsp;
     }

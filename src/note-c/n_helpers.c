@@ -29,7 +29,9 @@ static uint32_t timeBaseSetAtMs = 0;
 static JTIME timeBaseSec = 0;
 static bool timeBaseSetManually = false;
 static uint32_t suppressionTimerSecs = 10;
+static uint32_t refreshTimerSecs = 86400;
 static uint32_t timeTimer = 0;
+static uint32_t timeRefreshTimer = 0;
 static bool zoneStillUnavailable = true;
 static bool zoneForceRefresh = false;
 static char curZone[10] = {0};
@@ -98,6 +100,19 @@ JTIME NoteTime()
 {
     timeTimer = 0;
     return NoteTimeST();
+}
+
+//**************************************************************************/
+/*!
+  @brief  Set the number of minutes between refreshes of the time
+          from the Notecard, to help minimize clock drift on this host.
+          Set this to 0 for no auto-refresh; it defaults to daily.
+  @returns Nothing
+*/
+/**************************************************************************/
+void NoteTimeRefreshMins(uint32_t mins)
+{
+    refreshTimerSecs = mins * 60;
 }
 
 //**************************************************************************/
@@ -201,9 +216,14 @@ JTIME NoteTimeST()
         timeBaseSetAtMs = nowMs;
     }
 
+    // If it's time to refresh the time, do so
+    if (refreshTimerSecs != 0 && timerExpiredSecs(&timeRefreshTimer, refreshTimerSecs)) {
+        timeTimer = 0;
+    }
+
     // If we haven't yet fetched the time, or if we still need the timezone, do so with a suppression
     // timer so that we don't hammer the module before it's had a chance to connect to the network to fetch time.
-    if (!timeBaseSetManually && (timeBaseSec == 0 || zoneStillUnavailable || zoneForceRefresh)) {
+    if (!timeBaseSetManually && (timeTimer == 0 || timeBaseSec == 0 || zoneStillUnavailable || zoneForceRefresh)) {
         if (timerExpiredSecs(&timeTimer, suppressionTimerSecs)) {
 
             // Request time and zone info from the card
@@ -213,10 +233,8 @@ JTIME NoteTimeST()
                     JTIME seconds = JGetInt(rsp, "time");
                     if (seconds != 0) {
 
-                        // Set the time if it hasn't yet been set
-                        if (timeBaseSec == 0) {
-                            setTime(seconds);
-                        }
+                        // Set the time
+                        setTime(seconds);
 
                         // Get the zone
                         char *z = JGetString(rsp, "zone");
@@ -246,7 +264,7 @@ JTIME NoteTimeST()
     }
 
     // Adjust the base time by the number of seconds that have elapsed since the base.
-    JTIME adjustedTime = timeBaseSec + ((nowMs - timeBaseSetAtMs) / 1000);
+    JTIME adjustedTime = timeBaseSec + (int32_t) (((int64_t) nowMs - (int64_t) timeBaseSetAtMs) / 1000);
 
     // Done
     return adjustedTime;

@@ -103,6 +103,7 @@ void NoteResetRequired(void);
 J *NoteNewRequest(const char *request);
 J *NoteNewCommand(const char *request);
 J *NoteRequestResponse(J *req);
+J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds);
 char *NoteRequestResponseJSON(char *reqJSON);
 void NoteSuspendTransactionDebug(void);
 void NoteResumeTransactionDebug(void);
@@ -113,6 +114,7 @@ void NoteResumeTransactionDebug(void);
 #define SYNCSTATUS_LEVEL_ALL          -1
 bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
 bool NoteRequest(J *req);
+bool NoteRequestWithRetry(J *req, uint32_t timeoutms);
 #define NoteResponseError(rsp) (!JIsNullString(rsp, "err"))
 #define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, "err", errstr))
 #define NoteDeleteResponse(rsp) JDelete(rsp)
@@ -206,6 +208,7 @@ bool NoteTimeValid(void);
 bool NoteTimeValidST(void);
 JTIME NoteTime(void);
 JTIME NoteTimeST(void);
+void NoteTimeRefreshMins(uint32_t mins);
 void NoteTimeSet(JTIME secondsUTC, int offset, char *zone, char *country, char *area);
 bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint8_t *retHour, uint8_t *retMinute, uint8_t *retSecond, char **retWeekday, char **retZone);
 bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneOffset);

@@ -60,7 +60,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
 #ifdef ERRDBG
             _Debug("reply to request didn't arrive from module in time\n");
 #endif
-            return ERRSTR("transaction timeout",c_timeout);
+            return ERRSTR("transaction timeout {io}",c_iotimeout);
         }
         _DelayMs(10);
     }
@@ -90,7 +90,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
                 _Debug("\n");
 #endif
                 _Free(jsonbuf);
-                return ERRSTR("transaction incomplete",c_timeout);
+                return ERRSTR("transaction incomplete {io}",c_iotimeout);
             }
             _DelayMs(1);
             continue;
@@ -103,7 +103,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
             _Debug("invalid data received on serial port from notecard\n");
 #endif
             _Free(jsonbuf);
-            return ERRSTR("serial communications error",c_timeout);
+            return ERRSTR("serial communications error {io}",c_iotimeout);
         }
 
         // Append into the json buffer

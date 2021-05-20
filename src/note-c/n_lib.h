@@ -113,8 +113,8 @@ extern const char *c_newline;
 extern const char *c_mem;
 #define c_mem_len 3
 
-extern const char *c_timeout;
-#define c_timeout_len 7
+extern const char *c_iotimeout;
+#define c_iotimeout_len 12
 
 extern const char *c_err;
 #define c_err_len 3
@@ -127,6 +127,12 @@ extern const char *c_cmd;
 
 extern const char *c_bad;
 #define c_bad_len 3
+
+extern const char *c_iobad;
+#define c_iobad_len 8
+
+extern const char *c_ioerr;
+#define c_ioerr_len 4
 
 
 // Readability wrappers.  Anything starting with _ is simply calling the wrapper
