@@ -103,41 +103,42 @@ TwoWire::end (
 
 }
 
-int
+uint8_t
 TwoWire::endTransmission (
     void
 ) {
     return 0;
 }
 
-unsigned char
+int
 TwoWire::read (
     void
 ) {
     return 'z';
 }
 
-int
+uint8_t
 TwoWire::requestFrom (
     int dev_addr,
-    unsigned int read_len
+    int read_len
 ) {
     (void)dev_addr;
     (void)read_len;
     return 0;
 }
 
-void
+size_t
 TwoWire::write (
-    unsigned char c
+    uint8_t c
 ) {
     (void)c;
+    return 0;
 }
 
-long unsigned int
+size_t
 TwoWire::write (
-    unsigned char * msg,
-    long unsigned int len
+    uint8_t * msg,
+    size_t len
 ) {
     (void)msg;
     (void)len;

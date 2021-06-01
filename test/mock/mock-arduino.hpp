@@ -79,11 +79,11 @@ struct TwoWire {
     void begin(void);
     void beginTransmission(int);
     void end(void);
-    int endTransmission(void);
-    unsigned char read(void);
-    int requestFrom(int dev_addr, unsigned int read_len);
-    void write(unsigned char c);
-    long unsigned int write(unsigned char * msg, long unsigned int len);
+    uint8_t endTransmission(void);
+    int read(void);
+    uint8_t requestFrom(int dev_addr, int read_len);
+    size_t write(uint8_t c);
+    size_t write(uint8_t * msg, size_t len);
 };
 
 struct TwoWireBegin_Parameters {

@@ -114,10 +114,10 @@ int _readLengthAdjustment = 0;
               The I2C Address to use for the Notecard.
     @param    i2cmax
               The max length of each message to send from the host to
-        the Notecard. Used to ensure the messages are sized appropriately
-        for the host.
-  @param    wirePort
-        The TwoWire implementation to use for I2C communication.
+              the Notecard. Used to ensure the messages are sized appropriately
+              for the host.
+    @param    wirePort
+              The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
