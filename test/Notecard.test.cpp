@@ -759,25 +759,27 @@ int test_notecard_deleteResponse_does_not_modify_j_object_parameter_pointer_befo
 int test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing_to_note_c()
 {
   int result;
-  Notecard notecard;
-  const char str[] = "Hello, Test 30!";
-  char str_copy[32];
 
-  // Setup
-  strcpy(str_copy, str);
-  noteDebug_Parameters.message = nullptr;
+  // Arrange
+  const char str[] = "Hello, Test 30!";
+  Notecard notecard;
+
+  noteDebug_Parameters.reset();
 
   // Action
-  notecard.logDebug(str_copy);
+  notecard.logDebug(str);
 
   // Evaluate Result
-  if (0 == strcmp(str, noteDebug_Parameters.message))
+  if (0 == strcmp(str, noteDebug_Parameters.message_cache.c_str()))
   {
     result = 0;
   }
   else
   {
     result = 30;
+    std::cout << "FAILED]" << std::endl;
+    std::cout << "\tnoteDebug_Parameters.message_cache.c_str() == \"" << noteDebug_Parameters.message_cache.c_str() << "\", EXPECTED: \"" << str << "\"" << std::endl;
+    std::cout << "[";
   }
 
   return result;
@@ -786,23 +788,27 @@ int test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing
 int test_notecard_logDebugf_does_not_modify_string_parameter_value_before_passing_to_note_c()
 {
   int result;
-  Notecard notecard;
-  const char str[] = "Hello, Test 30!";
 
-  // Setup
-  noteDebug_Parameters.message = nullptr;
+  // Arrange
+  const char str[] = "Hello, Test 31!";
+  Notecard notecard;
+
+  noteDebug_Parameters.reset();
 
   // Action
-  notecard.logDebugf("Hello, %s %d%c", "Test", 30, '!');
+  notecard.logDebugf("Hello, %s %d%c", "Test", 31, '!');
 
   // Evaluate Result
-  if (0 == strcmp(str, noteDebug_Parameters.message))
+  if (0 == strcmp(str, noteDebug_Parameters.message_cache.c_str()))
   {
     result = 0;
   }
   else
   {
     result = 31;
+    std::cout << "FAILED]" << std::endl;
+    std::cout << "\tnoteDebug_Parameters.message_cache.c_str() == \"" << noteDebug_Parameters.message_cache.c_str() << "\", EXPECTED: \"" << str << "\"" << std::endl;
+    std::cout << "[";
   }
 
   return result;

@@ -1,6 +1,7 @@
 #include "NoteSerial_Arduino.hpp"
 
-NoteSerial * make_note_serial (
+NoteSerial *
+make_note_serial (
     NoteSerial::channel_t serial_channel_,
     size_t baud_rate_
 )

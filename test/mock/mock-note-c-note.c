@@ -37,6 +37,7 @@ NoteDebug(
 ) {
     // Stash parameter(s)
     noteDebug_Parameters.message = message;
+    noteDebug_Parameters.message_cache = message;
 }
 
 void
