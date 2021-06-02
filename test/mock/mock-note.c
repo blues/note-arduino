@@ -3,6 +3,7 @@
 NoteDebug_Parameters noteDebug_Parameters;
 NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+NoteNewCommand_Parameters noteNewCommand_Parameters;
 NoteNewRequest_Parameters noteNewRequest_Parameters;
 NoteRequest_Parameters noteRequest_Parameters;
 NoteRequestResponse_Parameters noteRequestResponse_Parameters;
@@ -57,6 +58,16 @@ NoteDebugSyncStatus(
     noteDebugSyncStatus_Parameters.maxLevel = maxLevel;
 
     return noteDebugSyncStatus_Parameters.result;
+}
+
+J *
+NoteNewCommand(
+    const char *request
+) {
+    // Stash parameter(s)
+    noteNewCommand_Parameters.request = request;
+
+    return noteNewCommand_Parameters.result;
 }
 
 J *

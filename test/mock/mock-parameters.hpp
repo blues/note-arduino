@@ -49,6 +49,17 @@ struct NoteDeleteResponse_Parameters {
     J *response;
 };
 
+struct NoteNewCommand_Parameters {
+    NoteNewCommand_Parameters(
+        void
+    ) :
+        request(nullptr),
+        result(nullptr)
+    { }
+    const char *request;
+    J *result;
+};
+
 struct NoteNewRequest_Parameters {
     NoteNewRequest_Parameters(
         void
@@ -151,6 +162,7 @@ struct NoteSetFnSerial_Parameters {
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+extern NoteNewCommand_Parameters noteNewCommand_Parameters;
 extern NoteNewRequest_Parameters noteNewRequest_Parameters;
 extern NoteRequest_Parameters noteRequest_Parameters;
 extern NoteRequestResponse_Parameters noteRequestResponse_Parameters;
