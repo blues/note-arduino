@@ -1017,6 +1017,67 @@ int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note
   return result;
 }
 
+int test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c()
+{
+  int result;
+  Notecard notecard;
+  const char *str = "Hello, Test 23!";
+  char str_copy[32];
+
+  // Setup
+  strcpy(str_copy, str);
+  noteNewCommand_Parameters.request = nullptr;
+  noteNewCommand_Parameters.result = nullptr;
+
+  // Action
+  notecard.newCommand(str_copy);
+
+  // Evaluate Result
+  if (0 == strcmp(str, noteNewCommand_Parameters.request))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = 40;
+  }
+
+  return result;
+}
+
+int test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller()
+{
+  int result;
+  Notecard notecard;
+  J *json_obj = reinterpret_cast<J *>(malloc(sizeof(J))); // JCreateObject();
+  assert(nullptr != json_obj);
+
+  // Setup
+  memset(json_obj, 0x55, sizeof(J)); //assert(nullptr != JAddStringToObject(json_obj,"key1", "value1"));
+  {
+    noteNewCommand_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+    assert(nullptr != noteNewCommand_Parameters.result);
+    memcpy(noteNewCommand_Parameters.result, json_obj, sizeof(J));
+  } //assert(nullptr != (noteNewCommand_Parameters.result = JDuplicate(json_obj,true)));
+
+  // Action
+  J *json_result = notecard.newCommand(nullptr);
+
+  // Evaluate Result
+  if (0 == memcmp(json_obj, json_result, sizeof(J)) /*JCompare(json_obj, json_result, false)*/)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = 41;
+  }
+
+  free(noteNewCommand_Parameters.result);
+  free(json_obj);
+  return result;
+}
+
 int main(void)
 {
   TestFunction tests[] = {
@@ -1058,7 +1119,9 @@ int main(void)
       {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called"},
       {test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called"},
-      {test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c, "test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c"}
+      {test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c, "test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c"},
+      {test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c"},
+      {test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));

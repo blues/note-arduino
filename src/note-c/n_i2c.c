@@ -18,10 +18,10 @@ static void _DelayIO(void);
 
 /**************************************************************************/
 /*!
-    @brief  We've noticed that there's an instability in some cards'
-            implementations of I2C, and as a result we introduce an intentional
-            delay before each and every I2C I/O.The timing was computed
-            empirically based on a number of commercial devices.
+  @brief  We've noticed that there's an instability in some cards'
+  implementations of I2C, and as a result we introduce an intentional
+  delay before each and every I2C I/O.The timing was computed
+  empirically based on a number of commercial devices.
 */
 /**************************************************************************/
 static void _DelayIO()
@@ -31,12 +31,12 @@ static void _DelayIO()
 
 /**************************************************************************/
 /*!
-    @brief  Given a JSON string, perform an I2C transaction with the Notecard.
-    @param   json
-               A c-string containing the JSON request object.
-    @param   jsonResponse
-               An out parameter c-string buffer that will contain the JSON
-               response from the Notercard.
+  @brief  Given a JSON string, perform an I2C transaction with the Notecard.
+  @param   json
+  A c-string containing the JSON request object.
+  @param   jsonResponse
+  An out parameter c-string buffer that will contain the JSON
+  response from the Notercard.
   @returns a c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
@@ -193,9 +193,9 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 
 //**************************************************************************/
 /*!
-    @brief  Initialize or re-initialize the I2C subsystem, returning false if
-            anything fails.
-    @returns a boolean. `true` if the reset was successful, `false`, if not.
+  @brief  Initialize or re-initialize the I2C subsystem, returning false if
+  anything fails.
+  @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
 bool i2cNoteReset()
@@ -209,11 +209,16 @@ bool i2cNoteReset()
         return false;
     }
 
-    // Synchronize by guaranteeing not only that I2C works, but that we drain the remainder of any
-    // pending partial reply from a previously-aborted session.  This outer loop does retries on
-    // I2C error, and is simply here for robustness.
+    // Synchronize by guaranteeing not only that I2C works, but that after we send \n that we drain
+    // the remainder of any pending partial reply from a previously-aborted session.  This outer loop
+    // does retries on I2C error, and is simply here for robustness.
     bool notecardReady = false;
     int retries;
+    _LockI2C();
+    _DelayIO();
+    _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
+    _DelayMs(CARD_REQUEST_I2C_SEGMENT_DELAY_MS);
+    _UnlockI2C();
     for (retries=0; !notecardReady && retries<3; retries++) {
 
         // Loop to drain all chunks of data that may be ready to transmit to us
