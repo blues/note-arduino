@@ -3,7 +3,8 @@
 NoteSerial * make_note_serial (
     NoteSerial::channel_t serial_channel_,
     size_t baud_rate_
-) {
+)
+{
     static NoteSerial * note_serial = nullptr;
     if (note_serial) {
         delete note_serial;
@@ -26,21 +27,24 @@ NoteSerial_Arduino::NoteSerial_Arduino
 size_t
 NoteSerial_Arduino::available (
     void
-) {
+)
+{
     return _notecardSerial.available();
 }
 
 char
 NoteSerial_Arduino::receive (
     void
-) {
+)
+{
     return _notecardSerial.read();
 }
 
 bool
 NoteSerial_Arduino::reset (
     void
-) {
+)
+{
     _notecardSerial.begin(_notecardSerialSpeed);
 
     return true;
@@ -51,7 +55,8 @@ NoteSerial_Arduino::transmit (
     uint8_t *buffer,
     size_t size,
     bool flush
-) {
+)
+{
     size_t result;
     result = _notecardSerial.write(buffer, size);
     if (flush) {

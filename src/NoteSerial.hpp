@@ -4,8 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-class NoteSerial {
-  public:
+class NoteSerial
+{
+public:
     /**************************************************************************/
     /*!
         @brief  Type used to abstract specific hardware implementation types.

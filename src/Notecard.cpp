@@ -48,50 +48,53 @@ TwoWire *Notecard::_i2cPort;
 Stream *Notecard::_debugSerial;
 bool Notecard::_debugSerialInitialized;
 
-#define I2C_DATA_TRACE false ///< Enable Tracing for I2C Reads and Writes
-
 #if defined(NOTE_FLOAT) || not defined(ERRDBG)
-static const char *i2cerr = "i2c?";
+static const char *i2cerr = "i2c {io}";
 #endif
 
-namespace {
-    NoteSerial * noteSerial(nullptr);
+namespace
+{
+NoteSerial * noteSerial(nullptr);
 
-    bool noteSerialAvailable (void) {
-        bool result;
-        if (noteSerial) {
-            result = noteSerial->available();
-        } else {
-            result = false;
-        }
-        return result;
+bool noteSerialAvailable (void)
+{
+    bool result;
+    if (noteSerial) {
+        result = noteSerial->available();
+    } else {
+        result = false;
     }
+    return result;
+}
 
-    char noteSerialReceive (void) {
-        char result;
-        if (noteSerial) {
-            result = noteSerial->receive();
-        } else {
-            result = '\0';
-        }
-        return result;
+char noteSerialReceive (void)
+{
+    char result;
+    if (noteSerial) {
+        result = noteSerial->receive();
+    } else {
+        result = '\0';
     }
+    return result;
+}
 
-    bool noteSerialReset (void) {
-        bool result;
-        if (noteSerial) {
-            result = noteSerial->reset();
-        } else {
-            result = false;
-        }
-        return result;
+bool noteSerialReset (void)
+{
+    bool result;
+    if (noteSerial) {
+        result = noteSerial->reset();
+    } else {
+        result = false;
     }
+    return result;
+}
 
-    void noteSerialTransmit (uint8_t *text_, size_t len_, bool flush_) {
-        if (noteSerial) {
-            noteSerial->transmit(text_, len_, flush_);
-        }
+void noteSerialTransmit (uint8_t *text_, size_t len_, bool flush_)
+{
+    if (noteSerial) {
+        noteSerial->transmit(text_, len_, flush_);
     }
+}
 }
 
 // 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
@@ -374,17 +377,6 @@ bool Notecard::noteI2CReset(uint16_t DevAddress)
 /**************************************************************************/
 const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size)
 {
-#if I2C_DATA_TRACE
-    NoteDebugf("i2c transmit len: \n", Size);
-    for (int i=0; i<Size; i++) {
-        NoteDebugf("%c", pBuffer[i]);
-    }
-    NoteDebugf("  ");
-    for (int i=0; i<Size; i++) {
-        NoteDebugf("%02x", pBuffer[i]);
-    }
-    NoteDebugf("\n");
-#endif
     _i2cPort->beginTransmission((int) DevAddress);
     uint8_t reg = Size;
     bool success = (_i2cPort->write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
@@ -395,7 +387,7 @@ const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uin
         success = false;
     }
     if (!success) {
-        return ERRSTR("i2c: write error",i2cerr);
+        return ERRSTR("i2c: write error {io}",i2cerr);
     }
     return NULL;
 }
@@ -418,12 +410,6 @@ const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uin
 /**************************************************************************/
 const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available)
 {
-#if I2C_DATA_TRACE
-    uint8_t *original = pBuffer;
-    if (Size) {
-        NoteDebugf("i2c receive: %d\n	", Size);
-    }
-#endif
     const char *errstr = NULL;
     uint8_t goodbyte = 0;
     uint8_t availbyte = 0;
@@ -443,16 +429,16 @@ const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint
         case 1:
             // Interestingly, this is the error that is returned when
             // some random device on the I2C bus is holding SCL low
-            errstr = "data too long to fit in transmit buffer";
+            errstr = "data too long to fit in transmit buffer {io}";
             break;
         case 2:
-            errstr = "received NACK on transmit of address";
+            errstr = "received NACK on transmit of address {io}";
             break;
         case 3:
-            errstr = "received NACK on transmit of data";
+            errstr = "received NACK on transmit of data {io}";
             break;
         case 4:
-            errstr = "unknown error on endTransmission";
+            errstr = "unknown error on endTransmission {io}";
             break;
         }
 #else
@@ -466,24 +452,14 @@ const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint
         int readlen = Size + (sizeof(uint8_t)*2);
         int len = _i2cPort->requestFrom((int) DevAddress, readlen+_readLengthAdjustment);
         if (len == 0) {
-            errstr = ERRSTR("i2c: no response",i2cerr);
+            errstr = ERRSTR("i2c: no response {io}",i2cerr);
         } else if (len != readlen) {
-#if I2C_DATA_TRACE
-            NoteDebugf("i2c incorrect amount of data: %d expected, %d actual\n", readlen, len);
-#endif
-            errstr = ERRSTR("i2c: incorrect amount of data received",i2cerr);
+            errstr = ERRSTR("i2c: incorrect amount of data received {io}",i2cerr);
         } else {
             availbyte = _i2cPort->read();
             goodbyte = _i2cPort->read();
             if (goodbyte != Size) {
-#if I2C_DATA_TRACE
-                NoteDebugf("%d != %d, received:\n", goodbyte, Size);
-                for (size_t i=0; i<Size; i++) {
-                    NoteDebugf("%c", _i2cPort.read());
-                }
-                NoteDebugf("\n");
-#endif
-                errstr = ERRSTR("i2c: incorrect amount of data",i2cerr);
+                errstr = ERRSTR("i2c: incorrect amount of data {io}",i2cerr);
             } else {
                 for (size_t i=0; i<Size; i++) {
                     *pBuffer++ = _i2cPort->read();
@@ -496,17 +472,6 @@ const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint
         NoteDebugln(errstr);
         return errstr;
     }
-#if I2C_DATA_TRACE
-    if (Size) {
-        for (int i=0; i<Size; i++) {
-            NoteDebugf("%02x", original[i]);
-        }
-        NoteDebugf("\n", availbyte);
-    }
-    if (availbyte) {
-        NoteDebugf("%d available\n", availbyte);
-    }
-#endif
     *available = availbyte;
     return NULL;
 }
