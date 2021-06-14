@@ -42,59 +42,109 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "NoteI2c.hpp"
 #include "NoteSerial.hpp"
 
-TwoWire *Notecard::_i2cPort;
 Stream *Notecard::_debugSerial;
 bool Notecard::_debugSerialInitialized;
 
-#if defined(NOTE_FLOAT) || not defined(ERRDBG)
-static const char *i2cerr = "i2c {io}";
-#endif
-
 namespace
 {
-NoteSerial * noteSerial(nullptr);
+    NoteI2c *noteI2c(nullptr);
 
-bool noteSerialAvailable (void)
-{
-    bool result;
-    if (noteSerial) {
-        result = noteSerial->available();
-    } else {
-        result = false;
+    const char *noteI2cReceive(uint16_t device_address_, uint8_t *buffer_, uint16_t size_, uint32_t *available_)
+    {
+        const char *result;
+        if (noteI2c)
+        {
+            result = noteI2c->receive(device_address_, buffer_, size_, available_);
+        }
+        else
+        {
+            result = "i2c: A call to Notecard::begin() is required. {io}";
+        }
+        return result;
     }
-    return result;
-}
 
-char noteSerialReceive (void)
-{
-    char result;
-    if (noteSerial) {
-        result = noteSerial->receive();
-    } else {
-        result = '\0';
+    bool noteI2cReset(uint16_t device_address_)
+    {
+        bool result;
+        if (noteI2c)
+        {
+            result = noteI2c->reset(device_address_);
+        }
+        else
+        {
+            result = false;
+        }
+        return result;
     }
-    return result;
-}
 
-bool noteSerialReset (void)
-{
-    bool result;
-    if (noteSerial) {
-        result = noteSerial->reset();
-    } else {
-        result = false;
+    const char *noteI2cTransmit(uint16_t device_address_, uint8_t *buffer_, uint16_t size_)
+    {
+        const char *result;
+        if (noteI2c)
+        {
+            result = noteI2c->transmit(device_address_, buffer_, size_);
+        }
+        else
+        {
+            result = "i2c: A call to Notecard::begin() is required. {io}";
+        }
+        return result;
     }
-    return result;
-}
 
-void noteSerialTransmit (uint8_t *text_, size_t len_, bool flush_)
-{
-    if (noteSerial) {
-        noteSerial->transmit(text_, len_, flush_);
+    NoteSerial *noteSerial(nullptr);
+
+    bool noteSerialAvailable(void)
+    {
+        bool result;
+        if (noteSerial)
+        {
+            result = noteSerial->available();
+        }
+        else
+        {
+            result = false;
+        }
+        return result;
     }
-}
+
+    char noteSerialReceive(void)
+    {
+        char result;
+        if (noteSerial)
+        {
+            result = noteSerial->receive();
+        }
+        else
+        {
+            result = '\0';
+        }
+        return result;
+    }
+
+    bool noteSerialReset(void)
+    {
+        bool result;
+        if (noteSerial)
+        {
+            result = noteSerial->reset();
+        }
+        else
+        {
+            result = false;
+        }
+        return result;
+    }
+
+    void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
+    {
+        if (noteSerial)
+        {
+            noteSerial->transmit(text_, len_, flush_);
+        }
+    }
 }
 
 // 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
@@ -114,20 +164,19 @@ int _readLengthAdjustment = 0;
               The I2C Address to use for the Notecard.
     @param    i2cmax
               The max length of each message to send from the host to
-        the Notecard. Used to ensure the messages are sized appropriately
-        for the host.
-  @param    wirePort
-        The TwoWire implementation to use for I2C communication.
+              the Notecard. Used to ensure the messages are sized appropriately
+              for the host.
+    @param    wirePort
+              The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 {
     NoteSetFnDefault(malloc, free, delay, millis);
-    _i2cPort = &wirePort;
-    _i2cPort->begin();
+    noteI2c = make_note_i2c(&wirePort);
 
-    NoteSetFnI2C(i2caddress, i2cmax, Notecard::noteI2CReset,
-                 Notecard::noteI2CTransmit, Notecard::noteI2CReceive);
+    NoteSetFnI2C(i2caddress, i2cmax, noteI2cReset,
+                 noteI2cTransmit, noteI2cReceive);
 }
 
 /**************************************************************************/
@@ -340,138 +389,9 @@ bool Notecard::responseError(J *rsp)
 /**************************************************************************/
 size_t Notecard::debugSerialOutput(const char *message)
 {
-    if (!_debugSerialInitialized) {
+    if (!_debugSerialInitialized)
+    {
         return 0;
     }
-    return(_debugSerial->print(message));
-}
-
-/**************************************************************************/
-/*!
-    @brief  Resets the I2C port. Required by note-c.
-    @return `True`.
-*/
-/**************************************************************************/
-bool Notecard::noteI2CReset(uint16_t DevAddress)
-{
-    (void)DevAddress;
-#if WIRE_HAS_END
-    _i2cPort->end();
-#endif
-    _i2cPort->begin();
-    return true;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Transmits an amount of data from the host in blocking mode.
-    @param    DevAddress
-              The I2C address.
-    @param    pBuffer
-              The data to transmit over I2C. The caller should have shifted
-              it right so that the low bit is NOT the read/write bit.
-    @param    Size
-              the number of bytes to transmit.
-    @returns A string with an error, or `NULL` if the transmit was successful.
-*/
-/**************************************************************************/
-const char *Notecard::noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size)
-{
-    _i2cPort->beginTransmission((int) DevAddress);
-    uint8_t reg = Size;
-    bool success = (_i2cPort->write(&reg, sizeof(uint8_t)) == sizeof(uint8_t));
-    if (success) {
-        success = (_i2cPort->write(pBuffer, Size) == Size);
-    }
-    if (_i2cPort->endTransmission() != 0) {
-        success = false;
-    }
-    if (!success) {
-        return ERRSTR("i2c: write error {io}",i2cerr);
-    }
-    return NULL;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Receives an amount of data from the Notecard in blocking mode.
-    @param    DevAddress
-              The I2C address.
-    @param    pBuffer
-              The data to transmit over I2C. The caller should have shifted
-              it right so that the low bit is NOT the read/write bit.
-    @param    Size
-              the number of bytes to transmit.
-    @param    available
-              The number of bytes available to read, out param,
-              updated by the function.
-    @returns A string with an error, or `NULL` if the receive was successful.
-*/
-/**************************************************************************/
-const char *Notecard::noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *available)
-{
-    const char *errstr = NULL;
-    uint8_t goodbyte = 0;
-    uint8_t availbyte = 0;
-
-    // Retry errors, because it's harmless to do so
-    for (int i=0; i<3; i++) {
-        _i2cPort->beginTransmission((int) DevAddress);
-        _i2cPort->write((uint8_t)0);
-        _i2cPort->write((uint8_t)Size);
-        uint8_t result = _i2cPort->endTransmission();
-        if (result == 0) {
-            errstr = NULL;
-            break;
-        }
-#ifdef ERRDBG
-        switch (result) {
-        case 1:
-            // Interestingly, this is the error that is returned when
-            // some random device on the I2C bus is holding SCL low
-            errstr = "data too long to fit in transmit buffer {io}";
-            break;
-        case 2:
-            errstr = "received NACK on transmit of address {io}";
-            break;
-        case 3:
-            errstr = "received NACK on transmit of data {io}";
-            break;
-        case 4:
-            errstr = "unknown error on endTransmission {io}";
-            break;
-        }
-#else
-        errstr = i2cerr;
-#endif
-    }
-
-    // Only receive if we successfully began transmission
-    if (errstr == NULL) {
-
-        int readlen = Size + (sizeof(uint8_t)*2);
-        int len = _i2cPort->requestFrom((int) DevAddress, readlen+_readLengthAdjustment);
-        if (len == 0) {
-            errstr = ERRSTR("i2c: no response {io}",i2cerr);
-        } else if (len != readlen) {
-            errstr = ERRSTR("i2c: incorrect amount of data received {io}",i2cerr);
-        } else {
-            availbyte = _i2cPort->read();
-            goodbyte = _i2cPort->read();
-            if (goodbyte != Size) {
-                errstr = ERRSTR("i2c: incorrect amount of data {io}",i2cerr);
-            } else {
-                for (size_t i=0; i<Size; i++) {
-                    *pBuffer++ = _i2cPort->read();
-                }
-            }
-        }
-    }
-
-    if (errstr != NULL) {
-        NoteDebugln(errstr);
-        return errstr;
-    }
-    *available = availbyte;
-    return NULL;
+    return (_debugSerial->print(message));
 }

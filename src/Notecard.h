@@ -138,13 +138,9 @@ public:
     bool responseError(J *rsp);
 
 private:
-    static TwoWire *_i2cPort;
     static Stream *_debugSerial;
     static bool _debugSerialInitialized;
 
-    static bool noteI2CReset(uint16_t DevAddress);
-    static const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-    static const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
     static size_t debugSerialOutput(const char *message);
 };
 

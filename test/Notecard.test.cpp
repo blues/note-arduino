@@ -8,7 +8,7 @@
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note.c ../src/Notecard.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++17 -I. -I../src -DMOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/Notecard.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++14 -I. -I../src -DMOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
@@ -759,25 +759,27 @@ int test_notecard_deleteResponse_does_not_modify_j_object_parameter_pointer_befo
 int test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing_to_note_c()
 {
   int result;
-  Notecard notecard;
-  const char str[] = "Hello, Test 30!";
-  char str_copy[32];
 
-  // Setup
-  strcpy(str_copy, str);
-  noteDebug_Parameters.message = nullptr;
+  // Arrange
+  const char str[] = "Hello, Test 30!";
+  Notecard notecard;
+
+  noteDebug_Parameters.reset();
 
   // Action
-  notecard.logDebug(str_copy);
+  notecard.logDebug(str);
 
   // Evaluate Result
-  if (0 == strcmp(str, noteDebug_Parameters.message))
+  if (0 == strcmp(str, noteDebug_Parameters.message_cache.c_str()))
   {
     result = 0;
   }
   else
   {
     result = 30;
+    std::cout << "FAILED]" << std::endl;
+    std::cout << "\tnoteDebug_Parameters.message_cache.c_str() == \"" << noteDebug_Parameters.message_cache.c_str() << "\", EXPECTED: \"" << str << "\"" << std::endl;
+    std::cout << "[";
   }
 
   return result;
@@ -786,23 +788,27 @@ int test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing
 int test_notecard_logDebugf_does_not_modify_string_parameter_value_before_passing_to_note_c()
 {
   int result;
-  Notecard notecard;
-  const char str[] = "Hello, Test 30!";
 
-  // Setup
-  noteDebug_Parameters.message = nullptr;
+  // Arrange
+  const char str[] = "Hello, Test 31!";
+  Notecard notecard;
+
+  noteDebug_Parameters.reset();
 
   // Action
-  notecard.logDebugf("Hello, %s %d%c", "Test", 30, '!');
+  notecard.logDebugf("Hello, %s %d%c", "Test", 31, '!');
 
   // Evaluate Result
-  if (0 == strcmp(str, noteDebug_Parameters.message))
+  if (0 == strcmp(str, noteDebug_Parameters.message_cache.c_str()))
   {
     result = 0;
   }
   else
   {
     result = 31;
+    std::cout << "FAILED]" << std::endl;
+    std::cout << "\tnoteDebug_Parameters.message_cache.c_str() == \"" << noteDebug_Parameters.message_cache.c_str() << "\", EXPECTED: \"" << str << "\"" << std::endl;
+    std::cout << "[";
   }
 
   return result;
@@ -949,13 +955,13 @@ int test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_call
   Notecard notecard;
 
   // Setup
-  twoWireBegin_Parameters.called = false;
+  twoWireBegin_Parameters.invoked = 0;
 
   // Action
   notecard.begin();
 
   // Evaluate Result
-  if (true == twoWireBegin_Parameters.called)
+  if (twoWireBegin_Parameters.invoked)
   {
     result = 0;
   }
@@ -974,13 +980,13 @@ int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
   TwoWire mockWire;
 
   // Setup
-  twoWireBegin_Parameters.called = false;
+  twoWireBegin_Parameters.invoked = 0;
 
   // Action
   notecard.begin(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, mockWire);
 
   // Evaluate Result
-  if (true == twoWireBegin_Parameters.called)
+  if (twoWireBegin_Parameters.invoked)
   {
     result = 0;
   }

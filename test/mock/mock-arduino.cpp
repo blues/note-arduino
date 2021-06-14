@@ -6,6 +6,13 @@ HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
 TwoWireBegin_Parameters twoWireBegin_Parameters;
+TwoWireBeginTransmission_Parameters twoWireBeginTransmission_Parameters;
+TwoWireEnd_Parameters twoWireEnd_Parameters;
+TwoWireEndTransmission_Parameters twoWireEndTransmission_Parameters;
+TwoWireRead_Parameters twoWireRead_Parameters;
+TwoWireRequestFrom_Parameters twoWireRequestFrom_Parameters;
+TwoWireWriteByte_Parameters twoWireWriteByte_Parameters;
+TwoWireWriteBuffer_Parameters twoWireWriteBuffer_Parameters;
 
 // Global Arduino Objects (Singletons)
 HardwareSerial Serial;
@@ -33,6 +40,7 @@ HardwareSerial::available (
     // Record invocation(s)
     ++hardwareSerialAvailable_Parameters.invoked;
 
+    // Return user-supplied result
     return hardwareSerialAvailable_Parameters.result;
 }
 
@@ -59,6 +67,7 @@ HardwareSerial::read (
     // Record invocation(s)
     ++hardwareSerialRead_Parameters.invoked;
 
+    // Return user-supplied result
     return hardwareSerialRead_Parameters.result;
 }
 
@@ -71,6 +80,7 @@ HardwareSerial::write (
     hardwareSerialWrite_Parameters.buffer = buffer;
     hardwareSerialWrite_Parameters.size = size;
 
+    // Return user-supplied result
     return hardwareSerialWrite_Parameters.result;
 }
 
@@ -85,61 +95,113 @@ void
 TwoWire::begin (
     void
 ) {
-  // Capture call
-  twoWireBegin_Parameters.called = true;
+    // Record invocation(s)
+    ++twoWireBegin_Parameters.invoked;
 }
 
 void
 TwoWire::beginTransmission (
-    int
+    uint8_t address
 ) {
+    // Record invocation(s)
+    ++twoWireBeginTransmission_Parameters.invoked;
 
+    // Stash parameter(s)
+    twoWireBeginTransmission_Parameters.address = address;
 }
 
 void
 TwoWire::end (
     void
 ) {
-
+    // Record invocation(s)
+    ++twoWireEnd_Parameters.invoked;
 }
 
-int
+uint8_t
 TwoWire::endTransmission (
     void
 ) {
-    return 0;
-}
+    uint8_t result;
 
-unsigned char
-TwoWire::read (
-    void
-) {
-    return 'z';
+    // Record invocation(s)
+    const size_t invocation = twoWireEndTransmission_Parameters.invoked++;
+
+    // Return user-supplied result if available
+    if (twoWireEndTransmission_Parameters.results.size() > invocation) {
+        result = twoWireEndTransmission_Parameters.results[invocation];
+    } else {
+        result = 0;
+    }
+
+    return result;
 }
 
 int
+TwoWire::read (
+    void
+) {
+    int result;
+
+    // Record invocation(s)
+    const size_t invocation = twoWireRead_Parameters.invoked++;
+
+    // Return user-supplied result if available
+    if (twoWireRead_Parameters.results.size() > invocation) {
+        result = twoWireRead_Parameters.results[invocation];
+    } else {
+        result = 0;
+    }
+
+    return result;
+}
+
+uint8_t
 TwoWire::requestFrom (
-    int dev_addr,
-    unsigned int read_len
+    int address,
+    int quantity
 ) {
-    (void)dev_addr;
-    (void)read_len;
-    return 0;
+    // Record invocation(s)
+    ++twoWireRequestFrom_Parameters.invoked;
+
+    // Stash parameter(s)
+    twoWireRequestFrom_Parameters.address = address;
+    twoWireRequestFrom_Parameters.quantity = quantity;
+
+
+    // Return user-supplied result
+    return twoWireRequestFrom_Parameters.result;
 }
 
-void
+size_t
 TwoWire::write (
-    unsigned char c
+    uint8_t c
 ) {
-    (void)c;
+    // Record invocation(s)
+    ++twoWireWriteByte_Parameters.invoked;
+
+    // Stash parameter(s)
+    twoWireWriteByte_Parameters.c = c;
+
+    // Buffer writes
+    twoWireWriteByte_Parameters.write_buffer.push_back(c);
+
+    // Return user-supplied result
+    return twoWireWriteByte_Parameters.result;
 }
 
-long unsigned int
+size_t
 TwoWire::write (
-    unsigned char * msg,
-    long unsigned int len
+    uint8_t * buffer,
+    size_t size
 ) {
-    (void)msg;
-    (void)len;
-    return 0;
+    // Record invocation(s)
+    ++twoWireWriteBuffer_Parameters.invoked;
+
+    // Stash parameter(s)
+    twoWireWriteBuffer_Parameters.buffer = buffer;
+    twoWireWriteBuffer_Parameters.size = size;
+
+    // Return user-supplied result
+    return twoWireWriteBuffer_Parameters.result;
 }

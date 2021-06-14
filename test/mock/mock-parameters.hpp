@@ -1,6 +1,8 @@
 #ifndef MOCK_PARAMETERS_HPP
 #define MOCK_PARAMETERS_HPP
 
+#include <string>
+
 #include "note-c/note.h"
 
 #ifdef NoteDeleteResponse
@@ -23,7 +25,12 @@ struct NoteDebug_Parameters {
     ) :
         message(nullptr)
     { }
+    void reset (void) {
+        message = nullptr;
+        message_cache.clear();
+    }
     const char *message;
+    std::string message_cache;
 };
 
 struct NoteDebugSyncStatus_Parameters {
