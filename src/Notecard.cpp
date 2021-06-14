@@ -147,10 +147,6 @@ namespace
     }
 }
 
-// 2018-06 ST Microelectronics has a HAL bug that causes an infinite hang.
-// This code enables us to exercise that code path to test the state of the bug.
-int _readLengthAdjustment = 0;
-
 /***************************************************************************
  PUBLIC FUNCTIONS
  ***************************************************************************/
@@ -226,20 +222,6 @@ void Notecard::clearDebugOutputStream()
 {
     _debugSerialInitialized = false;
     NoteSetFnDebugOutput(nullptr);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Adjust the I2C read length.
-            Method enabling a developer to test the state of a known issue
-            with the I2C HAL on some ST Microelectronics boards.
-    @param    Adjustment
-              The read length to override.
-*/
-/**************************************************************************/
-void Notecard::i2cTest(int Adjustment)
-{
-    _readLengthAdjustment = Adjustment;
 }
 
 /**************************************************************************/
