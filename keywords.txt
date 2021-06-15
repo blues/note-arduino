@@ -8,7 +8,6 @@ FUNCTIONS
 ==================================
 begin	KEYWORD2
 setDebugOutputStream	KEYWORD2
-i2cTest	KEYWORD2
 newCommand	KEYWORD2
 newRequest	KEYWORD2
 sendRequest	KEYWORD2

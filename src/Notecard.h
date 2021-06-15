@@ -126,7 +126,6 @@ public:
     void begin(HardwareSerial &serial, int speed = 9600);
     void setDebugOutputStream(Stream &dbgserial);
     void clearDebugOutputStream(void);
-    void i2cTest(int Adjustment);
     J *newRequest(const char *request);
     J *newCommand(const char *request);
     bool sendRequest(J *req);
