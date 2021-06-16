@@ -125,17 +125,32 @@ For details on contributions we accept and the process for contributing, see our
 
 From the `test` directory, execute the `run_tests.sh` script.
 
+### Dependencies
+
+`bash` - the tests scripts are written in `bash` syntax
+`valgrind` - required to identify and protect against memory leaks.
+
 ### Success
 
-Upon success, you will see the following message:
+Upon success, you will see a message similar to the following:
 
 ```none
 ...
-[passed] test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller
-[passed] test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c
-[passed] test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller
+[passed] test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true
+[passed] test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false
+[passed] test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller
+==13467==
+==13467== HEAP SUMMARY:
+==13467==     in use at exit: 0 bytes in 0 blocks
+==13467==   total heap usage: 2 allocs, 2 frees, 73,728 bytes allocated
+==13467==
+==13467== All heap blocks were freed -- no leaks are possible
+==13467==
+==13467== For lists of detected and suppressed errors, rerun with: -s
+==13467== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+NoteSerial_Arduino tests passed!
 
-All tests passed!
+All tests have passed!
 ```
 
 ### Failure
@@ -144,34 +159,48 @@ When a test fails, you will see a message similar to the following:
 
 ```none
 ...
-[passed] test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c
-[passed] test_notecard_sendRequest_does_not_modify_note_c_result_value_before_returning_to_caller
-[FAILED] test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c
+[passed] test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method
+[passed] test_notei2c_arduino_receive_requests_response_data_from_notecard
+[FAILED] NoteI2c_Arduino.test.cpp:120
+        twoWireBeginTransmission_Parameters.invoked == 2, EXPECTED: > 1
+        twoWireWriteByte_Parameters.invoked == 4, EXPECTED: > 2
+        twoWireEndTransmission_Parameters.invoked == 2, EXPECTED: > 1
+[FAILED] test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure
+==14566==
+==14566== HEAP SUMMARY:
+==14566==     in use at exit: 0 bytes in 0 blocks
+==14566==   total heap usage: 7 allocs, 7 frees, 73,738 bytes allocated
+==14566==
+==14566== All heap blocks were freed -- no leaks are possible
+==14566==
+==14566== For lists of detected and suppressed errors, rerun with: -s
+==14566== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+NoteI2c_Arduino tests failed!
 
-Test <27> failed!
+TESTS FAILED!!!
 ```
 
 Here, the failed test is the last reported test,
-`test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c`,
-and the related test number is `27`. The return value of each test is unique,
-therefore this number can be used to find the test in `notecard-test.cpp` by
-searching for "`result = 27`".
+`test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure`. The first
+line marked with `[FAILED]` indicates the file and line number related to the
+failed test: file `NoteI2c_Arduino.test.cpp` near line `120`. The return value
+of each test is a non-zero identifier related to the test suite.
 
 ### Adding a New Test
 
 The signature of a test function is `int(*test_fn)(void)`, so to say, a test
 function takes NO parameters and returns an integer.
 
-To add a new test to `notecard-test.cpp`, add your new test immediately below
-the last test and increment the error value, `result`, by 1. At the time of
-writing, the last test returns an error value of 36, therefore the error
-condition of a new test should set the `result` value to 37.
+To add a new test to a test suite, create your new test and add the test
+to the test runner at the bottom of the file. You may find it easiest to copy
+an existing test and adapt the **Arrange**, **Action**, and **Assert** sections.
+Please create an expressive error message that can assist in understanding a
+failed test.
 
-To add this test to the runner, copy the test's name and use it to create an
-entry in the `tests` array in the `main` function. The entry will occupy it's
-own line at the end of the array, and syntax should be as follows,
-`{test_name, "test_name"}`. _Don't forget to add a comma to the end of the
-array, before adding your new entry._
+To add a test to the runner, copy the test's name and use it to create an entry
+in the `tests` array in the `main` function. The entry will occupy it's own line
+at the end of the array, and syntax should be as follows,
+`{test_name, "test_name"},`.
 
 ## More Information
 
