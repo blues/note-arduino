@@ -11,20 +11,23 @@ int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_
 {
     int result;
 
-    // Setup
-    hardwareSerialBegin_Parameters.baud = 0;
+    // Arrange
+    hardwareSerialBegin_Parameters.reset();
 
     // Action
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Evaluate Result
-    if (0 != hardwareSerialBegin_Parameters.baud)
+    // Assert
+    if (hardwareSerialBegin_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 1;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.invoked == " << !!hardwareSerialBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -33,22 +36,26 @@ int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_
 int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin()
 {
     int result;
+
+    // Arrange
     const size_t EXPECTED_BAUD_RATE = 9600;
 
-    // Setup
-    hardwareSerialBegin_Parameters.baud = 0;
+    hardwareSerialBegin_Parameters.reset();
 
     // Action
     NoteSerial_Arduino noteserial(Serial, EXPECTED_BAUD_RATE);
 
-    // Evaluate Result
+    // Assert
     if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
     {
         result = 0;
     }
     else
     {
-        result = 2;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -57,22 +64,25 @@ int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_pa
 int test_noteserial_arduino_available_invokes_hardware_serial_available()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialAvailable_Parameters.invoked = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    hardwareSerialAvailable_Parameters.reset();
 
     // Action
     noteserial.available();
 
-    // Evaluate Result
+    // Assert
     if (hardwareSerialAvailable_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 3;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialAvailable_Parameters.invoked == " << !!hardwareSerialAvailable_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -81,23 +91,28 @@ int test_noteserial_arduino_available_invokes_hardware_serial_available()
 int test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller()
 {
     int result;
+
+    // Arrange
     NoteSerial_Arduino noteserial(Serial, 9600);
     const size_t EXPECTED_RESULT = 79;
 
-    // Setup
+    hardwareSerialAvailable_Parameters.reset();
     hardwareSerialAvailable_Parameters.result = EXPECTED_RESULT;
 
     // Action
     const size_t ACTUAL_RESULT = noteserial.available();
 
-    // Evaluate Result
+    // Assert
     if (ACTUAL_RESULT == EXPECTED_RESULT)
     {
         result = 0;
     }
     else
     {
-        result = 4;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial.available() == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -106,22 +121,26 @@ int test_noteserial_arduino_available_does_not_modify_hardware_serial_available_
 int test_noteserial_arduino_receive_invokes_hardware_serial_read()
 {
     int result;
+
+    // Arrange
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialRead_Parameters.invoked = 0;
+    hardwareSerialRead_Parameters.reset();
 
     // Action
     noteserial.receive();
 
-    // Evaluate Result
+    // Assert
     if (hardwareSerialRead_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 5;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialRead_Parameters.invoked == " << hardwareSerialRead_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -130,23 +149,28 @@ int test_noteserial_arduino_receive_invokes_hardware_serial_read()
 int test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_value_before_returning_to_caller()
 {
     int result;
+
+    // Arrange
     const char EXPECTED_RESULT = 'z';
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
+    hardwareSerialRead_Parameters.reset();
     hardwareSerialRead_Parameters.result = EXPECTED_RESULT;
 
     // Action
     const char ACTUAL_RESULT = noteserial.receive();
 
-    // Evaluate Result
-    if (EXPECTED_RESULT == ACTUAL_RESULT)
+    // Assert
+    if (ACTUAL_RESULT == EXPECTED_RESULT)
     {
         result = 0;
     }
     else
     {
-        result = 6;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial.receive() == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -155,22 +179,25 @@ int test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_
 int test_noteserial_arduino_reset_invokes_hardware_serial_begin()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialBegin_Parameters.baud = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    hardwareSerialBegin_Parameters.reset();
 
     // Action
     noteserial.reset();
 
-    // Evaluate Result
-    if (0 != hardwareSerialBegin_Parameters.baud)
+    // Assert
+    if (hardwareSerialBegin_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 7;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.invoked == " << !!hardwareSerialBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -179,23 +206,27 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin()
 int test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_parameter_that_was_originally_supplied_to_the_constructor()
 {
     int result;
+
+    // Arrange
     const size_t EXPECTED_BAUD_RATE = 9600;
     NoteSerial_Arduino noteserial(Serial, EXPECTED_BAUD_RATE);
 
-    // Setup
-    hardwareSerialBegin_Parameters.baud = 0;
+    hardwareSerialBegin_Parameters.reset();
 
     // Action
     noteserial.reset();
 
-    // Evaluate Result
+    // Assert
     if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
     {
         result = 0;
     }
     else
     {
-        result = 8;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -204,21 +235,24 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_pa
 int test_noteserial_arduino_reset_always_returns_true()
 {
     int result;
+
+    // Arrange
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-
     // Action
-    const char ACTUAL_RESULT = noteserial.reset();
+    const bool ACTUAL_RESULT = noteserial.reset();
 
-    // Evaluate Result
-    if (true == ACTUAL_RESULT)
+    // Assert
+    if (ACTUAL_RESULT)
     {
         result = 0;
     }
     else
     {
-        result = 9;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial.reset() == " << ACTUAL_RESULT << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -227,23 +261,26 @@ int test_noteserial_arduino_reset_always_returns_true()
 int test_noteserial_arduino_transmit_invokes_hardware_serial_write()
 {
     int result;
+
+    // Arrange
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialWrite_Parameters.buffer = nullptr;
-    hardwareSerialWrite_Parameters.size = 0;
+    hardwareSerialWrite_Parameters.reset();
 
     // Action
-    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test 10!")), 16, true);
+    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test!")), 13, true);
 
-    // Evaluate Result
-    if (nullptr != hardwareSerialWrite_Parameters.buffer)
+    // Assert
+    if (hardwareSerialWrite_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 10;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialWrite_Parameters.invoked == " << !!hardwareSerialWrite_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -252,26 +289,27 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_write()
 int test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_before_passing_to_hardware_serial_write()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
-    const char EXPECTED_RESULT[] = "Hello, Test 11!";
-    char str_copy[32];
 
-    // Setup
-    strcpy(str_copy, EXPECTED_RESULT);
-    hardwareSerialWrite_Parameters.buffer = nullptr;
-    hardwareSerialWrite_Parameters.size = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    const char EXPECTED_RESULT[] = "Hello, Test!";
+
+    hardwareSerialWrite_Parameters.reset();
 
     // Action
-    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>(str_copy)), strlen(str_copy), true);
+    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>(EXPECTED_RESULT)), strlen(EXPECTED_RESULT), true);
 
-    // Evaluate Result
-    if (0 == strcmp(EXPECTED_RESULT, const_cast<const char *>(reinterpret_cast<char *>(hardwareSerialWrite_Parameters.buffer))))
+    // Assert
+    if (!strcmp(EXPECTED_RESULT, hardwareSerialWrite_Parameters.buffer_cache.c_str()))
     {
         result = 0;
     }
     else
     {
-        result = 11;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialWrite_Parameters.buffer_cache.c_str() == \"" << hardwareSerialWrite_Parameters.buffer_cache.c_str() << "\", EXPECTED: \"" << EXPECTED_RESULT << "\"" << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -280,24 +318,27 @@ int test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_befo
 int test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
-    const size_t EXPECTED_RESULT = 16;
 
-    // Setup
-    hardwareSerialWrite_Parameters.buffer = nullptr;
-    hardwareSerialWrite_Parameters.size = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    const size_t EXPECTED_RESULT = 13;
+
+    hardwareSerialWrite_Parameters.reset();
 
     // Action
-    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test 12!")), EXPECTED_RESULT, true);
+    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test!")), EXPECTED_RESULT, true);
 
-    // Evaluate Result
+    // Assert
     if (EXPECTED_RESULT == hardwareSerialWrite_Parameters.size)
     {
         result = 0;
     }
     else
     {
-        result = 12;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialWrite_Parameters.size == " << hardwareSerialWrite_Parameters.size << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -306,22 +347,25 @@ int test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before
 int test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialFlush_Parameters.invoked = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    hardwareSerialFlush_Parameters.reset();
 
     // Action
-    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test 13!")), 16, true);
+    noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test!")), 13, true);
 
-    // Evaluate Result
+    // Assert
     if (hardwareSerialFlush_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 13;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialFlush_Parameters.invoked == " << !!hardwareSerialFlush_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -330,22 +374,25 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_pa
 int test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false()
 {
     int result;
-    NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Setup
-    hardwareSerialFlush_Parameters.invoked = 0;
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    hardwareSerialFlush_Parameters.reset();
 
     // Action
     noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test 14!")), 16, false);
 
-    // Evaluate Result
+    // Assert
     if (!hardwareSerialFlush_Parameters.invoked)
     {
         result = 0;
     }
     else
     {
-        result = 14;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialFlush_Parameters.invoked == " << !!hardwareSerialFlush_Parameters.invoked << ", EXPECTED: " << false << std::endl;
+        std::cout << "[";
     }
 
     return result;
@@ -354,23 +401,28 @@ int test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_
 int test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller()
 {
     int result;
-    const size_t EXPECTED_RESULT = 16;
 
-    // Setup
-    hardwareSerialWrite_Parameters.result = EXPECTED_RESULT;
+    // Arrange
+    const size_t EXPECTED_RESULT = 13;
     NoteSerial_Arduino noteserial(Serial, 9600);
 
-    // Action
-    const char ACTUAL_RESULT = noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test 15!")), 16, true);
+    hardwareSerialWrite_Parameters.reset();
+    hardwareSerialWrite_Parameters.result = EXPECTED_RESULT;
 
-    // Evaluate Result
-    if (EXPECTED_RESULT == ACTUAL_RESULT)
+    // Action
+    const size_t ACTUAL_RESULT = noteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>("Hello, Test!")), 13, true);
+
+    // Assert
+    if (ACTUAL_RESULT == EXPECTED_RESULT)
     {
         result = 0;
     }
     else
     {
-        result = 15;
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>(\"Hello, Test!\")), 13, true) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+        std::cout << "[";
     }
 
     return result;

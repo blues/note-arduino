@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 void delay (unsigned int);
@@ -24,6 +25,13 @@ struct HardwareSerialAvailable_Parameters {
         invoked(0),
         result(0)
     { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = 0;
+    }
     size_t invoked;
     size_t result;
 };
@@ -34,6 +42,14 @@ struct HardwareSerialBegin_Parameters {
     ) :
         baud(0)
     { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        baud = 0;
+    }
+    size_t invoked;
     unsigned int baud;
 };
 
@@ -43,6 +59,12 @@ struct HardwareSerialFlush_Parameters {
     ) :
         invoked(0)
     { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+    }
     size_t invoked;
 };
 
@@ -52,8 +74,15 @@ struct HardwareSerialRead_Parameters {
         void
     ) :
         invoked(0),
-        result('\0')
+        result(0)
     { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = 0;
+    }
     size_t invoked;
     char result;
 };
@@ -62,11 +91,24 @@ struct HardwareSerialWrite_Parameters {
     HardwareSerialWrite_Parameters(
         void
     ) :
+        invoked(0),
         buffer(nullptr),
         size(0),
         result(0)
     { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        buffer = nullptr;
+        buffer_cache.clear();
+        size = 0;
+        result = 0;
+    }
+    size_t invoked;
     uint8_t * buffer;
+    std::string buffer_cache;
     size_t size;
     size_t result;
 };

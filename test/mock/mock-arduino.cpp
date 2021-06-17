@@ -48,6 +48,9 @@ void
 HardwareSerial::begin (
     unsigned int baud
 ) {
+    // Record invocation(s)
+    ++hardwareSerialBegin_Parameters.invoked;
+
     // Stash parameter(s)
     hardwareSerialBegin_Parameters.baud = baud;
 }
@@ -76,8 +79,12 @@ HardwareSerial::write (
     uint8_t * buffer,
     size_t size
 ) {
+    // Record invocation(s)
+    ++hardwareSerialWrite_Parameters.invoked;
+
     // Stash parameter(s)
     hardwareSerialWrite_Parameters.buffer = buffer;
+    hardwareSerialWrite_Parameters.buffer_cache = reinterpret_cast<char *>(buffer);
     hardwareSerialWrite_Parameters.size = size;
 
     // Return user-supplied result
