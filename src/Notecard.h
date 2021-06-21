@@ -29,7 +29,6 @@
 
 #ifndef MOCK
 #include <Arduino.h>
-#include <HardwareSerial.h>
 #include <Wire.h>
 #include <note-c/note.h>
 #else
@@ -135,12 +134,6 @@ public:
     void logDebugf(const char *format, ...);
     bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
     bool responseError(J *rsp);
-
-private:
-    static Stream *_debugSerial;
-    static bool _debugSerialInitialized;
-
-    static size_t debugSerialOutput(const char *message);
 };
 
 #endif

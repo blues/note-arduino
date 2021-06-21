@@ -42,14 +42,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "NoteLog.hpp"
 #include "NoteI2c.hpp"
 #include "NoteSerial.hpp"
 
-Stream *Notecard::_debugSerial;
-bool Notecard::_debugSerialInitialized;
-
 namespace
 {
+    NoteLog *noteLog(nullptr);
+
+    size_t noteLogPrint(const char * str_)
+    {
+        size_t result;
+        if (noteLog)
+        {
+            result = noteLog->print(str_);
+        }
+        else
+        {
+            result = 0;
+        }
+        return result;
+    }
+
     NoteI2c *noteI2c(nullptr);
 
     const char *noteI2cReceive(uint16_t device_address_, uint8_t *buffer_, uint16_t size_, uint32_t *available_)
@@ -208,9 +222,8 @@ void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 /**************************************************************************/
 void Notecard::setDebugOutputStream(Stream &dbgserial)
 {
-    _debugSerial = &dbgserial;
-    _debugSerialInitialized = true;
-    NoteSetFnDebugOutput(Notecard::debugSerialOutput);
+    noteLog = make_note_log(&dbgserial);
+    NoteSetFnDebugOutput(noteLogPrint);
 }
 
 /**************************************************************************/
@@ -220,7 +233,6 @@ void Notecard::setDebugOutputStream(Stream &dbgserial)
 /**************************************************************************/
 void Notecard::clearDebugOutputStream()
 {
-    _debugSerialInitialized = false;
     NoteSetFnDebugOutput(nullptr);
 }
 
@@ -355,25 +367,4 @@ bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
 bool Notecard::responseError(J *rsp)
 {
     return NoteResponseError(rsp);
-}
-
-/***************************************************************************
- PRIVATE FUNCTIONS
- ***************************************************************************/
-
-/**************************************************************************/
-/*!
-    @brief  Writes a message to the debug Serial stream.
-    @param    message
-              The message to log.
-    @return The number of bytes written.
-*/
-/**************************************************************************/
-size_t Notecard::debugSerialOutput(const char *message)
-{
-    if (!_debugSerialInitialized)
-    {
-        return 0;
-    }
-    return (_debugSerial->print(message));
 }
