@@ -5,6 +5,7 @@ HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
+StreamPrint_Parameters streamPrint_Parameters;
 TwoWireBegin_Parameters twoWireBegin_Parameters;
 TwoWireBeginTransmission_Parameters twoWireBeginTransmission_Parameters;
 TwoWireEnd_Parameters twoWireEnd_Parameters;
@@ -17,7 +18,6 @@ TwoWireWriteBuffer_Parameters twoWireWriteBuffer_Parameters;
 // Global Arduino Objects (Singletons)
 HardwareSerial Serial;
 TwoWire Wire;
-Stream dbgserial;
 
 void
 delay (
@@ -91,11 +91,19 @@ HardwareSerial::write (
     return hardwareSerialWrite_Parameters.result;
 }
 
-long unsigned int
+size_t
 Stream::print (
-    const char *
+    const char * str
 ) {
-    return 0;
+    // Record invocation(s)
+    ++streamPrint_Parameters.invoked;
+
+    // Stash parameter(s)
+    streamPrint_Parameters.str = str;
+    streamPrint_Parameters.str_cache = str;
+
+    // Return user-supplied result
+    return streamPrint_Parameters.result;
 }
 
 void
