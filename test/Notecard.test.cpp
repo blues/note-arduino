@@ -586,7 +586,7 @@ int test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer()
   noteSetFnDebugOutput_Parameters.reset();
 
   // Action
-  notecard.setDebugOutputStream(dbgserial);
+  notecard.setDebugOutputStream(Serial);
 
   // Assert
   if (noteSetFnDebugOutput_Parameters.fn)

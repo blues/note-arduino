@@ -10,7 +10,34 @@
 void delay (unsigned int);
 size_t millis (void);
 
-struct HardwareSerial {
+struct Stream {
+    virtual size_t print(const char * str);
+};
+
+struct StreamPrint_Parameters {
+    StreamPrint_Parameters(
+        void
+    ) :
+        invoked(0),
+        str(nullptr),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        str = nullptr;
+        str_cache.clear();
+        result = 0;
+    }
+    size_t invoked;
+    const char * str;
+    std::string str_cache;
+    size_t result;
+};
+
+struct HardwareSerial : public Stream {
     unsigned int available (void);
     void begin(unsigned int baud);
     void flush(void);
@@ -111,10 +138,6 @@ struct HardwareSerialWrite_Parameters {
     std::string buffer_cache;
     size_t size;
     size_t result;
-};
-
-struct Stream {
-    long unsigned int print(const char *);
 };
 
 struct TwoWire {
@@ -281,7 +304,7 @@ extern HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 extern HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 extern HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 extern HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
-extern Stream dbgserial;
+extern StreamPrint_Parameters streamPrint_Parameters;
 extern TwoWire Wire;
 extern TwoWireBegin_Parameters twoWireBegin_Parameters;
 extern TwoWireBeginTransmission_Parameters twoWireBeginTransmission_Parameters;

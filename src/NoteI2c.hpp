@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "Notecard.h"
-
 class NoteI2c {
   public:
     /**************************************************************************/
