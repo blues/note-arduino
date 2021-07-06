@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++14 -I. -I../src -DMOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++14 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method()
 {

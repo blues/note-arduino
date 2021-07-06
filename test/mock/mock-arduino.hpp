@@ -315,4 +315,4 @@ extern TwoWireRequestFrom_Parameters twoWireRequestFrom_Parameters;
 extern TwoWireWriteByte_Parameters twoWireWriteByte_Parameters;
 extern TwoWireWriteBuffer_Parameters twoWireWriteBuffer_Parameters;
 
-#endif
+#endif // MOCK_ARDUINO_HPP

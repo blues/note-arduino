@@ -27,7 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef MOCK
+#ifndef NOTE_MOCK
 #include <Arduino.h>
 #include <Wire.h>
 #include <note-c/note.h>
