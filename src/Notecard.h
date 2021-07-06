@@ -38,6 +38,22 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
+/*
+ * \brief Adafruit Feather-Specific Definitions
+ *
+ * The Adafruit feather specification defines standard pinout names for digital
+ * and analog pins. Unfortunately, the Adafruit Huzzah32 does not comply with
+ * this specification. As such, we provide mappings for the pins that are
+ * technically incorrect but which make it easier to write code that works
+ * across different feathers.
+ *
+ * On the ESP32 for instance, the pinout for Digital Pin 14 is located where
+ * D5 is usually located, so our symbol maps D5 to Digital Pin 14 on that
+ * board, etc...
+ *
+ * \see https://learn.adafruit.com/adafruit-feather/feather-specification
+ */
+
 #ifdef B0
 #undef B0
 #endif
