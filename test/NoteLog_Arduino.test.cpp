@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteLog_Arduino.cpp NoteLog_Arduino.test.cpp -std=c++11 -I. -I../src -DMOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteLog_Arduino.cpp NoteLog_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notelog_arduino_print_does_not_modify_str_parameter_value_before_passing_to_stream_print()
 {

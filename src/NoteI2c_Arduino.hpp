@@ -5,7 +5,7 @@
 
 #include "Notecard.h"
 
-#ifndef MOCK
+#ifndef NOTE_MOCK
   #include <Wire.h>
 #else
   #include "mock/mock-arduino.hpp"
