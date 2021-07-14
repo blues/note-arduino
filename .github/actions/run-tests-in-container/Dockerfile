@@ -3,7 +3,7 @@
 # Build development environment
 # $ docker build . --tag note-arduino-test
 
-# Launch development environment (mount source root as /nes-rob/)
+# Launch development environment (mount source root as /note-arduino/)
 # $ docker run --rm --volume $(pwd)/../../../:/note-arduino/ --workdir /note-arduino/ note-arduino-test
 
 # Base Image
