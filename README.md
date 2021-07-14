@@ -123,12 +123,33 @@ For details on contributions we accept and the process for contributing, see our
 
 ## Note Arduino Tests
 
-From the `test` directory, execute the `run_tests.sh` script.
-
 ### Dependencies
 
-`bash` - the tests scripts are written in `bash` syntax
-`valgrind` - required to identify and protect against memory leaks.
+The tests are designed to be executed using Docker, and the environment required
+by the tests is defined in .github/actions/run-tests-in-container/Dockerfile.
+The following directions are provided to aid in executing the tests in
+a container.
+
+> _**NOTE:** If you are uncomfortable using Docker, then you may wish to use
+the Dockerfile as a guide to install the necessary dependencies and execute
+`run_all_tests.sh` locally._
+
+### Invocation
+
+1. From the `note-arduino` folder, build the container with the
+following command:
+
+```none
+docker build .github/actions/run-tests-in-container/ --tag note-arduino-test
+```
+
+1. Execute the tests inside the container using the following command:
+
+```none
+docker run --rm --volume $(pwd):/note-arduino/ --workdir /note-arduino/ note-arduino-test
+```
+
+1. Similar test results should print to your terminal for review.
 
 ### Success
 
