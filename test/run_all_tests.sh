@@ -2,7 +2,17 @@
 
 all_tests_result=0
 
-g++ -Wall -Wextra -Wpedantic src/Notecard.cpp src/NoteI2c_Arduino.cpp src/NoteLog_Arduino.cpp src/NoteSerial_Arduino.cpp test/Notecard.test.cpp test/mock/mock-arduino.cpp test/mock/mock-note-c-note.c -std=c++11 -Isrc -Itest -DNOTE_MOCK
+g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  src/Notecard.cpp \
+  src/NoteI2c_Arduino.cpp \
+  src/NoteLog_Arduino.cpp \
+  src/NoteSerial_Arduino.cpp \
+  test/Notecard.test.cpp \
+  test/mock/mock-arduino.cpp \
+  test/mock/mock-note-c-note.c \
+  -Isrc \
+  -Itest \
+  -DNOTE_MOCK
 if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
   echo
   valgrind --leak-check=full --error-exitcode=66 ./a.out
@@ -17,7 +27,14 @@ else
   all_tests_result=999
 fi
 
-g++ -Wall -Wextra -Wpedantic src/NoteI2c_Arduino.cpp test/NoteI2c_Arduino.test.cpp test/mock/mock-arduino.cpp test/mock/mock-note-c-note.c -std=c++11 -Isrc -Itest -DNOTE_MOCK
+g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  src/NoteI2c_Arduino.cpp \
+  test/NoteI2c_Arduino.test.cpp \
+  test/mock/mock-arduino.cpp \
+  test/mock/mock-note-c-note.c \
+  -Isrc \
+  -Itest \
+  -DNOTE_MOCK
 if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
   echo
   valgrind --leak-check=full --error-exitcode=66 ./a.out
@@ -32,7 +49,15 @@ else
   all_tests_result=999
 fi
 
-g++ -Wall -Wextra -Wpedantic src/NoteI2c_Arduino.cpp test/NoteI2c_Arduino.test.cpp test/mock/mock-arduino.cpp test/mock/mock-note-c-note.c -std=c++11 -Isrc -Itest -DNOTE_MOCK -DWIRE_HAS_END
+g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  src/NoteI2c_Arduino.cpp \
+  test/NoteI2c_Arduino.test.cpp \
+  test/mock/mock-arduino.cpp \
+  test/mock/mock-note-c-note.c \
+  -Isrc \
+  -Itest \
+  -DNOTE_MOCK \
+  -DWIRE_HAS_END
 if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
   echo
   valgrind --leak-check=full --error-exitcode=66 ./a.out
@@ -47,7 +72,13 @@ else
   all_tests_result=999
 fi
 
-g++ -Wall -Wextra -Wpedantic src/NoteLog_Arduino.cpp test/NoteLog_Arduino.test.cpp test/mock/mock-arduino.cpp -std=c++11 -Isrc -Itest -DNOTE_MOCK
+g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  src/NoteLog_Arduino.cpp \
+  test/NoteLog_Arduino.test.cpp \
+  test/mock/mock-arduino.cpp \
+  -Isrc \
+  -Itest \
+  -DNOTE_MOCK
 if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
   echo
   valgrind --leak-check=full --error-exitcode=66 ./a.out
@@ -62,7 +93,13 @@ else
   all_tests_result=999
 fi
 
-g++ -Wall -Wextra -Wpedantic src/NoteSerial_Arduino.cpp test/NoteSerial_Arduino.test.cpp test/mock/mock-arduino.cpp -std=c++11 -Isrc -Itest -DNOTE_MOCK
+g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  src/NoteSerial_Arduino.cpp \
+  test/NoteSerial_Arduino.test.cpp \
+  test/mock/mock-arduino.cpp \
+  -Isrc \
+  -Itest \
+  -DNOTE_MOCK
 if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
   echo
   valgrind --leak-check=full --error-exitcode=66 ./a.out
@@ -80,6 +117,11 @@ fi
 echo
 if [ 0 -eq ${all_tests_result} ]; then
   echo 'All tests have passed!'
+  gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
+    --object-directory . \
+    --root src \
+    --exclude .*_error.* \
+  && rm ./a.out *.gcno
 else
   echo 'TESTS FAILED!!!'
 fi
