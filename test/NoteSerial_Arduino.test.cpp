@@ -3,9 +3,95 @@
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
 
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++14 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+
+int test_make_note_serial_instantiates_noteserial_object()
+{
+    int result;
+
+    // Arrange
+    NoteSerial * noteserial = nullptr;
+
+    // Action
+    noteserial = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+
+    // Assert
+    if (nullptr != noteserial)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial == " << !!noteserial << ", EXPECTED: not nullptr" << std::endl;
+        std::cout << "[";
+    }
+
+    // Clean-up
+    make_note_serial(nullptr,0);
+
+    return result;
+}
+
+int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object_for_all_calls()
+{
+    int result;
+
+    // Arrange
+    NoteSerial * const noteserial_1 = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+
+    // Action
+    NoteSerial * const noteserial_2 = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+
+    // Assert
+    if (noteserial_1 == noteserial_2)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial_2 == " << std::hex << noteserial_2 << ", EXPECTED: " << noteserial_1 << std::endl;
+        std::cout << "[";
+    }
+
+    // Clean-up
+    make_note_serial(nullptr,0);
+
+    return result;
+}
+
+int test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter()
+{
+    int result;
+
+    // Arrange
+    NoteSerial * noteserial = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+    assert(noteserial);
+
+    // Action
+    noteserial = make_note_serial(nullptr,0);
+
+    // Assert
+    if (nullptr == noteserial)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnoteserial == " << std::hex << noteserial << ", EXPECTED: 0 (nullptr)" << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
 
 int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method()
 {
@@ -431,6 +517,9 @@ int test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_resul
 int main(void)
 {
     TestFunction tests[] = {
+        {test_make_note_serial_instantiates_noteserial_object, "test_make_note_serial_instantiates_noteserial_object"},
+        {test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object_for_all_calls, "test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object_for_all_calls"},
+        {test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter"},
         {test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method, "test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method"},
         {test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin, "test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin"},
         {test_noteserial_arduino_available_invokes_hardware_serial_available, "test_noteserial_arduino_available_invokes_hardware_serial_available"},

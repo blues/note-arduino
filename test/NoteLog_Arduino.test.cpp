@@ -3,9 +3,95 @@
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
 
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 // Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteLog_Arduino.cpp NoteLog_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+
+int test_make_note_log_instantiates_notelog_object()
+{
+    int result;
+
+    // Arrange
+    NoteLog * notelog = nullptr;
+
+    // Action
+    notelog = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+
+    // Assert
+    if (nullptr != notelog)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnotelog == " << !!notelog << ", EXPECTED: not nullptr" << std::endl;
+        std::cout << "[";
+    }
+
+    // Clean-up
+    make_note_log(nullptr);
+
+    return result;
+}
+
+int test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_all_calls()
+{
+    int result;
+
+    // Arrange
+    NoteLog * const notelog_1 = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+
+    // Action
+    NoteLog * const notelog_2 = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+
+    // Assert
+    if (notelog_1 == notelog_2)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnotelog_2 == " << std::hex << notelog_2 << ", EXPECTED: " << notelog_1 << std::endl;
+        std::cout << "[";
+    }
+
+    // Clean-up
+    make_note_log(nullptr);
+
+    return result;
+}
+
+int test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter()
+{
+    int result;
+
+    // Arrange
+    NoteLog * notelog = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+    assert(notelog);
+
+    // Action
+    notelog = make_note_log(nullptr);
+
+    // Assert
+    if (nullptr == notelog)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
+        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\tnotelog == " << std::hex << notelog << ", EXPECTED: 0 (nullptr)" << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
 
 int test_notelog_arduino_print_does_not_modify_str_parameter_value_before_passing_to_stream_print()
 {
@@ -69,6 +155,9 @@ int test_notelog_arduino_print_does_not_modify_stream_print_result_value_before_
 int main(void)
 {
     TestFunction tests[] = {
+        {test_make_note_log_instantiates_notelog_object, "test_make_note_log_instantiates_notelog_object"},
+        {test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_all_calls, "test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_all_calls"},
+        {test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter"},
         {test_notelog_arduino_print_does_not_modify_str_parameter_value_before_passing_to_stream_print, "test_notelog_arduino_print_does_not_modify_buffer_parameter_value_before_passing_to_stream_print"},
         {test_notelog_arduino_print_does_not_modify_stream_print_result_value_before_returning_to_caller, "test_notelog_arduino_print_does_not_modify_stream_print_result_value_before_returning_to_caller"},
     };
