@@ -135,6 +135,7 @@
 class Notecard
 {
 public:
+    ~Notecard(void);
     void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
                uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
                TwoWire &wirePort = Wire);

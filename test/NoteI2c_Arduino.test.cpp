@@ -3,9 +3,95 @@
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
 
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++14 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+
+int test_make_note_i2c_instantiates_notei2c_object()
+{
+  int result;
+
+  // Arrange
+  NoteI2c * notei2c = nullptr;
+
+  // Action
+  notei2c = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+
+  // Assert
+  if (nullptr != notei2c)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotei2c == " << !!notei2c << ", EXPECTED: not nullptr" << std::endl;
+    std::cout << "[";
+  }
+
+  // Clean-up
+  make_note_i2c(nullptr);
+
+  return result;
+}
+
+int test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_all_calls()
+{
+  int result;
+
+  // Arrange
+  NoteI2c * const notei2c_1 = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+
+  // Action
+  NoteI2c * const notei2c_2 = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+
+  // Assert
+  if (notei2c_1 == notei2c_2)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotei2c_2 == " << std::hex << notei2c_2 << ", EXPECTED: " << notei2c_1 << std::endl;
+    std::cout << "[";
+  }
+
+  // Clean-up
+  make_note_i2c(nullptr);
+
+  return result;
+}
+
+int test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter()
+{
+  int result;
+
+  // Arrange
+  NoteI2c * notei2c = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+  assert(notei2c);
+
+  // Action
+  notei2c = make_note_i2c(nullptr);
+
+  // Assert
+  if (nullptr == notei2c)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotei2c == " << std::hex << notei2c << ", EXPECTED: 0 (nullptr)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
 
 int test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method()
 {
@@ -1448,6 +1534,9 @@ int test_notei2c_arduino_transmit_returns_error_message_on_unexpected_i2c_transm
 int main(void)
 {
   TestFunction tests[] = {
+      {test_make_note_i2c_instantiates_notei2c_object, "test_make_note_i2c_instantiates_notei2c_object"},
+      {test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_all_calls, "test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_all_calls"},
+      {test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter"},
       {test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method, "test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method"},
       {test_notei2c_arduino_receive_requests_response_data_from_notecard, "test_notei2c_arduino_receive_requests_response_data_from_notecard"},
       {test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure, "test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure"},

@@ -165,6 +165,14 @@ namespace
  PUBLIC FUNCTIONS
  ***************************************************************************/
 
+Notecard::~Notecard (void)
+{
+    // Delete Singleton(s)
+    noteI2c = make_note_i2c(nullptr);
+    noteLog = make_note_log(nullptr);
+    noteSerial = make_note_serial(nullptr, 0);
+}
+
 /**************************************************************************/
 /*!
     @brief  Initialize the Notecard for I2C.

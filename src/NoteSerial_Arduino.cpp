@@ -7,10 +7,14 @@ make_note_serial (
 )
 {
     static NoteSerial * note_serial = nullptr;
-    if (note_serial) {
-        delete note_serial;
+    if (!serial_channel_) {
+        if (note_serial) {
+            delete note_serial;
+            note_serial = nullptr;
+        }
+    } else if (!note_serial) {
+        note_serial = new NoteSerial_Arduino(*reinterpret_cast<HardwareSerial *>(serial_channel_), baud_rate_);
     }
-    note_serial = new NoteSerial_Arduino(*reinterpret_cast<HardwareSerial *>(serial_channel_), baud_rate_);
     return note_serial;
 }
 
