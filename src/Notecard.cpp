@@ -190,6 +190,7 @@ Notecard::~Notecard (void)
 /**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 {
+    NoteSetUserAgent((char *)"note-arduino");
     NoteSetFnDefault(malloc, free, delay, millis);
     noteI2c = make_note_i2c(&wirePort);
 
@@ -211,6 +212,7 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 /**************************************************************************/
 void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 {
+    NoteSetUserAgent((char *)"note-arduino");
     NoteSetFnDefault(malloc, free, delay, millis);
     noteSerial = make_note_serial(&selectedSerialPort, selectedSpeed);
 

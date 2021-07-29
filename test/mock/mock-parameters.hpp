@@ -292,6 +292,26 @@ struct NoteSetFnSerial_Parameters {
     serialReceiveFn readfn;
 };
 
+struct NoteSetUserAgent_Parameters {
+    NoteSetUserAgent_Parameters(
+        void
+    ) :
+        invoked(0),
+        agent(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        agent = nullptr;
+        agent_cache.clear();
+    }
+    size_t invoked;
+    const char *agent;
+    std::string agent_cache;
+};
+
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
@@ -304,5 +324,6 @@ extern NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 extern NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 extern NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
 extern NoteSetFnSerial_Parameters noteSetFnSerial_Parameters;
+extern NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;
 
 #endif // MOCK_PARAMETERS_HPP

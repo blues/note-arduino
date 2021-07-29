@@ -502,6 +502,23 @@ void NoteUnlockNote()
 
 //**************************************************************************/
 /*!
+  @brief  Get the active interface's name
+  @returns A string
+*/
+/**************************************************************************/
+const char *NoteActiveInterface()
+{
+    switch (hookActiveInterface) {
+    case interfaceSerial:
+        return "serial";
+    case interfaceI2C:
+        return "i2c";
+    }
+    return "unknown";
+}
+
+//**************************************************************************/
+/*!
   @brief  Reset the Serial bus using the platform-specific hook.
   @returns A boolean indicating whether the Serial bus was reset.
 */
@@ -618,8 +635,8 @@ const char *NoteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
 /**************************************************************************/
 uint32_t NoteI2CAddress()
 {
-    if (i2cAddress == NOTE_I2C_ADDR_DEFAULT) {
-        return 0x17;
+    if (i2cAddress == 0) {
+        return NOTE_I2C_ADDR_DEFAULT;
     }
     return i2cAddress;
 }
@@ -646,12 +663,12 @@ uint32_t NoteI2CMax()
 {
     // Many Arduino libraries (such as ESP32) have a limit less than 32, so if the max isn't specified
     // we must assume the worst and segment the I2C messages into very tiny chunks.
-    if (i2cMax == NOTE_I2C_MAX_DEFAULT) {
-        return 30;
+    if (i2cMax == 0) {
+        return NOTE_I2C_MAX_DEFAULT;
     }
     // Note design specs
-    if (i2cMax > 127) {
-        i2cMax = 127;
+    if (i2cMax > NOTE_I2C_MAX_MAX) {
+        i2cMax = NOTE_I2C_MAX_MAX;
     }
     return i2cMax;
 }

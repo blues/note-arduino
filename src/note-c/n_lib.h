@@ -83,6 +83,7 @@ bool serialNoteReset(void);
 // Hooks
 void NoteLockNote(void);
 void NoteUnlockNote(void);
+const char *NoteActiveInterface(void);
 bool NoteSerialReset(void);
 void NoteSerialTransmit(uint8_t *, size_t, bool);
 bool NoteSerialAvailable(void);

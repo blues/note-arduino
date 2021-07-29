@@ -314,6 +314,21 @@ char *NoteRequestResponseJSON(char *reqJSON)
 
 /**************************************************************************/
 /*!
+    @brief  Override-able method to return user agent object
+  @returns a `J` cJSON object with the user agent object.
+*/
+/**************************************************************************/
+#if defined(_MSC_VER)
+J *noteUserAgent()
+#else
+__attribute__((weak)) J *noteUserAgent()
+#endif
+{
+    return NULL;
+}
+
+/**************************************************************************/
+/*!
     @brief  Initiate a transaction to the Notecard and return the response.
             Does NOT free the request structure from memory after sending
             the request.
@@ -331,8 +346,22 @@ J *NoteTransaction(J *req)
         return NULL;
     }
 
+    // Determine the request or command type
+    const char *reqType = JGetString(req, "req");
+    const char *cmdType = JGetString(req, "cmd");
+
+    // Add the user agent object if appropriate
+#ifndef NOTE_DISABLE_USER_AGENT
+    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0 || strcmp(cmdType, "hub.set"))) {
+        J *body = noteUserAgent();
+        if (body != NULL) {
+            JAddItemToObject(req, "body", body);
+        }
+    }
+#endif
+
     // Determine whether or not a response will be expected, by virtue of "cmd" being present
-    bool noResponseExpected = (JGetString(req, "req")[0] == '\0' && JGetString(req, "cmd")[0] != '\0');
+    bool noResponseExpected = (reqType[0] == '\0' && cmdType[0] != '\0');
 
     // If a reset of the module is required for any reason, do it now.
     // We must do this before acquiring lock.
