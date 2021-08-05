@@ -2,12 +2,6 @@
 
 all_tests_result=0
 
-if [ -z "$COVERALLS_REPO_TOKEN" ]; then
-  echo "COVERALLS_REPO_TOKEN not set"
-  exit
-fi
-
-if [ 0 -eq 0 ]; then
 g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
   src/Notecard.cpp \
   src/NoteI2c_Arduino.cpp \
@@ -119,9 +113,7 @@ if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
 else
   all_tests_result=999
 fi
-fi
 
-echo
 if [ 0 -eq ${all_tests_result} ]; then
   echo 'All tests have passed!'
     gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
@@ -131,13 +123,12 @@ if [ 0 -eq ${all_tests_result} ]; then
       --exclude test \
       --coveralls coverage.json \
       --txt && rm ./a.out *.gcno
-    if [ -f coverage.json ]; then 
-      python3 .github/actions/run-tests-in-container/report/report.py coverage.json
-      if [ 0 -ne $? ]; then
-        echo "Unable to publish coverage report!"
-        all_tests_result=998
-      fi
+    if [ ! -f "coverage.json" ]; then
+      echo "Coverage report not produced";
+      all_tests_result=997
     fi
 else
   echo 'TESTS FAILED!!!'
 fi
+
+exit $all_tests_result
