@@ -8,6 +8,8 @@
 
 
 # Base Image - here we reuse the test image since it has all the dependencies required 
-FROM note-arduino-test
+FROM frolvlad/alpine-python3
+
+RUN pip install requests
 
 ENTRYPOINT ["ash", "-c", "./.github/actions/publish-coverage/publish-to-coveralls.sh"]
