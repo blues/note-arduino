@@ -2,8 +2,11 @@
 .DS_Store
 *.gch
 *.out
-
+*.gcda
+*.gcno
+*.gcov
 Doxyfile*
 doxygen_sqlite3.db
 html
 latex
+coverage.json

@@ -115,13 +115,23 @@ else
 fi
 
 echo
+
 if [ 0 -eq ${all_tests_result} ]; then
   echo 'All tests have passed!'
   gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
     --object-directory . \
     --root src \
     --exclude .*_error.* \
+    --exclude test \
+    --coveralls coverage.json \
+    --txt \
   && rm ./a.out *.gcno
+  if [ ! -f "coverage.json" ]; then
+    echo "Coverage report not produced";
+    all_tests_result=997
+  fi
 else
   echo 'TESTS FAILED!!!'
 fi
+
+exit $all_tests_result

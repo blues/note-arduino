@@ -9,12 +9,18 @@
 # Base Image
 FROM alpine
 
+
 # Testing Dependencies
+# install gcovr from the package manager, which gets most required dependencies (avoiding the need for libxml2-dev, libxslt-dev and setting the include path.)
+# then install using pip to get the 5.x line with support for coveralls formatted reports.
 RUN ["ash", "-c", "\
     apk add --no-cache \
       gcovr \
+      py3-pip \
+      python3-dev \
       g++ \
       valgrind \
+      && pip install -U gcovr \
 "]
 
 ENTRYPOINT ["./test/run_all_tests.sh"]
