@@ -8,8 +8,8 @@
 
 
 # Base Image - here we reuse the test image since it has all the dependencies required 
-FROM frolvlad/alpine-python3
+FROM alpine
 
-RUN pip install requests
+RUN apk add py3-pip && pip install requests
 
 ENTRYPOINT ["ash", "-c", "./.github/actions/publish-coverage/publish-to-coveralls.sh"]
