@@ -43,7 +43,7 @@ NoteI2c_Arduino::receive (
     // Request response data from Notecard
     for (size_t i = 0 ; i < 3 ; ++i) {
         _i2cPort.beginTransmission(static_cast<uint8_t>(device_address_));
-        _i2cPort.write(0);
+        _i2cPort.write(static_cast<uint8_t>(0));
         _i2cPort.write(static_cast<uint8_t>(requested_byte_count_));
         transmission_error = _i2cPort.endTransmission();
 
