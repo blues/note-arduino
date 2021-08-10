@@ -7,8 +7,11 @@
 #include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
+#include "mock/NoteI2c_Mock.hpp"
+#include "mock/NoteLog_Mock.hpp"
+#include "mock/NoteSerial_Mock.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/Notecard.cpp ../src/NoteI2c_Arduino.cpp ../src/NoteLog_Arduino.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
@@ -323,20 +326,20 @@ int test_notecard_begin_i2c_default_parameter_for_i2c_address_is_passed_to_note_
   return result;
 }
 
-int test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called()
+int test_notecard_begin_i2c_default_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wire()
 {
   int result;
 
   // Arrange
   Notecard notecard;
 
-  twoWireBegin_Parameters.reset();
+  make_note_i2c_Parameters.reset();
 
   // Action
   notecard.begin();
 
   // Assert
-  if (twoWireBegin_Parameters.invoked)
+  if (&Wire == make_note_i2c_Parameters.i2c_bus)
   {
     result = 0;
   }
@@ -344,14 +347,14 @@ int test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_call
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireBegin_Parameters.invoked == " << !!twoWireBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\tmake_note_i2c_Parameters.i2c_bus == " << !!make_note_i2c_Parameters.i2c_bus << ", EXPECTED: " << &Wire << std::endl;
     std::cout << "[";
   }
 
   return result;
 }
 
-int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
+int test_notecard_begin_i2c_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wirePort()
 {
   int result;
 
@@ -359,13 +362,13 @@ int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
   Notecard notecard;
   TwoWire mockWire;
 
-  twoWireBegin_Parameters.reset();
+  make_note_i2c_Parameters.reset();
 
   // Action
   notecard.begin(NOTE_I2C_ADDR_DEFAULT, NOTE_I2C_MAX_DEFAULT, mockWire);
 
   // Assert
-  if (twoWireBegin_Parameters.invoked)
+  if (&mockWire == make_note_i2c_Parameters.i2c_bus)
   {
     result = 0;
   }
@@ -373,7 +376,7 @@ int test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireBegin_Parameters.invoked == " << !!twoWireBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\tmake_note_i2c_Parameters.i2c_bus == " << make_note_i2c_Parameters.i2c_bus << ", EXPECTED: " << &mockWire << std::endl;
     std::cout << "[";
   }
 
@@ -641,13 +644,13 @@ int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_pr
   Notecard notecard;
   const unsigned int EXPECTED_BAUD_RATE = 9600;
 
-  hardwareSerialBegin_Parameters.reset();
+  make_note_serial_Parameters.reset();
 
   // Action
   notecard.begin(Serial, EXPECTED_BAUD_RATE);
 
   // Assert
-  if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
+  if (EXPECTED_BAUD_RATE == make_note_serial_Parameters.baud_rate)
   {
     result = 0;
   }
@@ -655,14 +658,14 @@ int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_pr
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+    std::cout << "\tmake_note_serial_Parameters.baud_rate == " << make_note_serial_Parameters.baud_rate << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
     std::cout << "[";
   }
 
   return result;
 }
 
-int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c()
+int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_default_speed()
 {
   int result;
 
@@ -670,13 +673,13 @@ int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note
   Notecard notecard;
   const unsigned int EXPECTED_BAUD_RATE = 9600;
 
-  hardwareSerialBegin_Parameters.reset();
+  make_note_serial_Parameters.reset();
 
   // Action
   notecard.begin(Serial);
 
   // Assert
-  if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
+  if (EXPECTED_BAUD_RATE == make_note_serial_Parameters.baud_rate)
   {
     result = 0;
   }
@@ -684,7 +687,7 @@ int test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+    std::cout << "\tmake_note_serial_Parameters.baud_rate == " << make_note_serial_Parameters.baud_rate << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
     std::cout << "[";
   }
 
@@ -1315,8 +1318,8 @@ int main(void)
       {test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer, "test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer"},
       {test_notecard_begin_i2c_default_parameter_for_i2c_max_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_max_is_passed_to_note_c"},
       {test_notecard_begin_i2c_default_parameter_for_i2c_address_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_address_is_passed_to_note_c"},
-      {test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_default_parameter_for_wirePort_has_begin_method_called"},
-      {test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called, "test_notecard_begin_i2c_parameter_for_wirePort_has_begin_method_called"},
+      {test_notecard_begin_i2c_default_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wire, "test_notecard_begin_i2c_default_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wire"},
+      {test_notecard_begin_i2c_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wirePort, "test_notecard_begin_i2c_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wirePort"},
       {test_notecard_begin_i2c_sets_user_agent_to_note_arduino, "test_notecard_begin_i2c_sets_user_agent_to_note_arduino"},
       {test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer, "test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer"},
       {test_notecard_begin_serial_shares_a_memory_free_functon_pointer, "test_notecard_begin_serial_shares_a_memory_free_functon_pointer"},
@@ -1327,7 +1330,7 @@ int main(void)
       {test_notecard_begin_serial_shares_a_serial_available_functon_pointer, "test_notecard_begin_serial_shares_a_serial_available_functon_pointer"},
       {test_notecard_begin_serial_shares_a_serial_receive_functon_pointer, "test_notecard_begin_serial_shares_a_serial_receive_functon_pointer"},
       {test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed, "test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed"},
-      {test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c, "test_notecard_begin_serial_default_parameter_for_baud_rate_is_passed_to_note_c"},
+      {test_notecard_begin_serial_initializes_the_provided_serial_interface_with_default_speed, "test_notecard_begin_serial_initializes_the_provided_serial_interface_with_default_speed"},
       {test_notecard_begin_serial_sets_user_agent_to_note_arduino, "test_notecard_begin_serial_sets_user_agent_to_note_arduino"},
       {test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer"},

@@ -2,136 +2,151 @@
 
 all_tests_result=0
 
-g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
-  src/Notecard.cpp \
-  src/NoteI2c_Arduino.cpp \
-  src/NoteLog_Arduino.cpp \
-  src/NoteSerial_Arduino.cpp \
-  test/Notecard.test.cpp \
-  test/mock/mock-arduino.cpp \
-  test/mock/mock-note-c-note.c \
-  -Isrc \
-  -Itest \
-  -DNOTE_MOCK
-if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
-  echo
-  valgrind --leak-check=full --error-exitcode=66 ./a.out
-  tests_result=$?
-  if [ 0 -eq ${tests_result} ]; then
-    echo 'Notecard tests passed!'
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo 'Compiling and running Notecard Test Suite...'
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+    src/Notecard.cpp \
+    test/Notecard.test.cpp \
+    test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
+    test/mock/NoteI2c_Mock.cpp \
+    test/mock/NoteLog_Mock.cpp \
+    test/mock/NoteSerial_Mock.cpp \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo 'Notecard tests passed!'
+    else
+      echo "Notecard tests failed!"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
   else
-    echo "Notecard tests failed!"
+    all_tests_result=999
   fi
-  all_tests_result=$((all_tests_result+tests_result))
-else
-  all_tests_result=999
 fi
 
-g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
-  src/NoteI2c_Arduino.cpp \
-  test/NoteI2c_Arduino.test.cpp \
-  test/mock/mock-arduino.cpp \
-  test/mock/mock-note-c-note.c \
-  -Isrc \
-  -Itest \
-  -DNOTE_MOCK
-if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
-  echo
-  valgrind --leak-check=full --error-exitcode=66 ./a.out
-  tests_result=$?
-  if [ 0 -eq ${tests_result} ]; then
-    echo 'NoteI2c_Arduino tests passed!'
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo 'Compiling and running NoteI2c_Arduino Test Suite (no flags)...'
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+    src/NoteI2c_Arduino.cpp \
+    test/NoteI2c_Arduino.test.cpp \
+    test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo 'NoteI2c_Arduino tests passed!'
+    else
+      echo "NoteI2c_Arduino tests failed!"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
   else
-    echo "NoteI2c_Arduino tests failed!"
+    all_tests_result=999
   fi
-  all_tests_result=$((all_tests_result+tests_result))
-else
-  all_tests_result=999
 fi
 
-g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
-  src/NoteI2c_Arduino.cpp \
-  test/NoteI2c_Arduino.test.cpp \
-  test/mock/mock-arduino.cpp \
-  test/mock/mock-note-c-note.c \
-  -Isrc \
-  -Itest \
-  -DNOTE_MOCK \
-  -DWIRE_HAS_END
-if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
-  echo
-  valgrind --leak-check=full --error-exitcode=66 ./a.out
-  tests_result=$?
-  if [ 0 -eq ${tests_result} ]; then
-    echo 'NoteI2c_Arduino tests passed! (-DWIRE_HAS_END)'
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo 'Compiling and running NoteI2c_Arduino Test Suite (-DWIRE_HAS_END)...'
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+    src/NoteI2c_Arduino.cpp \
+    test/NoteI2c_Arduino.test.cpp \
+    test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK \
+    -DWIRE_HAS_END
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo 'NoteI2c_Arduino tests passed! (-DWIRE_HAS_END)'
+    else
+      echo "NoteI2c_Arduino tests failed!"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
   else
-    echo "NoteI2c_Arduino tests failed!"
+    all_tests_result=999
   fi
-  all_tests_result=$((all_tests_result+tests_result))
-else
-  all_tests_result=999
 fi
 
-g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
-  src/NoteLog_Arduino.cpp \
-  test/NoteLog_Arduino.test.cpp \
-  test/mock/mock-arduino.cpp \
-  -Isrc \
-  -Itest \
-  -DNOTE_MOCK
-if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
-  echo
-  valgrind --leak-check=full --error-exitcode=66 ./a.out
-  tests_result=$?
-  if [ 0 -eq ${tests_result} ]; then
-    echo 'NoteLog_Arduino tests passed!'
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo 'Compiling and running NoteLog_Arduino Test Suite...'
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+    src/NoteLog_Arduino.cpp \
+    test/NoteLog_Arduino.test.cpp \
+    test/mock/mock-arduino.cpp \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo 'NoteLog_Arduino tests passed!'
+    else
+      echo "NoteLog_Arduino tests failed!"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
   else
-    echo "NoteLog_Arduino tests failed!"
+    all_tests_result=999
   fi
-  all_tests_result=$((all_tests_result+tests_result))
-else
-  all_tests_result=999
 fi
 
-g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
-  src/NoteSerial_Arduino.cpp \
-  test/NoteSerial_Arduino.test.cpp \
-  test/mock/mock-arduino.cpp \
-  -Isrc \
-  -Itest \
-  -DNOTE_MOCK
-if [ 0 -eq $? ] && [ 0 -eq $all_tests_result ]; then
-  echo
-  valgrind --leak-check=full --error-exitcode=66 ./a.out
-  tests_result=$?
-  if [ 0 -eq ${tests_result} ]; then
-    echo 'NoteSerial_Arduino tests passed!'
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo 'Compiling and running NoteSerial_Arduino Test Suite...'
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+    src/NoteSerial_Arduino.cpp \
+    test/NoteSerial_Arduino.test.cpp \
+    test/mock/mock-arduino.cpp \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo 'NoteSerial_Arduino tests passed!'
+    else
+      echo "NoteSerial_Arduino tests failed!"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
   else
-    echo "NoteSerial_Arduino tests failed!"
+    all_tests_result=999
   fi
-  all_tests_result=$((all_tests_result+tests_result))
-else
-  all_tests_result=999
 fi
 
-echo
-
+# Print summary statement
 if [ 0 -eq ${all_tests_result} ]; then
-  echo 'All tests have passed!'
-  gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
-    --object-directory . \
-    --root src \
-    --exclude .*_error.* \
-    --exclude test \
-    --coveralls coverage.json \
-    --txt \
-  && rm ./a.out *.gcno
-  if [ ! -f "coverage.json" ]; then
-    echo "Coverage report not produced";
-    all_tests_result=997
+  echo && echo 'All tests have passed!'
+  # Run coverage if available
+  if [ $(which gcovr) ]; then
+    gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
+      --object-directory . \
+      --root src \
+      --exclude .*_error.* \
+      --exclude test \
+      --coveralls coverage.json \
+      --txt \
+    && rm ./a.out *.gcno
+    if [ ! -f "coverage.json" ]; then
+      echo "Coverage report not produced";
+      all_tests_result=997
+    fi
+  else
+    rm ./a.out *.gcda *.gcno
   fi
 else
-  echo 'TESTS FAILED!!!'
+  echo && echo 'TESTS FAILED!!!' \
+  && rm ./a.out *.gcda *.gcno
 fi
 
 exit $all_tests_result

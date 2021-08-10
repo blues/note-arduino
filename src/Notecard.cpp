@@ -48,22 +48,6 @@
 
 namespace
 {
-    NoteLog *noteLog(nullptr);
-
-    size_t noteLogPrint(const char * str_)
-    {
-        size_t result;
-        if (noteLog)
-        {
-            result = noteLog->print(str_);
-        }
-        else
-        {
-            result = 0;
-        }
-        return result;
-    }
-
     NoteI2c *noteI2c(nullptr);
 
     const char *noteI2cReceive(uint16_t device_address_, uint8_t *buffer_, uint16_t size_, uint32_t *available_)
@@ -104,6 +88,22 @@ namespace
         else
         {
             result = "i2c: A call to Notecard::begin() is required. {io}";
+        }
+        return result;
+    }
+
+    NoteLog *noteLog(nullptr);
+
+    size_t noteLogPrint(const char * str_)
+    {
+        size_t result;
+        if (noteLog)
+        {
+            result = noteLog->print(str_);
+        }
+        else
+        {
+            result = 0;
         }
         return result;
     }
