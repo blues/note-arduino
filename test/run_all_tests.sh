@@ -4,12 +4,12 @@ all_tests_result=0
 
 g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
   src/Notecard.cpp \
-  src/NoteI2c_Arduino.cpp \
-  src/NoteLog_Arduino.cpp \
-  src/NoteSerial_Arduino.cpp \
   test/Notecard.test.cpp \
   test/mock/mock-arduino.cpp \
   test/mock/mock-note-c-note.c \
+  test/mock/MockI2c_Arduino.cpp \
+  test/mock/MockLog_Arduino.cpp \
+  test/mock/MockSerial_Arduino.cpp \
   -Isrc \
   -Itest \
   -DNOTE_MOCK
