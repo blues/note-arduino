@@ -11,7 +11,7 @@
 #include "mock/MockLog_Arduino.hpp"
 #include "mock/MockSerial_Arduino.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/Notecard.cpp ../src/NoteI2c_Arduino.cpp ../src/NoteLog_Arduino.cpp ../src/NoteSerial_Arduino.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/MockI2c_Arduino.cpp mock/MockLog_Arduino.cpp mock/MockSerial_Arduino.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
