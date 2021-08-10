@@ -1,8 +1,9 @@
-#include "mock/MockLog_Arduino.hpp"
+#include "mock/NoteLog_Mock.hpp"
 
 #include "NoteLog_Arduino.hpp"
 
 MakeNoteLog_Parameters make_note_log_Parameters;
+NoteLogPrint_Parameters noteLogPrint_Parameters;
 
 NoteLog *
 make_note_log (
@@ -19,21 +20,17 @@ make_note_log (
     return make_note_log_Parameters.result;
 }
 
-NoteLog_Arduino::NoteLog_Arduino
-(
-    Stream * log_stream_
-) :
-    _notecardLog(log_stream_)
-{ }
-
 size_t
 NoteLog_Arduino::print (
-    const char * str_
+    const char * message_
 )
 {
-    (void)str_;
+    // Record invocation(s)
+    ++noteLogPrint_Parameters.invoked;
 
-    size_t result = 0;
+    // Stash parameter(s)
+    noteLogPrint_Parameters.message = message_;
 
-    return result;
+    // Return user-supplied result
+    return noteLogPrint_Parameters.result;
 }

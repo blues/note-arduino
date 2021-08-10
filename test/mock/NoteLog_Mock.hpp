@@ -26,6 +26,27 @@ struct MakeNoteLog_Parameters {
     NoteLog * result;
 };
 
+struct NoteLogPrint_Parameters {
+    NoteLogPrint_Parameters(
+        void
+    ) :
+        invoked(0),
+        message(nullptr),
+        result(0)
+    { }
+    void reset (
+        void
+    ) {
+        invoked = 0;
+        message = nullptr;
+        result = 0;
+    }
+    size_t invoked;
+    const char * message;
+    size_t result;
+};
+
 extern MakeNoteLog_Parameters make_note_log_Parameters;
+extern NoteLogPrint_Parameters noteLogPrint_Parameters;
 
 #endif // MOCK_LOG_ARDUINO_HPP

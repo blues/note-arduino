@@ -7,11 +7,11 @@
 #include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
-#include "mock/MockI2c_Arduino.hpp"
-#include "mock/MockLog_Arduino.hpp"
-#include "mock/MockSerial_Arduino.hpp"
+#include "mock/NoteI2c_Mock.hpp"
+#include "mock/NoteLog_Mock.hpp"
+#include "mock/NoteSerial_Mock.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/MockI2c_Arduino.cpp mock/MockLog_Arduino.cpp mock/MockSerial_Arduino.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
