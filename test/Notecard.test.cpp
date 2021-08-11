@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "Notecard.h"
+#include "NoteI2c_Arduino.hpp"
 #include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
@@ -1304,6 +1305,700 @@ int test_notecard_newCommand_does_not_modify_note_c_result_value_before_returnin
   return result;
 }
 
+int test_static_callback_note_i2c_receive_invokes_notei2c_receive()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x17;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (noteI2cReceive_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReceive_Parameters.invoked == " << noteI2cReceive_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  // 0x1B binary representation => 0001 1011
+  const uint16_t EXPECTED_ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(EXPECTED_ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (EXPECTED_ADDRESS == noteI2cReceive_Parameters.device_address)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReceive_Parameters.device_address == " << noteI2cReceive_Parameters.device_address << ", EXPECTED: " << EXPECTED_ADDRESS << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (response_buffer == noteI2cReceive_Parameters.buffer)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << std::hex << "\tnoteI2cReceive_Parameters.buffer == " << noteI2cReceive_Parameters.buffer << ", EXPECTED: " << &response_buffer[0] << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_modify_size_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t EXPECTED_SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, EXPECTED_SIZE, &actual_response_size);
+
+  // Assert
+  if (EXPECTED_SIZE == noteI2cReceive_Parameters.requested_byte_count)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReceive_Parameters.requested_byte_count == " << noteI2cReceive_Parameters.requested_byte_count << ", EXPECTED: " << EXPECTED_SIZE << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_modify_available_parameter_address_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (&actual_response_size == noteI2cReceive_Parameters.available)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << std::hex << "\tnoteI2cReceive_Parameters.available == " << noteI2cReceive_Parameters.available << ", EXPECTED: " << &actual_response_size << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+  noteI2cReceive_Parameters.result = "i2c: fake test error!";
+
+  // Action
+  const char * const ACTUAL_RESULT = noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (!strcmp(ACTUAL_RESULT, noteI2cReceive_Parameters.result))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteI2cReceive_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (!noteI2cReceive_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReceive_Parameters.invoked == " << noteI2cReceive_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_receive_returns_error_message_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t actual_response_size;
+  const char * const EXPECTED_RESULT = "i2c: A call to Notecard::begin() is required. {io}";
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const char * const ACTUAL_RESULT = noteSetFnI2C_Parameters.receivefn(ADDRESS, response_buffer, SIZE, &actual_response_size);
+
+  // Assert
+  if (!strcmp(ACTUAL_RESULT,EXPECTED_RESULT))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_reset_invokes_notei2c_reset()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x17;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.resetfn(ADDRESS);
+
+  // Assert
+  if (noteI2cReset_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReset_Parameters.invoked == " << noteI2cReset_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_reset_does_not_modify_device_address_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  // 0x1B binary representation => 0001 1011
+  const uint16_t EXPECTED_ADDRESS = 0x1B;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.resetfn(EXPECTED_ADDRESS);
+
+  // Assert
+  if (EXPECTED_ADDRESS == noteI2cReset_Parameters.device_address)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReset_Parameters.device_address == " << noteI2cReset_Parameters.device_address << ", EXPECTED: " << EXPECTED_ADDRESS << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReset_Parameters.reset();  // Clear the structure for testing results
+  noteI2cReset_Parameters.result = true;
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnI2C_Parameters.resetfn(ADDRESS);
+
+  // Assert
+  if (ACTUAL_RESULT == noteI2cReset_Parameters.result)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteI2cReset_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.resetfn(ADDRESS);
+
+  // Assert
+  if (!noteI2cReset_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cReset_Parameters.invoked == " << noteI2cReset_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnI2C_Parameters.resetfn(ADDRESS);
+
+  // Assert
+  if (!ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: false (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_invokes_notei2c_transmit()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x17;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (noteI2cTransmit_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cTransmit_Parameters.invoked == " << noteI2cTransmit_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_does_not_modify_device_address_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  // 0x1B binary representation => 0001 1011
+  const uint16_t EXPECTED_ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.transmitfn(EXPECTED_ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (EXPECTED_ADDRESS == noteI2cTransmit_Parameters.device_address)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cTransmit_Parameters.device_address == " << noteI2cTransmit_Parameters.device_address << ", EXPECTED: " << EXPECTED_ADDRESS << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_does_not_modify_buffer_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[] = "Test Passed!";
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (!strcmp(reinterpret_cast<char *>(response_buffer),reinterpret_cast<char *>(noteI2cTransmit_Parameters.buffer)))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cTransmit_Parameters.buffer == " << noteI2cTransmit_Parameters.buffer << ", EXPECTED: " << response_buffer << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_does_not_modify_size_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t EXPECTED_SIZE = 13;
+  uint8_t response_buffer[32];
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, EXPECTED_SIZE);
+
+  // Assert
+  if (EXPECTED_SIZE == noteI2cTransmit_Parameters.size)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cTransmit_Parameters.size == " << noteI2cTransmit_Parameters.size << ", EXPECTED: " << EXPECTED_SIZE << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+
+  Notecard notecard;
+  NoteI2c_Arduino mockI2c_arduino(Wire);  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.result = &mockI2c_arduino;  // Return mocked interface
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+  noteI2cTransmit_Parameters.result = "i2c: fake test error!";
+
+  // Action
+  const char * const ACTUAL_RESULT = noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (!strcmp(ACTUAL_RESULT, noteI2cTransmit_Parameters.result))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteI2cTransmit_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (!noteI2cTransmit_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteI2cTransmit_Parameters == " << noteI2cTransmit_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_i2c_transmit_returns_error_message_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const uint16_t ADDRESS = 0x1B;
+  const uint16_t SIZE = 13;
+  uint8_t response_buffer[32];
+  const char * const EXPECTED_RESULT = "i2c: A call to Notecard::begin() is required. {io}";
+
+  Notecard notecard;
+  make_note_i2c_Parameters.reset();
+  notecard.begin();  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const char * const ACTUAL_RESULT = noteSetFnI2C_Parameters.transmitfn(ADDRESS, response_buffer, SIZE);
+
+  // Assert
+  if (!strcmp(ACTUAL_RESULT,EXPECTED_RESULT))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int main(void)
 {
   TestFunction tests[] = {
@@ -1350,6 +2045,26 @@ int main(void)
       {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c"},
       {test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_static_callback_note_i2c_receive_invokes_notei2c_receive, "test_static_callback_note_i2c_receive_invokes_notei2c_receive"},
+      {test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_receive_does_not_modify_size_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_size_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_receive_does_not_modify_available_parameter_address_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_available_parameter_address_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_receive_does_not_modify_interface_method_return_value, "test_static_callback_note_i2c_receive_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_i2c_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_i2c_receive_returns_error_message_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_receive_returns_error_message_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_i2c_reset_invokes_notei2c_reset, "test_static_callback_note_i2c_reset_invokes_notei2c_reset"},
+      {test_static_callback_note_i2c_reset_does_not_modify_device_address_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_reset_does_not_modify_device_address_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_value, "test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_i2c_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_i2c_transmit_invokes_notei2c_transmit, "test_static_callback_note_i2c_transmit_invokes_notei2c_transmit"},
+      {test_static_callback_note_i2c_transmit_does_not_modify_device_address_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_transmit_does_not_modify_device_address_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_transmit_does_not_modify_buffer_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_transmit_does_not_modify_buffer_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_transmit_does_not_modify_interface_method_return_value, "test_static_callback_note_i2c_transmit_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_i2c_transmit_does_not_modify_size_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_transmit_does_not_modify_size_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_i2c_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_i2c_transmit_returns_error_message_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_transmit_returns_error_message_when_interface_has_not_been_instantiated"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
