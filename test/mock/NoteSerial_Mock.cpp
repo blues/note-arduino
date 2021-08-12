@@ -25,6 +25,16 @@ make_note_serial (
     return make_note_serial_Parameters.result;
 }
 
+NoteSerial_Arduino::NoteSerial_Arduino (
+    HardwareSerial & hw_serial_,
+    size_t baud_rate_
+) :
+    _notecardSerial(hw_serial_),
+    _notecardSerialSpeed(baud_rate_)
+{
+
+}
+
 size_t
 NoteSerial_Arduino::available (
     void

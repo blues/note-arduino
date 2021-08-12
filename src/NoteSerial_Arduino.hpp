@@ -20,7 +20,7 @@ public:
 
 private:
     HardwareSerial & _notecardSerial;
-    int _notecardSerialSpeed;
+    const int _notecardSerialSpeed;
 };
 
 #endif // NOTE_SERIAL_ARDUINO_HPP

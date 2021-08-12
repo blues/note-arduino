@@ -6,6 +6,7 @@
 #include "Notecard.h"
 #include "NoteI2c_Arduino.hpp"
 #include "NoteLog_Arduino.hpp"
+#include "NoteSerial_Arduino.hpp"
 #include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
@@ -2162,6 +2163,543 @@ int test_static_callback_note_log_print_returns_false_when_interface_has_not_bee
   return result;
 }
 
+int test_static_callback_note_serial_available_invokes_noteserial_available()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.availfn();
+
+  // Assert
+  if (noteSerialAvailable_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialAvailable_Parameters.invoked == " << noteSerialAvailable_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_available_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
+  noteSerialAvailable_Parameters.result = true;
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.availfn();
+
+  // Assert
+  if (ACTUAL_RESULT == noteSerialAvailable_Parameters.result)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteSerialAvailable_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_available_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.availfn();
+
+  // Assert
+  if (!noteSerialAvailable_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialAvailable_Parameters.invoked == " << noteSerialAvailable_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_available_returns_false_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.availfn();
+
+  // Assert
+  if (!ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: false (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_receive_invokes_noteserial_receive()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.readfn();
+
+  // Assert
+  if (noteSerialReceive_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialReceive_Parameters.invoked == " << noteSerialReceive_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_receive_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
+  noteSerialReceive_Parameters.result = 'Z';
+
+  // Action
+  const char ACTUAL_RESULT = noteSetFnSerial_Parameters.readfn();
+
+  // Assert
+  if (ACTUAL_RESULT == noteSerialReceive_Parameters.result)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteSerialReceive_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.readfn();
+
+  // Assert
+  if (!noteSerialReceive_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialReceive_Parameters.invoked == " << noteSerialReceive_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_receive_returns_false_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  const char EXPECTED_RESULT = '\0';
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const char ACTUAL_RESULT = noteSetFnSerial_Parameters.readfn();
+
+  // Assert
+  if (ACTUAL_RESULT == EXPECTED_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: NULL terminator ('\0')" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_reset_invokes_noteserial_reset()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.resetfn();
+
+  // Assert
+  if (noteSerialReset_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialReset_Parameters.invoked == " << noteSerialReset_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_reset_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReset_Parameters.reset();  // Clear the structure for testing results
+  noteSerialReset_Parameters.result = true;
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.resetfn();
+
+  // Assert
+  if (ACTUAL_RESULT == noteSerialReset_Parameters.result)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteSerialReset_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.resetfn();
+
+  // Assert
+  if (!noteSerialReset_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialReset_Parameters.invoked == " << noteSerialReset_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_reset_returns_false_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialReset_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.resetfn();
+
+  // Assert
+  if (!ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: false (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_transmit_invokes_noteserial_transmit()
+{
+  int result;
+
+  // Arrange
+  uint8_t text[] = "Test passed!";
+  const size_t LEN = sizeof(text);
+  const bool FLUSH = true;
+
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.writefn(text, LEN, FLUSH);
+
+  // Assert
+  if (noteSerialTransmit_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\noteSerialTransmit_Parameters.invoked == " << noteSerialTransmit_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_transmit_does_not_modify_text_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  uint8_t expected_text[] = "Test passed!";
+  const size_t LEN = sizeof(expected_text);
+  const bool FLUSH = true;
+
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.writefn(expected_text, LEN, FLUSH);
+
+  // Assert
+  if (!strcmp(reinterpret_cast<char *>(expected_text),reinterpret_cast<char *>(noteSerialTransmit_Parameters.buffer)))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\noteSerialTransmit_Parameters.buffer == " << noteSerialTransmit_Parameters.buffer << ", EXPECTED: " << expected_text << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  uint8_t text[] = "Test passed!";
+  const size_t EXPECTED_LEN = sizeof(text);
+  const bool FLUSH = true;
+
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.writefn(text, EXPECTED_LEN, FLUSH);
+
+  // Assert
+  if (EXPECTED_LEN == noteSerialTransmit_Parameters.size)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\noteSerialTransmit_Parameters.size == " << noteSerialTransmit_Parameters.size << ", EXPECTED: " << EXPECTED_LEN << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+  // Arrange
+  uint8_t text[] = "Test passed!";
+  const size_t LEN = sizeof(text);
+  const bool EXPECTED_FLUSH = true;
+
+  Notecard notecard;
+  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.writefn(text, LEN, EXPECTED_FLUSH);
+
+  // Assert
+  if (EXPECTED_FLUSH == noteSerialTransmit_Parameters.flush)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\noteSerialTransmit_Parameters.flush == " << noteSerialTransmit_Parameters.flush << ", EXPECTED: " << EXPECTED_FLUSH << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+  // Arrange
+  uint8_t text[] = "Test passed!";
+  const size_t LEN = sizeof(text);
+  const bool EXPECTED_FLUSH = true;
+
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
+
+  // Action
+  noteSetFnSerial_Parameters.writefn(text, LEN, EXPECTED_FLUSH);
+
+  // Assert
+  if (!noteSerialTransmit_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSerialTransmit_Parameters.invoked == " << noteSerialTransmit_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int main(void)
 {
   TestFunction tests[] = {
@@ -2233,6 +2771,23 @@ int main(void)
       {test_static_callback_note_log_print_does_not_modify_interface_method_return_value, "test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_value"},
       {test_static_callback_note_log_print_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
       {test_static_callback_note_log_print_returns_false_when_interface_has_not_been_instantiated, "test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_available_invokes_noteserial_available, "test_static_callback_note_serial_available_invokes_noteserial_available"},
+      {test_static_callback_note_serial_available_does_not_modify_interface_method_return_value, "test_static_callback_note_serial_available_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_serial_available_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_available_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_available_returns_false_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_available_returns_false_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_receive_invokes_noteserial_receive, "test_static_callback_note_serial_receive_invokes_noteserial_receive"},
+      {test_static_callback_note_serial_receive_does_not_modify_interface_method_return_value, "test_static_callback_note_serial_receive_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_serial_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_receive_returns_false_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_receive_returns_false_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_reset_invokes_noteserial_reset, "test_static_callback_note_serial_reset_invokes_noteserial_reset"},
+      {test_static_callback_note_serial_reset_does_not_modify_interface_method_return_value, "test_static_callback_note_serial_reset_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_serial_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_reset_returns_false_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_reset_returns_false_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_serial_transmit_invokes_noteserial_transmit, "test_static_callback_note_serial_transmit_invokes_noteserial_transmit"},
+      {test_static_callback_note_serial_transmit_does_not_modify_text_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_text_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
