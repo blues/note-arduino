@@ -20,6 +20,14 @@ make_note_log (
     return make_note_log_Parameters.result;
 }
 
+NoteLog_Arduino::NoteLog_Arduino (
+    Stream * log_stream_
+) :
+    _notecardLog(log_stream_)
+{
+
+}
+
 size_t
 NoteLog_Arduino::print (
     const char * message_
