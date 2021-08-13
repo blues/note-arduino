@@ -33,7 +33,7 @@ static char *n_cpu_name = NULL;
   @returns a `J` cJSON object with the user agent object.
 */
 /**************************************************************************/
-J *noteUserAgent()
+J *NoteUserAgent()
 {
 
     J *ua = JCreateObject();
@@ -47,10 +47,13 @@ J *noteUserAgent()
 #define PLUS ""
 #endif
 
+#define STRINGIFY(x) STRINGIFY_(x)
+#define STRINGIFY_(x) #x
+
 #if defined(__ICCARM__)
-    char *compiler = "iar arm" PLUS " " __VER__;
+    char *compiler = "iar arm" PLUS " " STRINGIFY(__VER__);
 #elif defined(__IAR_SYSTEMS_ICC__)
-    char *compiler = "iar" PLUS " " __VER__;
+    char *compiler = "iar" PLUS " " STRINIFY(__VER__);
 #elif defined(__clang__)
     char *compiler = "clang" PLUS " " __VERSION__;
 #elif defined(__GNUC__)
@@ -66,47 +69,47 @@ J *noteUserAgent()
 #endif
 
 #if defined(ARDUINO_ARCH_ARC32)
-    char *arch = "arc32";
+    n_cpu_name = "arc32";
 #elif defined(ARDUINO_ARCH_AVR)
-    char *arch = "avr";
+    n_cpu_name = "avr";
 #elif defined(ARDUINO_ARCH_ESP32)
-    char *arch = "esp32";
+    n_cpu_name = "esp32";
 #elif defined(ARDUINO_ARCH_ESP8266)
-    char *arch = "esp8266";
+    n_cpu_name = "esp8266";
 #elif defined(ARDUINO_ARCH_MBED)
-    char *arch = "mbed";
+    n_cpu_name = "mbed";
 #elif defined(ARDUINO_ARCH_MEGAAVR)
-    char *arch = "megaavr";
+    n_cpu_name = "megaavr";
 #elif defined(ARDUINO_ARCH_NRF52840)
-    char *arch = "nrf52840";
+    n_cpu_name = "nrf52840";
 #elif defined(ARDUINO_ARCH_NRF52)
-    char *arch = "nrf52";
+    n_cpu_name = "nrf52";
 #elif defined(ARDUINO_ARCH_NRF51)
-    char *arch = "nrf51";
+    n_cpu_name = "nrf51";
 #elif defined(ARDUINO_ARCH_PIC32)
-    char *arch = "pic32";
+    n_cpu_name = "pic32";
 #elif defined(ARDUINO_ARCH_SAMD)
-    char *arch = "samd";
+    n_cpu_name = "samd";
 #elif defined(ARDUINO_ARCH_SAM)
-    char *arch = "sam";
+    n_cpu_name = "sam";
 #elif defined(ARDUINO_ARCH_SPRESENSE)
-    char *arch = "spresence";
+    n_cpu_name = "spresence";
 #elif defined(ARDUINO_ARCH_STM32F0)
-    char *arch = "stm32f0";
+    n_cpu_name = "stm32f0";
 #elif defined(ARDUINO_ARCH_STM32F1)
-    char *arch = "stm32f1";
+    n_cpu_name = "stm32f1";
 #elif defined(ARDUINO_ARCH_STM32F4)
-    char *arch = "stm32f4";
+    n_cpu_name = "stm32f4";
 #elif defined(ARDUINO_ARCH_STM32G0)
-    char *arch = "stm32g0";
+    n_cpu_name = "stm32g0";
 #elif defined(ARDUINO_ARCH_STM32L4)
-    char *arch = "stm32f4";
+    n_cpu_name = "stm32f4";
 #elif defined(ARDUINO_ARCH_STM32U5)
-    char *arch = "stm32u5";
+    n_cpu_name = "stm32u5";
 #elif defined(ARDUINO_ARCH_STM32)
-    char *arch = "stm32";
+    n_cpu_name = "stm32";
 #else
-    char *arch = "";
+    n_cpu_name = "";
 #endif
 
     JAddStringToObject(ua, "agent", n_agent);

@@ -319,9 +319,9 @@ char *NoteRequestResponseJSON(char *reqJSON)
 */
 /**************************************************************************/
 #if defined(_MSC_VER)
-J *noteUserAgent()
+J *NoteUserAgent()
 #else
-__attribute__((weak)) J *noteUserAgent()
+__attribute__((weak)) J *NoteUserAgent()
 #endif
 {
     return NULL;
@@ -353,7 +353,7 @@ J *NoteTransaction(J *req)
     // Add the user agent object if appropriate
 #ifndef NOTE_DISABLE_USER_AGENT
     if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0 || strcmp(cmdType, "hub.set"))) {
-        J *body = noteUserAgent();
+        J *body = NoteUserAgent();
         if (body != NULL) {
             JAddItemToObject(req, "body", body);
         }

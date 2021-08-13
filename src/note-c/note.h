@@ -138,6 +138,7 @@ void NoteSetFnDisabled(void);
 void NoteSetI2CAddress(uint32_t i2caddress);
 
 // User agent
+J *NoteUserAgent(void);
 void NoteSetUserAgent(char *agent);
 void NoteSetUserAgentOS(char *os_name, char *os_platform, char *os_family, char *os_version);
 void NoteSetUserAgentCPU(int cpu_mem, int cpu_mhz, int cpu_cores, char *cpu_vendor, char *cpu_name);
