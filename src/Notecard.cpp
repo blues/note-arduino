@@ -94,12 +94,12 @@ namespace
 
     NoteLog *noteLog(nullptr);
 
-    size_t noteLogPrint(const char * str_)
+    size_t noteLogPrint(const char * message_)
     {
         size_t result;
         if (noteLog)
         {
-            result = noteLog->print(str_);
+            result = noteLog->print(message_);
         }
         else
         {

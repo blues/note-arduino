@@ -22,6 +22,14 @@ make_note_i2c (
     return make_note_i2c_Parameters.result;
 }
 
+NoteI2c_Arduino::NoteI2c_Arduino (
+    TwoWire & i2c_bus_
+) :
+    _i2cPort(i2c_bus_)
+{
+
+}
+
 const char *
 NoteI2c_Arduino::receive (
     uint16_t device_address_,

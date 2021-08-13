@@ -4,7 +4,7 @@ all_tests_result=0
 
 if [ 0 -eq $all_tests_result ]; then
   echo && echo 'Compiling and running Notecard Test Suite...'
-  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
     src/Notecard.cpp \
     test/Notecard.test.cpp \
     test/mock/mock-arduino.cpp \
@@ -31,7 +31,7 @@ fi
 
 if [ 0 -eq $all_tests_result ]; then
   echo && echo 'Compiling and running NoteI2c_Arduino Test Suite (no flags)...'
-  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
     src/NoteI2c_Arduino.cpp \
     test/NoteI2c_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
@@ -55,7 +55,7 @@ fi
 
 if [ 0 -eq $all_tests_result ]; then
   echo && echo 'Compiling and running NoteI2c_Arduino Test Suite (-DWIRE_HAS_END)...'
-  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
     src/NoteI2c_Arduino.cpp \
     test/NoteI2c_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
@@ -80,7 +80,7 @@ fi
 
 if [ 0 -eq $all_tests_result ]; then
   echo && echo 'Compiling and running NoteLog_Arduino Test Suite...'
-  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
     src/NoteLog_Arduino.cpp \
     test/NoteLog_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
@@ -103,7 +103,7 @@ fi
 
 if [ 0 -eq $all_tests_result ]; then
   echo && echo 'Compiling and running NoteSerial_Arduino Test Suite...'
-  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Wpedantic -std=c++11 -O0 -g \
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
     src/NoteSerial_Arduino.cpp \
     test/NoteSerial_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
@@ -142,11 +142,11 @@ if [ 0 -eq ${all_tests_result} ]; then
       all_tests_result=997
     fi
   else
-    rm ./a.out *.gcda *.gcno
+    rm -f ./a.out *.gcda *.gcno
   fi
 else
   echo && echo 'TESTS FAILED!!!' \
-  && rm ./a.out *.gcda *.gcno
+  && rm -f ./a.out *.gcda *.gcno
 fi
 
 exit $all_tests_result
