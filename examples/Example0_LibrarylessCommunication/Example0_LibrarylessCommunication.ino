@@ -16,7 +16,12 @@
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
-#define serialNotecard Serial1
+#ifndef NOTECARD_SERIAL     
+#define NOTECARD_SERIAL Serial1
+#endif
+
+#define serialNotecard NOTECARD_SERIAL
+
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge

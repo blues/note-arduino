@@ -1,0 +1,6 @@
+name: 'Build examples'
+author: 'Matthew McGowan'
+description: 'Build the library examples, targeting various platforms'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

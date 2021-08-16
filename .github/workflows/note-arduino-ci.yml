@@ -15,12 +15,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Run Tests In Container
+      - name: Build library examples
+        id: build_examples
+        uses: ./.github/actions/build-avr
+      - name: Run tests in container
         id: containerized_tests
         uses: ./.github/actions/run-tests-in-container
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      - name: Publish Test Coverage
+      - name: Publish test coverage
         id: publish_coverage
         uses: ./.github/actions/publish-coverage
 
