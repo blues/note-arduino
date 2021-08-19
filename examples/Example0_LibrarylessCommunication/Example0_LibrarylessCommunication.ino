@@ -16,7 +16,7 @@
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
-#ifndef NOTECARD_SERIAL     
+#ifndef NOTECARD_SERIAL
 #define NOTECARD_SERIAL Serial1
 #endif
 

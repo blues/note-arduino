@@ -17,7 +17,7 @@ jobs:
           submodules: true
       - name: Build library examples
         id: build_examples
-        uses: ./.github/actions/build-avr
+        uses: ./.github/actions/build-examples
       - name: Run tests in container
         id: containerized_tests
         uses: ./.github/actions/run-tests-in-container
