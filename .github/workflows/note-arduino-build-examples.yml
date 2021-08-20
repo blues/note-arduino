@@ -1,0 +1,33 @@
+name: Note Arduino Build Examples
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    
+jobs:
+  build_examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platforms: [ "arduino:avr", "arduino:mbed_rp2040" ]
+        include:
+          - platforms: "arduino:avr"
+            boards: "arduino:avr:uno"
+          - platforms: "arduino:mbed_rp2040"
+            boards: "arduino:mbed_rp2040:pico"
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Build library examples
+        id: build_examples
+        uses: ./.github/actions/build-examples
+        env:
+          BOARDS: ${{ matrix.boards }}
+          PLATFORMS: ${{ matrix.platforms }}
+          
+    
