@@ -14,7 +14,7 @@
 #       PLATFORMS="arduino:avr arduino:mbed_rp2040"
 #       BOARDS="arduino:avr:uno arduino:mbed_rp2040:pico"
 
-FROM ubuntu
+FROM debian:stable-slim
 
 RUN apt-get update && apt-get install -y curl
 # libc6-compat advice from here https://githubmemory.com/repo/arduino/arduino-cli/issues/1378
