@@ -5,18 +5,31 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-    
+
 jobs:
   build_examples:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platforms: [ "arduino:avr", "arduino:mbed_rp2040" ]
+        platforms: [ "esp32:esp32", "arduino:avr", "arduino:mbed_rp2040", "arduino:nrf52", "STMicroelectronics:stm32" ]
         include:
+          - platform: "esp32:esp32"
+            boards: "esp32:esp32:featheresp32"
+            source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json 
+            extra_compile_flags: "-DESP32 -DCORE_DEBUG_LEVEL=0"         
           - platforms: "arduino:avr"
             boards: "arduino:avr:uno"
           - platforms: "arduino:mbed_rp2040"
             boards: "arduino:mbed_rp2040:pico"
+          - platform: "adafruit:nrf52"
+            boards: "adafruit:nrf52:feather52840"
+            source-url: https://www.adafruit.com/package_adafruit_index.json
+            extra_compile_flags: "-DNRF52"
+          - platform: "STMicroelectronics:stm32"
+            boards: "STMicroelectronics:stm32:Disco"
+            source-url: "https://github.com/stm32duino/BoardManagerFiles/raw/master/package_stmicroelectronics_index.json"
+            extra_compile_flags: "-DSTM32F030x6 -DNOTECARD_SERIAL=USBSerial"
+            
     steps:
       - name: Checkout Code
         id: checkout
@@ -29,5 +42,5 @@ jobs:
         env:
           BOARDS: ${{ matrix.boards }}
           PLATFORMS: ${{ matrix.platforms }}
-          
+          EXTRA_FLAGS: ${{ matrix.extra_compile_flags }}
     

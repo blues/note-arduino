@@ -18,16 +18,11 @@ echo "Building library examples for $cores ($boards)"
 
 # not all exampels compile on all platforms. This variable contains the combinations that should be excluded
 # example2 requires a button definition
-exclude=" arduino:mbed_rp2040:pico-./examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino "
+exclude=" STMicroelectronics:stm32:GenF4-./examples/Example0_LibrarylessCommunication/Example0_LibrarylessCommunication.ino esp32:esp32:esp32-./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino arduino:mbed_rp2040:pico-./examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino "
 
-
-# WORKSPACE is either the github workspace or the cwd if not defined.
 export WORKSPACE=${GITHUB_WORKSPACE:-/note-arduino}
 [ ! -d $ARDUINO/libraries/note-arduino ] && ln -s $WORKSPACE $ARDUINO/libraries/note-arduino
 echo "Add arduino library path $WORKSPACE"
-
-# add ESP32 support - https://www.survivingwithandroid.com/arduino-cli-compile-upload-manage-libraries-cores-boards/
-# arduino-cli config add board_manager.additional_urls "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
 
 arduino-cli core update-index
 
@@ -40,6 +35,8 @@ done
 # install the libraries
 arduino-cli lib install "Adafruit BME680 Library"
 
+extraFlags="-DNOTECARD_SERIAL=Serial $EXTRA_FLAGS"
+
 # build the examples for each board, unless that combination has been excluded
 for board in $boards ; do 
     echo "Building library examples for board $board"
@@ -49,7 +46,8 @@ for board in $boards ; do
             echo "Build for $combo is excluded. Skipping."
         else
             echo "Compiling example $combo"
-            arduino-cli compile -b $board --build-property "build.extra_flags=-DNOTECARD_SERIAL=Serial" $ino
+            echo "arduino-cli compile --fqbn $board --build-property \"build.extra_flags=$extraFlags\" $ino"
+            arduino-cli compile --fqbn $board --build-property "build.extra_flags=$extraFlags" $ino
         fi
     done
 done
