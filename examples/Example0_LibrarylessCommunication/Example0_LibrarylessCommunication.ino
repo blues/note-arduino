@@ -16,6 +16,13 @@
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
+#include <stdio.h>       // Required for snprintf on nrf52, not present on avr:uno
+
+#ifdef NRF52
+// see https://githubmemory.com/repo/adafruit/Adafruit_nRF52_Arduino/issues/653
+#include "Adafruit_TinyUSB.h"
+#endif
+
 #ifndef NOTECARD_SERIAL
 #define NOTECARD_SERIAL Serial1
 #endif
