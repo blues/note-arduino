@@ -24,11 +24,10 @@ ENV ARDUINO=/Arduino
 ENV ARDUINO_CLI=/Arduino/cli
 ENV ARDUINO_DIRECTORIES_USER=$ARDUINO
 ENV PATH="${ARDUINO_CLI}/bin:${PATH}"
-
+ 
 # esp32 requires python3 to be the system python. 
 # pre-install some platforms
-RUN pushd $ARDUINO_CLI && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh && \
-    mkdir -p $ARDUINO_CLI/bin && \
+RUN BINDIR=$ARDUINO_CLI/bin && mkdir -p $ARDUINO_CLI/bin && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh && \
     mkdir -p $ARDUINO/libraries && \
     arduino-cli config init && \
     arduino-cli config add board_manager.additional_urls "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" && \
@@ -41,8 +40,7 @@ RUN pushd $ARDUINO_CLI && curl -fsSL https://raw.githubusercontent.com/arduino/a
     arduino-cli core install arduino:avr && \
     arduino-cli core install arduino:mbed_rp2040 && \
     arduino-cli core install STMicroelectronics:stm32 && \
-    arduino-cli lib install "Adafruit BME680 Library" && \
-    popd
+    arduino-cli lib install "Adafruit BME680 Library"
 
 
 ENTRYPOINT ["bash", "-c", "./.github/actions/build-examples/entrypoint.sh"]
