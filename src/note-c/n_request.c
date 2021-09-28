@@ -352,7 +352,7 @@ J *NoteTransaction(J *req)
 
     // Add the user agent object if appropriate
 #ifndef NOTE_DISABLE_USER_AGENT
-    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0 || strcmp(cmdType, "hub.set"))) {
+    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0)) {
         J *body = NoteUserAgent();
         if (body != NULL) {
             JAddItemToObject(req, "body", body);
