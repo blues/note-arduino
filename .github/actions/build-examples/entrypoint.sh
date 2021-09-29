@@ -34,7 +34,11 @@ echo "Add arduino library path $WORKSPACE"
 # done
 
 # install the libraries
-arduino-cli lib install "Adafruit BME680 Library"
+# arduino-cli lib install "Adafruit BME680 Library"
+
+# attempt to work around the crash on github.
+arduino-cli update
+arduino-cli core update-index
 
 extraFlags="-DNOTECARD_SERIAL=Serial $EXTRA_FLAGS"
 
