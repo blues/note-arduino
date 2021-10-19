@@ -95,7 +95,9 @@ def main():
                 del json_coverage_details['service_job_id']
 
             # Post report to Coveralls.io
-            post_report(json_coverage_details, args)
+            if post_report(json_coverage_details, args)!=0:
+                sys.exit(-1)
+            
 
 if __name__ == '__main__':
     main()
