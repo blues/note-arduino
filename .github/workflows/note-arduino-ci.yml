@@ -23,4 +23,6 @@ jobs:
       - name: Publish Test Coverage
         id: publish_coverage
         uses: ./.github/actions/publish-coverage
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
