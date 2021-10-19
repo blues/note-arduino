@@ -90,6 +90,9 @@ def main():
             json_coverage_details['service_job_id'] = os.environ.get('CF_BUILD_ID')
             if (json_coverage_details['service_job_id'] is not None):
                 json_coverage_details['service_name'] = "codefresh"
+            elif os.environ.get('GITHUB_RUN_NUMBER') is not None:
+                json_coverage_details['service_job_id'] = os.environ.get('GITHUB_RUN_NUMBER')
+                json_coverage_details['service_name'] = "github"
             else:
                 json_coverage_details['service_name'] = ""
                 del json_coverage_details['service_job_id']
