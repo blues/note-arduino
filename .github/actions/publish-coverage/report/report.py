@@ -58,8 +58,10 @@ def post_report(coverage, args):
     """Post coverage report to coveralls.io."""
     response = requests.post(URL, files={'json_file': json.dumps(coverage)},
                              verify=(not args.skip_ssl_verify))
+    
     try:
         result = response.json()
+        result['status'] = response.status_code
     except ValueError:
         result = {'error': 'Failure to submit data. '
                   'Response [%(status)s]: %(text)s' % {
