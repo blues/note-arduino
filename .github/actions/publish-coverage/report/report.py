@@ -86,18 +86,6 @@ def main():
                     print("Environment variable COVERALLS_REPO_TOKEN is required to upload coverage information")
                     exit(-1)
 
-            # Consume Codefresh CI specific environment variables _(if available)_
-            json_coverage_details['service_job_id'] = os.environ.get('CF_BUILD_ID')
-            if (json_coverage_details['service_job_id'] is not None):
-                json_coverage_details['service_name'] = "codefresh"
-            elif os.environ.get('GITHUB_RUN_ID') is not None:
-                print('Using GITHUB_RUN_ID')
-                json_coverage_details['service_job_id'] = os.environ.get('GITHUB_RUN_ID')
-                json_coverage_details['service_name'] = "github"
-            else:
-                json_coverage_details['service_name'] = ""
-                del json_coverage_details['service_job_id']
-
             # Post report to Coveralls.io
             if post_report(json_coverage_details, args)!=0:
                 exit(-2)
