@@ -21,6 +21,10 @@
 #define buttonPin     6
 #define buttonPressedState  LOW
 #define ledPin        4
+#elif defined(ARDUINO_ARCH_STM32)
+#define buttonPin     USER_BTN
+#define buttonPressedState  LOW
+#define ledPin        LED_BUILTIN
 #else
 #error "please add a board definition for button and led"
 #define buttonPin     ?       // Change to any GPIO pin where there is an active-high button
