@@ -314,21 +314,6 @@ char *NoteRequestResponseJSON(char *reqJSON)
 
 /**************************************************************************/
 /*!
-    @brief  Override-able method to return user agent object
-  @returns a `J` cJSON object with the user agent object.
-*/
-/**************************************************************************/
-#if defined(_MSC_VER)
-J *NoteUserAgent()
-#else
-__attribute__((weak)) J *NoteUserAgent()
-#endif
-{
-    return NULL;
-}
-
-/**************************************************************************/
-/*!
     @brief  Initiate a transaction to the Notecard and return the response.
             Does NOT free the request structure from memory after sending
             the request.

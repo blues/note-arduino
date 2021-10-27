@@ -305,7 +305,7 @@ bool JContainsString(J *rsp, const char *field, const char *substr)
 //**************************************************************************/
 /*!
     @brief  Add a binary to a Note as a Base64-encoded string.
-    @param   req The JSON request object.
+    @param   req The JSON object to which the field should be added
     @param   fieldName The field to set.
     @param   binaryData The binary data to set.
     @param   binaryDataLen The length of the binary string.
@@ -327,6 +327,38 @@ bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, u
     }
     JAddItemToObject(req, fieldName, stringItem);
     return true;
+}
+
+//**************************************************************************/
+/*!
+    @brief  Get binary from an object that is expected to be a Base64-encoded string.
+    @param   rsp The JSON object containing the  field.
+    @param   fieldName The field to get data from.
+    @param   retBinaryData The binary data object allocated.  (Use standard "free" method to free it.)
+    @param   retBinaryDataLen The length of the binary data.
+    @returns bool. Whether the binary data was allocated and returned.
+*/
+/**************************************************************************/
+bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData, uint32_t *retBinaryDataLen)
+{
+
+    char *payload = JGetString(rsp, fieldName);
+    if (payload[0] == '\0') {
+        return false;
+    }
+
+    // Allocate a buffer for the payload
+    char *p = (char *) _Malloc(JB64DecodeLen(payload));
+    if (p == NULL) {
+		return false;
+	}
+    uint32_t actualLen = JB64Decode(p, payload);
+
+	// Return the binary to the caller
+	*retBinaryData = p;
+	*retBinaryDataLen = actualLen;
+	return true;
+
 }
 
 //**************************************************************************/

@@ -29,11 +29,29 @@ static char *n_cpu_name = NULL;
 
 /**************************************************************************/
 /*!
-    @brief  Method to return user agent object
+    @brief  Override-able method to add more data to the user agent object
   @returns a `J` cJSON object with the user agent object.
 */
 /**************************************************************************/
+#if defined(_MSC_VER)
+void NoteUserAgentUpdate(J *ua)
+#else
+__attribute__((weak)) void NoteUserAgentUpdate(J *ua)
+#endif
+{
+}
+
+/**************************************************************************/
+/*!
+    @brief  Override-able method to return user agent object
+  @returns a `J` cJSON object with the user agent object.
+*/
+/**************************************************************************/
+#if defined(_MSC_VER)
 J *NoteUserAgent()
+#else
+__attribute__((weak)) J *NoteUserAgent()
+#endif
 {
 
     J *ua = JCreateObject();
@@ -76,8 +94,6 @@ J *NoteUserAgent()
     n_cpu_name = "esp32";
 #elif defined(ARDUINO_ARCH_ESP8266)
     n_cpu_name = "esp8266";
-#elif defined(ARDUINO_ARCH_MBED)
-    n_cpu_name = "mbed";
 #elif defined(ARDUINO_ARCH_MEGAAVR)
     n_cpu_name = "megaavr";
 #elif defined(ARDUINO_ARCH_NRF52840)
@@ -144,6 +160,9 @@ J *NoteUserAgent()
     if (n_os_version != NULL) {
         JAddStringToObject(ua, "os_version", n_os_version);
     }
+
+    // Add more data to the UA from a higher level
+    NoteUserAgentUpdate(ua);
 
     return ua;
 
