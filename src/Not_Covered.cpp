@@ -38,6 +38,7 @@ unsigned int crc32b_2(unsigned char *message) {
    }
    return ~crc;
 }
+#endif
 
 unsigned int crc32b_3(unsigned char *message) {
    int i, j;
@@ -61,4 +62,3 @@ void f(void) {
 
 }
 
-#endif
