@@ -22,7 +22,7 @@ jobs:
       - name: test
         run: ./test/run_all_tests.sh
       - name: run lcov
-        run: lcov --capture --directory . --output-file lcov.info
+        run: lcov --capture --directory . --output-file lcov-all.info && lcov --remove lcov-all.info "*test*" "*mock*" -o lcov.info
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
