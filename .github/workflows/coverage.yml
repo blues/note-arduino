@@ -1,0 +1,31 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+    - '*'
+  pull_request:
+    branches:
+    - '*'
+
+
+jobs:
+  coverage:
+    name: coverage (ubuntu-18.04)
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y lcov g++ valgrind
+      - name: test
+        run: ./test/run_all_tests.sh
+      - name: run lcov
+        run: lcov --capture --directory . --output-file lcov.info
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "./lcov.info"
+

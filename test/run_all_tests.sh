@@ -134,20 +134,16 @@ if [ 0 -eq ${all_tests_result} ]; then
   echo && echo 'All tests have passed!'
   # Run coverage if available
   if [ $(which gcovr) ]; then
-    gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
+    echo "GITHUB_ACTIONS $GITHUB_ACTIONS"
+    echo "GITHUB_WORKFLOW $GITHUB_WORKFLOW"
+    echo "GITHUB_RUN_ID $GITHUB_RUN_ID"
+    echo "GITHUB_SHA $GITHUB_SHA"
+    gcovr --print-summary --sort-percentage --exclude-throw-branches \
       --object-directory . \
       --root src \
       --exclude .*_error.* \
       --exclude test \
-      --coveralls coverage.json \
-      --txt \
-    && rm ./a.out *.gcno
-    if [ ! -f "coverage.json" ]; then
-      echo "Coverage report not produced";
-      all_tests_result=997
-    fi
-  else
-    rm -f ./a.out *.gcda *.gcno
+      --txt 
   fi
 else
   echo && echo 'TESTS FAILED!!!' \
