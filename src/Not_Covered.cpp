@@ -1,5 +1,7 @@
 // This file is deliberately not covered. The PR can be thrown away once we validate that coveralls rejects it and accepts it when the code is removed. 
 
+#if 0
+
 unsigned int crc32b(unsigned char *message) {
    int i, j;
    unsigned int byte, crc, mask;
@@ -58,3 +60,5 @@ unsigned int crc32b_3(unsigned char *message) {
 void f(void) {
 
 }
+
+#endif
