@@ -24,7 +24,7 @@ jobs:
       - name: remove test source coverage
         run: rm *mock*.gc?? *Mock*.gc?? *test*.gc??
       - name: run lcov
-        run: lcov --capture --directory . --output-file lcov-all.info && lcov --remove lcov-all.info "*test*" "*mock*" -o lcov.info
+        run: lcov --capture --directory . --output-file lcov.info
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
