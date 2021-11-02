@@ -18,9 +18,11 @@ jobs:
       - name: Run Tests In Container
         id: containerized_tests
         uses: ./.github/actions/run-tests-in-container
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      - name: Coveralls Action Bug Workaround
+        id: coveralls_bug_workaround
+        run: sudo sed -i 's/github\/workspace/home\/runner\/work\/note-arduino\/note-arduino/g' ./coverage/lcov.info
       - name: Publish Test Coverage
         id: publish_coverage
-        uses: ./.github/actions/publish-coverage
-
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

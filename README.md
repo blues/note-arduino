@@ -174,6 +174,29 @@ Upon success, you will see a message similar to the following:
 NoteSerial_Arduino tests passed!
 
 All tests have passed!
+
+gcov (Alpine 10.3.1_git20210424) 10.3.1 20210424
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+
+lcov: LCOV version 20200626-2688-g6cc6292bbc
+Capturing coverage data from .
+Found gcov version: 10.3.1
+Using intermediate gcov format
+Scanning . for .gcda files ...
+Found 4 data files in .
+Processing NoteLog_Arduino.gcda
+Processing NoteI2c_Arduino.gcda
+Processing NoteSerial_Arduino.gcda
+Processing Notecard.gcda
+Finished .info-file creation
+Reading tracefile ./coverage/lcov.info
+Summary coverage rate:
+  lines......: 100.0% (215 of 215 lines)
+  functions..: 92.9% (39 of 42 functions)
+  branches...: no data found
 ```
 
 ### Failure

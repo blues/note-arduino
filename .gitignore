@@ -6,6 +6,8 @@
 *.gcno
 *.gcov
 
+coverage/
+
 Doxyfile*
 doxygen_sqlite3.db
 html

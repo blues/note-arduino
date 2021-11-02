@@ -126,27 +126,31 @@ fi
 
 # Print summary statement
 if [ 0 -eq ${all_tests_result} ]; then
-  echo && echo 'All tests have passed!'
+  echo && echo 'All tests have passed!' && echo
+
   # Run coverage if available
-  if [ $(which gcovr) ]; then
-    gcovr --print-summary --sort-percentage --exclude-throw-branches --delete \
-      --object-directory . \
-      --root src \
-      --exclude .*_error.* \
-      --exclude test \
-      --coveralls coverage.json \
-      --txt \
-    && rm ./a.out *.gcno
-    if [ ! -f "coverage.json" ]; then
-      echo "Coverage report not produced";
-      all_tests_result=997
+  if [ $(which lcov) ]; then
+    rm mock-*.gc?? *_Mock.gc?? *test.gc?? \
+    && gcov --version \
+    && lcov --version \
+    && mkdir -p ./coverage \
+    && lcov --capture \
+      --directory . \
+      --exclude '/note-arduino/test/*' \
+      --output-file ./coverage/lcov.info \
+      --rc lcov_branch_coverage=1
+    if [ ! -f "./coverage/lcov.info" ]; then
+      echo "COVERAGE REPORT NOT PRODUCED!!!";
+      all_tests_result=998
+    else
+      lcov --summary ./coverage/lcov.info
     fi
-  else
-    rm -f ./a.out *.gcda *.gcno
   fi
 else
-  echo && echo 'TESTS FAILED!!!' \
-  && rm -f ./a.out *.gcda *.gcno
+  echo && echo 'TESTS FAILED!!!'
 fi
+
+# Clean testing artifacts
+rm -f *.gcda *.gcno ./a.out
 
 exit $all_tests_result

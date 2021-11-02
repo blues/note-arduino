@@ -1,5 +1,0 @@
-name: 'Publish Coverage'
-description: 'Publish test coverage report to coveralls'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
