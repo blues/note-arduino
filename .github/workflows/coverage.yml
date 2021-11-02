@@ -25,6 +25,13 @@ jobs:
         run: rm *mock*.gc?? *Mock*.gc?? *test*.gc??
       - name: run lcov
         run: lcov --capture --directory . --output-file lcov.info
+      - name: Version Check
+        id: ver
+        run: |
+          gcov --version
+          lcov --version
+          ls -al ./lcov.info
+          cat ./lcov.info
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
