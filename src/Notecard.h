@@ -94,6 +94,18 @@
 #endif
 #define D13 13
 
+#elif defined(ARDUINO_SWAN_R5)
+
+#ifdef CS
+#undef CS
+#endif
+#define CS PD0
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 CS
+
 #else
 
 #ifndef D5
