@@ -355,7 +355,7 @@ bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData
     uint32_t actualLen = JB64Decode(p, payload);
 
 	// Return the binary to the caller
-	*retBinaryData = p;
+	*retBinaryData = (uint8_t *)p;
 	*retBinaryDataLen = actualLen;
 	return true;
 
