@@ -71,7 +71,7 @@ void loop()
 
     // Add a "note" to the Notecard, in the default data notefile. The "body" of the note is
     // JSON object completely of our own design, and is passed straight through as-is to notehub.io.
-    // (Note that we add the "start" flag for demonstration purposes to upload the data instantaneously,
+    // (Note that we add the "sync" flag for demonstration purposes to upload the data instantaneously,
     // so that if you are looking at this on notehub.io you will see the data appearing 'live'.)
     // Note that we use a somewhat convoluted way of displaying a floating point number because %f
     // isn't supported in many versions of Arduino (newlib).
@@ -80,7 +80,7 @@ void loop()
              "{"
              "\"req\":\"note.add\""
              ","
-             "\"start\":true"
+             "\"sync\":true"
              ","
              "\"body\":{\"temp\":%d.%02d,\"voltage\":%d.%02d,\"count\":%d}"
              "}",

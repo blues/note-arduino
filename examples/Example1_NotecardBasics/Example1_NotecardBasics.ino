@@ -130,7 +130,7 @@ void loop()
         notecard.deleteResponse(rsp);
     }
 
-    // Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "start"
+    // Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "sync"
     // flag for demonstration purposes to upload the data instantaneously, so that if you are looking
     // at this on notehub.io you will see the data appearing 'live'.)
     J *req = notecard.newRequest("note.add");
