@@ -162,9 +162,7 @@ void loop()
     binaryData.temp = temperature;
     binaryData.voltage = voltage;
 
-    // Enqueue the measurement to the Notecard for transmission to the Notehub, adding the "start"
-    // flag for demonstration purposes to upload the data instantaneously, so that if you are looking
-    // at this on notehub.io you will see the data appearing 'live'.)
+    // Enqueue the measurement to the Notecard for transmission to the Notehub
     J *req = notecard.newRequest("note.add");
     if (req != NULL) {
         JAddStringToObject(req, "file", "sensors.qo");
