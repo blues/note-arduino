@@ -39,6 +39,7 @@ void NoteUserAgentUpdate(J *ua)
 __attribute__((weak)) void NoteUserAgentUpdate(J *ua)
 #endif
 {
+	((void)ua);	// avoid compiler warning
 }
 
 /**************************************************************************/

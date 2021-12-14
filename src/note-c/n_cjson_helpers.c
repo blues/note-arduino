@@ -350,14 +350,14 @@ bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData
     // Allocate a buffer for the payload
     char *p = (char *) _Malloc(JB64DecodeLen(payload));
     if (p == NULL) {
-		return false;
-	}
+        return false;
+    }
     uint32_t actualLen = JB64Decode(p, payload);
 
-	// Return the binary to the caller
-	*retBinaryData = (uint8_t *)p;
-	*retBinaryDataLen = actualLen;
-	return true;
+    // Return the binary to the caller
+    *retBinaryData = (uint8_t *)p;
+    *retBinaryDataLen = actualLen;
+    return true;
 
 }
 

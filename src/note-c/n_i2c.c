@@ -210,16 +210,18 @@ bool i2cNoteReset()
     }
 
     // Synchronize by guaranteeing not only that I2C works, but that after we send \n that we drain
-    // the remainder of any pending partial reply from a previously-aborted session.  This outer loop
-    // does retries on I2C error, and is simply here for robustness.
-    bool notecardReady = false;
-    int retries;
+    // the remainder of any pending partial reply from a previously-aborted session.
+    // If we get a failure on transmitting the \n, it means that the notecard isn't even present.
     _LockI2C();
     _DelayIO();
-    _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
+    const char *transmitErr = _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
     _DelayMs(CARD_REQUEST_I2C_SEGMENT_DELAY_MS);
     _UnlockI2C();
-    for (retries=0; !notecardReady && retries<3; retries++) {
+
+    // This outer loop does retries on I2C error, and is simply here for robustness.
+    bool notecardReady = false;
+    int retries;
+    for (retries=0; transmitErr==NULL && !notecardReady && retries<3; retries++) {
 
         // Loop to drain all chunks of data that may be ready to transmit to us
         int chunklen = 0;
@@ -254,12 +256,14 @@ bool i2cNoteReset()
             break;
         }
 
-        // Reinitialize i2c if there's no response
+    }
+
+    // Reinitialize i2c if there's no response
+    if (!notecardReady) {
         _LockI2C();
         _I2CReset(_I2CAddress());
         _UnlockI2C();
         _Debug(ERRSTR("notecard not responding\n", "no notecard\n"));
-
     }
 
     // Done

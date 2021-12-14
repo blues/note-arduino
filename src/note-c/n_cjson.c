@@ -395,7 +395,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     JNUMBER d = item->valuenumber;
     int length = 0;
     size_t i = 0;
-    unsigned char number_buffer[26]; /* temporary buffer to print the number into */
+    unsigned char number_buffer[JNTOA_MAX]; /* temporary buffer to print the number into */
     unsigned char decimal_point = get_decimal_point();
 
     if (output_buffer == NULL) {

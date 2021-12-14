@@ -571,7 +571,7 @@ bool NoteSetEnvDefaultInt(const char *variable, long int defaultVal)
 /**************************************************************************/
 bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal)
 {
-    char buf[32];
+    char buf[JNTOA_MAX];
     JNtoA(defaultVal, buf, -1);
     return NoteSetEnvDefault(variable, buf);
 }
@@ -586,10 +586,10 @@ bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal)
 /**************************************************************************/
 JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal)
 {
-    char buf[32], buf2[32];;
+    char buf[JNTOA_MAX], buf2[JNTOA_MAX];;
     JNtoA(defaultVal, buf2, -1);
     NoteGetEnv(variable, buf2, buf, sizeof(buf));
-    return JAtoN(buf, NULL);
+    return JAtoN((const char*)buf, NULL);
 }
 
 //**************************************************************************/

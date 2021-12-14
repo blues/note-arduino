@@ -188,8 +188,8 @@ char *JAllocString(uint8_t *buffer, uint32_t len);
 const char *JType(J *item);
 
 // Helper functions for apps that wish to limit their C library dependencies
-#define JNTOA_PRECISION (10)
-#define JNTOA_MAX       ((2*JNTOA_PRECISION)+1+1)
+#define JNTOA_PRECISION (16)
+#define JNTOA_MAX       (44)
 char * JNtoA(JNUMBER f, char * buf, int precision);
 JNUMBER JAtoN(const char *string, char **endPtr);
 void JItoA(long int n, char *s);
