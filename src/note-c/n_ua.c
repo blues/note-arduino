@@ -16,7 +16,7 @@
 #include "n_lib.h"
 
 // Override-able statics
-static char *n_agent = "note-c";
+static char *n_agent = (char *) "note-c";
 static char *n_os_name = NULL;
 static char *n_os_platform = NULL;
 static char *n_os_family = NULL;
@@ -39,7 +39,7 @@ void NoteUserAgentUpdate(J *ua)
 __attribute__((weak)) void NoteUserAgentUpdate(J *ua)
 #endif
 {
-	((void)ua);	// avoid compiler warning
+    ((void)ua);	// avoid compiler warning
 }
 
 /**************************************************************************/
@@ -70,63 +70,63 @@ __attribute__((weak)) J *NoteUserAgent()
 #define STRINGIFY_(x) #x
 
 #if defined(__ICCARM__)
-    char *compiler = "iar arm" PLUS " " STRINGIFY(__VER__);
+    char *compiler = (char *) ("iar arm" PLUS " " STRINGIFY(__VER__));
 #elif defined(__IAR_SYSTEMS_ICC__)
-    char *compiler = "iar" PLUS " " STRINIFY(__VER__);
+    char *compiler = (char *) ("iar" PLUS " " STRINIFY(__VER__));
 #elif defined(__clang__)
-    char *compiler = "clang" PLUS " " __VERSION__;
+    char *compiler = (char *) ("clang" PLUS " " __VERSION__);
 #elif defined(__GNUC__)
-    char *compiler = "gcc" PLUS " " __VERSION__;
+    char *compiler = (char *) ("gcc" PLUS " " __VERSION__);
 #elif defined(__ATOLLIC__) && defined(__GNUC__)
-    char *compiler = "atollic gcc" PLUS " " __VERSION__;
+    char *compiler = (char *) ("atollic gcc" PLUS " " __VERSION__);
 #elif defined(_MSC_FULL_VER)
-    char *compiler = "msc" PLUS " " _MSC_FULL_VER;
+    char *compiler = (char *) ("msc" PLUS " " _MSC_FULL_VER);
 #elif defined(__STDC_VERSION___)
-    char *compiler = "STDC" PLUS " " __STDC_VERSION__;
+    char *compiler = (char *) ("STDC" PLUS " " __STDC_VERSION__);
 #else
-    char *compiler = "unknown" PLUS " " __VERSION__
+    char *compiler = (char *) ("unknown" PLUS " " __VERSION__)
 #endif
 
 #if defined(ARDUINO_ARCH_ARC32)
-    n_cpu_name = "arc32";
+    n_cpu_name = (char *) "arc32";
 #elif defined(ARDUINO_ARCH_AVR)
-    n_cpu_name = "avr";
+    n_cpu_name = (char *) "avr";
 #elif defined(ARDUINO_ARCH_ESP32)
-    n_cpu_name = "esp32";
+    n_cpu_name = (char *) "esp32";
 #elif defined(ARDUINO_ARCH_ESP8266)
-    n_cpu_name = "esp8266";
+    n_cpu_name = (char *) "esp8266";
 #elif defined(ARDUINO_ARCH_MEGAAVR)
-    n_cpu_name = "megaavr";
+    n_cpu_name = (char *) "megaavr";
 #elif defined(ARDUINO_ARCH_NRF52840)
-    n_cpu_name = "nrf52840";
+    n_cpu_name = (char *) "nrf52840";
 #elif defined(ARDUINO_ARCH_NRF52)
-    n_cpu_name = "nrf52";
+    n_cpu_name = (char *) "nrf52";
 #elif defined(ARDUINO_ARCH_NRF51)
-    n_cpu_name = "nrf51";
+    n_cpu_name = (char *) "nrf51";
 #elif defined(ARDUINO_ARCH_PIC32)
-    n_cpu_name = "pic32";
+    n_cpu_name = (char *) "pic32";
 #elif defined(ARDUINO_ARCH_SAMD)
-    n_cpu_name = "samd";
+    n_cpu_name = (char *) "samd";
 #elif defined(ARDUINO_ARCH_SAM)
-    n_cpu_name = "sam";
+    n_cpu_name = (char *) "sam";
 #elif defined(ARDUINO_ARCH_SPRESENSE)
-    n_cpu_name = "spresence";
+    n_cpu_name = (char *) "spresence";
 #elif defined(ARDUINO_ARCH_STM32F0)
-    n_cpu_name = "stm32f0";
+    n_cpu_name = (char *) "stm32f0";
 #elif defined(ARDUINO_ARCH_STM32F1)
-    n_cpu_name = "stm32f1";
+    n_cpu_name = (char *) "stm32f1";
 #elif defined(ARDUINO_ARCH_STM32F4)
-    n_cpu_name = "stm32f4";
+    n_cpu_name = (char *) "stm32f4";
 #elif defined(ARDUINO_ARCH_STM32G0)
-    n_cpu_name = "stm32g0";
+    n_cpu_name = (char *) "stm32g0";
 #elif defined(ARDUINO_ARCH_STM32L4)
-    n_cpu_name = "stm32f4";
+    n_cpu_name = (char *) "stm32f4";
 #elif defined(ARDUINO_ARCH_STM32U5)
-    n_cpu_name = "stm32u5";
+    n_cpu_name = (char *) "stm32u5";
 #elif defined(ARDUINO_ARCH_STM32)
-    n_cpu_name = "stm32";
+    n_cpu_name = (char *) "stm32";
 #else
-    n_cpu_name = "";
+    n_cpu_name = (char *) "";
 #endif
 
     JAddStringToObject(ua, "agent", n_agent);

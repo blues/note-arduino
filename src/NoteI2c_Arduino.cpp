@@ -36,7 +36,8 @@ NoteI2c_Arduino::receive (
     uint8_t * buffer_,
     uint16_t requested_byte_count_,
     uint32_t * available_
-) {
+)
+{
     const char *result = nullptr;
     uint8_t transmission_error = 0;
 
@@ -53,22 +54,22 @@ NoteI2c_Arduino::receive (
         }
 
         switch (transmission_error) {
-          case 1:
+        case 1:
             result = ERRSTR("i2c: data too long to fit in transmit buffer {io}",i2cerr);
             break;
-          case 2:
+        case 2:
             result = ERRSTR("i2c: received NACK on transmit of address {io}",i2cerr);
             break;
-          case 3:
+        case 3:
             result = ERRSTR("i2c: received NACK on transmit of data {io}",i2cerr);
             break;
-          case 4:
+        case 4:
             result = ERRSTR("i2c: unknown error on TwoWire::endTransmission() {io}",i2cerr);
             break;
-          case 5:
+        case 5:
             result = ERRSTR("i2c: timeout {io}",i2cerr);
             break;
-          default:
+        default:
             result = ERRSTR("i2c: unknown error encounter during I2C transmission {io}",i2cerr);
         }
     }
@@ -102,7 +103,8 @@ NoteI2c_Arduino::receive (
 bool
 NoteI2c_Arduino::reset (
     uint16_t device_address_
-) {
+)
+{
     (void)device_address_;
 #if WIRE_HAS_END
     _i2cPort.end();
@@ -116,7 +118,8 @@ NoteI2c_Arduino::transmit (
     uint16_t device_address_,
     uint8_t * buffer_,
     uint16_t size_
-) {
+)
+{
     const char * result = nullptr;
     uint8_t transmission_error = 0;
 
@@ -127,22 +130,22 @@ NoteI2c_Arduino::transmit (
 
     if (transmission_error) {
         switch (transmission_error) {
-          case 1:
+        case 1:
             result = ERRSTR("i2c: data too long to fit in transmit buffer {io}",i2cerr);
             break;
-          case 2:
+        case 2:
             result = ERRSTR("i2c: received NACK on transmit of address {io}",i2cerr);
             break;
-          case 3:
+        case 3:
             result = ERRSTR("i2c: received NACK on transmit of data {io}",i2cerr);
             break;
-          case 4:
+        case 4:
             result = ERRSTR("i2c: unknown error on TwoWire::endTransmission() {io}",i2cerr);
             break;
-          case 5:
+        case 5:
             result = ERRSTR("i2c: timeout {io}",i2cerr);
             break;
-          default:
+        default:
             result = ERRSTR("i2c: unknown error encounter during I2C transmission {io}",i2cerr);
         }
     }

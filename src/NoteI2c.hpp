@@ -4,8 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-class NoteI2c {
-  public:
+class NoteI2c
+{
+public:
     /**************************************************************************/
     /*!
         @brief  Type used to abstract specific hardware implementation types.

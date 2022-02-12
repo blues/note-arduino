@@ -12,7 +12,7 @@ make_note_log (
             note_log = nullptr;
         }
     } else if (!note_log) {
-         note_log = new NoteLog_Arduino(reinterpret_cast<Stream *>(log_channel_));
+        note_log = new NoteLog_Arduino(reinterpret_cast<Stream *>(log_channel_));
     }
     return note_log;
 }
