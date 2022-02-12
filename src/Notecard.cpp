@@ -148,15 +148,15 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
    for delay and millis differently */
 
 extern "C" {
-    uint32_t platform_millis(void);
-    void platform_delay(uint32_t ms);
 
-    uint32_t platform_millis(void)
+    static uint32_t platform_millis(void);
+    static uint32_t platform_millis(void)
     {
         return (uint32_t) millis();
     }
 
-    void platform_delay(uint32_t ms)
+    static void platform_delay(uint32_t ms);
+    static void platform_delay(uint32_t ms)
     {
         delay((unsigned long int) ms);
     }
