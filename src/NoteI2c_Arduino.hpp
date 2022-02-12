@@ -6,20 +6,21 @@
 #include "Notecard.h"
 
 #ifndef NOTE_MOCK
-  #include <Wire.h>
+#include <Wire.h>
 #else
-  #include "mock/mock-arduino.hpp"
-  #include "mock/mock-parameters.hpp"
+#include "mock/mock-arduino.hpp"
+#include "mock/mock-parameters.hpp"
 #endif
 
-class NoteI2c_Arduino final : public NoteI2c {
-  public:
+class NoteI2c_Arduino final : public NoteI2c
+{
+public:
     NoteI2c_Arduino(TwoWire & i2c_bus);
     const char * receive(uint16_t device_address, uint8_t * buffer, uint16_t requested_byte_count, uint32_t * available) override;
     bool reset(uint16_t device_address) override;
     const char * transmit(uint16_t device_address, uint8_t * buffer, uint16_t size) override;
 
-  private:
+private:
     TwoWire & _i2cPort;
 };
 

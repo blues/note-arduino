@@ -48,117 +48,119 @@
 
 namespace
 {
-    NoteI2c *noteI2c(nullptr);
+NoteI2c *noteI2c(nullptr);
 
-    const char *noteI2cReceive(uint16_t device_address_, uint8_t *buffer_, uint16_t size_, uint32_t *available_)
+const char *noteI2cReceive(uint16_t device_address_, uint8_t *buffer_, uint16_t size_, uint32_t *available_)
+{
+    const char *result;
+    if (noteI2c) {
+        result = noteI2c->receive(device_address_, buffer_, size_, available_);
+    } else {
+        result = "i2c: A call to Notecard::begin() is required. {io}";
+    }
+    return result;
+}
+
+bool noteI2cReset(uint16_t device_address_)
+{
+    bool result;
+    if (noteI2c) {
+        result = noteI2c->reset(device_address_);
+    } else {
+        result = false;
+    }
+    return result;
+}
+
+const char *noteI2cTransmit(uint16_t device_address_, uint8_t *buffer_, uint16_t size_)
+{
+    const char *result;
+    if (noteI2c) {
+        result = noteI2c->transmit(device_address_, buffer_, size_);
+    } else {
+        result = "i2c: A call to Notecard::begin() is required. {io}";
+    }
+    return result;
+}
+
+NoteLog *noteLog(nullptr);
+
+size_t noteLogPrint(const char * message_)
+{
+    size_t result;
+    if (noteLog) {
+        result = noteLog->print(message_);
+    } else {
+        result = 0;
+    }
+    return result;
+}
+
+NoteSerial *noteSerial(nullptr);
+
+bool noteSerialAvailable(void)
+{
+    bool result;
+    if (noteSerial) {
+        result = noteSerial->available();
+    } else {
+        result = false;
+    }
+    return result;
+}
+
+char noteSerialReceive(void)
+{
+    char result;
+    if (noteSerial) {
+        result = noteSerial->receive();
+    } else {
+        result = '\0';
+    }
+    return result;
+}
+
+bool noteSerialReset(void)
+{
+    bool result;
+    if (noteSerial) {
+        result = noteSerial->reset();
+    } else {
+        result = false;
+    }
+    return result;
+}
+
+void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
+{
+    if (noteSerial) {
+        noteSerial->transmit(text_, len_, flush_);
+    }
+}
+}
+
+
+/***************************************************************************
+ PRIVATE FUNCTIONS
+ ***************************************************************************/
+
+/* These functions are necessary because some platforms define types
+   for delay and millis differently */
+
+extern "C" {
+    uint32_t platform_millis(void);
+    void platform_delay(uint32_t ms);
+
+    uint32_t platform_millis(void)
     {
-        const char *result;
-        if (noteI2c)
-        {
-            result = noteI2c->receive(device_address_, buffer_, size_, available_);
-        }
-        else
-        {
-            result = "i2c: A call to Notecard::begin() is required. {io}";
-        }
-        return result;
+        return (uint32_t) millis();
     }
 
-    bool noteI2cReset(uint16_t device_address_)
+    void platform_delay(uint32_t ms)
     {
-        bool result;
-        if (noteI2c)
-        {
-            result = noteI2c->reset(device_address_);
-        }
-        else
-        {
-            result = false;
-        }
-        return result;
+        delay((unsigned long int) ms);
     }
 
-    const char *noteI2cTransmit(uint16_t device_address_, uint8_t *buffer_, uint16_t size_)
-    {
-        const char *result;
-        if (noteI2c)
-        {
-            result = noteI2c->transmit(device_address_, buffer_, size_);
-        }
-        else
-        {
-            result = "i2c: A call to Notecard::begin() is required. {io}";
-        }
-        return result;
-    }
-
-    NoteLog *noteLog(nullptr);
-
-    size_t noteLogPrint(const char * message_)
-    {
-        size_t result;
-        if (noteLog)
-        {
-            result = noteLog->print(message_);
-        }
-        else
-        {
-            result = 0;
-        }
-        return result;
-    }
-
-    NoteSerial *noteSerial(nullptr);
-
-    bool noteSerialAvailable(void)
-    {
-        bool result;
-        if (noteSerial)
-        {
-            result = noteSerial->available();
-        }
-        else
-        {
-            result = false;
-        }
-        return result;
-    }
-
-    char noteSerialReceive(void)
-    {
-        char result;
-        if (noteSerial)
-        {
-            result = noteSerial->receive();
-        }
-        else
-        {
-            result = '\0';
-        }
-        return result;
-    }
-
-    bool noteSerialReset(void)
-    {
-        bool result;
-        if (noteSerial)
-        {
-            result = noteSerial->reset();
-        }
-        else
-        {
-            result = false;
-        }
-        return result;
-    }
-
-    void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
-    {
-        if (noteSerial)
-        {
-            noteSerial->transmit(text_, len_, flush_);
-        }
-    }
 }
 
 /***************************************************************************
@@ -191,7 +193,7 @@ Notecard::~Notecard (void)
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 {
     NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, delay, millis);
+    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
     noteI2c = make_note_i2c(&wirePort);
 
     NoteSetFnI2C(i2caddress, i2cmax, noteI2cReset,
@@ -213,7 +215,7 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
 {
     NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, delay, millis);
+    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
     noteSerial = make_note_serial(&selectedSerialPort, selectedSpeed);
 
     NoteSetFnSerial(noteSerialReset, noteSerialTransmit,

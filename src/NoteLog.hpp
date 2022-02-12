@@ -3,7 +3,8 @@
 
 #include <stddef.h>
 
-class NoteLog {
+class NoteLog
+{
 public:
     /**************************************************************************/
     /*!
