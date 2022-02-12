@@ -106,7 +106,7 @@ bool JBoolValue(J *item)
 char *JStringValue(J *item)
 {
     if (item == NULL) {
-        return "";
+        return (char *)"";
     }
     return item->valuestring;
 }

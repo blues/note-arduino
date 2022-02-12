@@ -59,7 +59,7 @@ static char scService[128] = {0};
 #define daysByMonth(y) ((y)&03||(y)==0?normalYearDaysByMonth:leapYearDaysByMonth)
 static short leapYearDaysByMonth[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
 static short normalYearDaysByMonth[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-static char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 // Forwards
 static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
@@ -306,7 +306,7 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
             *retArea = (char *) "";
         }
         if (retZone != NULL) {
-            *retZone = "UTC";
+            *retZone = (char *) "UTC";
         }
         if (retZoneOffset != NULL) {
             *retZoneOffset = 0;
@@ -360,10 +360,10 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
         *retSecond = 0;
     }
     if (retWeekday != NULL) {
-        *retWeekday = "";
+        *retWeekday = (char *) "";
     }
     if (retZone != NULL) {
-        *retZone = "";
+        *retZone = (char *) "";
     }
 
     // Exit if time isn't yet valid
@@ -387,7 +387,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
     secs = (uint32_t) currentEpochTime + ((70*365L+17)*86400LU);
     days = secs / 86400;
     if (retWeekday != NULL) {
-        *retWeekday = daynames[(days + 1) % 7];
+        *retWeekday = (char *) daynames[(days + 1) % 7];
     }
     for (year = days / 365; days < (i = ytodays(year) + 365L * year); ) {
         --year;

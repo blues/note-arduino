@@ -86,7 +86,7 @@ typedef void (*mutexFn) (void);
 typedef void * (*mallocFn) (size_t size);
 typedef void (*freeFn) (void *);
 typedef void (*delayMsFn) (uint32_t ms);
-typedef long unsigned int (*getMsFn) (void);
+typedef uint32_t (*getMsFn) (void);
 typedef size_t (*debugOutputFn) (const char *text);
 typedef bool (*serialResetFn) (void);
 typedef void (*serialTransmitFn) (uint8_t *data, size_t len, bool flush);
