@@ -72,7 +72,7 @@ __attribute__((weak)) J *NoteUserAgent()
 #if defined(__ICCARM__)
     char *compiler = (char *) ("iar arm" PLUS " " STRINGIFY(__VER__));
 #elif defined(__IAR_SYSTEMS_ICC__)
-    char *compiler = (char *) ("iar" PLUS " " STRINIFY(__VER__));
+    char *compiler = (char *) ("iar" PLUS " " STRINGIFY(__VER__));
 #elif defined(__clang__)
     char *compiler = (char *) ("clang" PLUS " " __VERSION__);
 #elif defined(__GNUC__)
