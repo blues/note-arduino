@@ -147,6 +147,7 @@ void NoteSetUserAgentCPU(int cpu_mem, int cpu_mhz, int cpu_cores, char *cpu_vend
 // Calls to the functions set above
 void NoteDebug(const char *message);
 void NoteDebugln(const char *message);
+void NoteDebugIntln(const char *message, int n);
 void NoteDebugf(const char *format, ...);
 void *NoteMalloc(size_t size);
 void NoteFree(void *);
@@ -260,6 +261,23 @@ bool NoteGetVoltage(JNUMBER *voltage);
 bool NoteGetTemperature(JNUMBER *temp);
 bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, char *roleBuf, int roleBufLen, char *emailBuf, int emailBufLen);
 bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf);
+
+// Definitions necessary for payload descriptor
+#define NP_SEGTYPE_LEN 4
+#define NP_SEGLEN_LEN sizeof(uint32_t)
+#define NP_SEGHDR_LEN (NP_SEGTYPE_LEN + NP_SEGLEN_LEN)
+typedef struct {
+    uint8_t *data;
+    uint32_t alloc;
+    uint32_t length;
+} NotePayloadDesc;
+bool NotePayloadSaveAndSleep(NotePayloadDesc *desc, uint32_t seconds, const char *modes);
+bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc);
+void NotePayloadSet(NotePayloadDesc *desc, uint8_t *buf, uint32_t buflen);
+void NotePayloadFree(NotePayloadDesc *desc);
+bool NotePayloadAddSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t plen);
+bool NotePayloadFindSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t *plen);
+bool NotePayloadGetSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t len);
 
 // C macro to convert a number to a string for use below
 #define _tstring(x)     #x

@@ -105,8 +105,8 @@ JTIME NoteTime()
 //**************************************************************************/
 /*!
   @brief  Set the number of minutes between refreshes of the time
-          from the Notecard, to help minimize clock drift on this host.
-          Set this to 0 for no auto-refresh; it defaults to daily.
+  from the Notecard, to help minimize clock drift on this host.
+  Set this to 0 for no auto-refresh; it defaults to daily.
   @returns Nothing
 */
 /**************************************************************************/
@@ -1047,9 +1047,53 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
 /*!
   @brief  Save the current state and use `card.attn` to set a host
   sleep interval.
+  @param  payload An optional binary payload to keep in memory while the host sleeps.
+  @param  seconds The duration to sleep.
+  @param  modes Optional list of additional `card.attn` modes.
+  @returns boolean. `true` if request was successful.
+*/
+/**************************************************************************/
+bool NotePayloadSaveAndSleep(NotePayloadDesc *desc, uint32_t seconds, const char *modes)
+{
+    char *stateB64 = NULL;
+
+    // If specified, encode
+    if (desc->data != NULL && desc->length != 0) {
+
+        // Get length that it will be when converted to base64
+        unsigned b64Len = JB64EncodeLen(desc->length);
+
+        // Convert the state to base64
+        stateB64 = _Malloc(b64Len);
+        if (stateB64 == NULL) {
+            return false;
+        }
+
+        // Encode the state buffer into a string
+        JB64Encode(stateB64, (const char *) desc->data, desc->length);
+
+    }
+
+    // Sleep
+    bool success = NoteSleep(stateB64, seconds, modes);
+
+    // Free the temp buffer
+    if (stateB64 != NULL) {
+        _Free(stateB64);
+    }
+
+    // Done
+    return success;
+
+}
+
+//**************************************************************************/
+/*!
+  @brief  Save the current state and use `card.attn` to set a host
+  sleep interval.
   @param  stateb64 A base64 payload to keep in memory while the host sleeps.
   @param  seconds The duration to sleep.
-  @param  modes A list of `card.attn` modes.
+  @param  modes Optional list of additional `card.attn` modes.
   @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
@@ -1057,15 +1101,20 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
 {
     bool success = false;
 
+    // Trace
+    _Debug("ABOUT TO SLEEP\n");
+
     // Use a Command rather than a Request so that the Notecard doesn't try to send
     // a response back to us, which would cause a communications error on that end.
     _Debug("requesting sleep\n");
     J *req = NoteNewCommand("card.attn");
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
-        J *stringReferenceItem = JCreateStringReference(stateb64);
-        if (stringReferenceItem != NULL) {
-            JAddItemToObject(req, "payload", stringReferenceItem);
+        if (stateb64 != NULL) {
+            J *stringReferenceItem = JCreateStringReference(stateb64);
+            if (stringReferenceItem != NULL) {
+                JAddItemToObject(req, "payload", stringReferenceItem);
+            }
         }
         char modestr[64];
         strlcpy(modestr, "sleep", sizeof(modestr));
@@ -1077,6 +1126,9 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
         JAddNumberToObject(req, "seconds", seconds);
         success = NoteRequest(req);
     }
+
+    // Trace
+    _Debug("DIDN'T SLEEP\n");
 
     // Done
     return success;
@@ -1094,13 +1146,42 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
 /**************************************************************************/
 bool NoteWake(int stateLen, void *state)
 {
+    NotePayloadDesc desc;
+    bool success = NotePayloadRetrieveAfterSleep(&desc);
+    if (!success) {
+        return false;
+    }
+    if (desc.length != (uint32_t)stateLen) {
+        NotePayloadFree(&desc);
+        return false;
+    }
+    memcpy(state, desc.data, stateLen);
+    NotePayloadFree(&desc);
+    return true;
+}
 
+//**************************************************************************/
+/*!
+  @brief  Wake the module by restoring state into a state buffer, returning
+  its length, and fail if it isn't available.
+  @param  payloadLen (out) Optional place to receive the length of the returned buffer
+  @param  payload (out) The place to store address of returned in-memory payload
+  @returns boolean. `true` if request was successful.
+*/
+/**************************************************************************/
+bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
+{
+
+    // Initialize payload descriptor
+    if (desc != NULL) {
+        memset(desc, 0, sizeof(NotePayloadDesc));
+    }
+
+    // Send the Notecard a request to retrieve the saved state
     J *req = NoteNewRequest("card.attn");
     if (req == NULL) {
         return false;
     }
-
-    // Send it a command to request the saved state
     JAddBoolToObject(req, "start", true);
     J *rsp = NoteRequestResponse(req);
     if (rsp == NULL) {
@@ -1117,39 +1198,36 @@ bool NoteWake(int stateLen, void *state)
         setTime(seconds);
     }
 
-    // Exit if no payload
+    // If we didn't expect any state to be restored, we're done
+    if (desc == NULL) {
+        NoteDeleteResponse(rsp);
+        return true;
+    }
+
+    // Exit if no payload, knowing that we expected one
     char *payload = JGetString(rsp, "payload");
     if (payload[0] == '\0') {
         NoteDeleteResponse(rsp);
         return false;
     }
 
-    // Exit if the purpose of the call was to intentionally discard saved state
-    if (state == NULL) {
-        NoteDeleteResponse(rsp);
-        return true;
-    }
-
     // Allocate a buffer for the payload.  (We can't decode in-place because we can't
     // risk overwriting memory if the actual payload is even slightly different.)
-    char *p = (char *) _Malloc(JB64DecodeLen(payload));
+    uint32_t allocLen = JB64DecodeLen(payload);
+    uint8_t *p = (uint8_t *) _Malloc(allocLen);
     if (p == NULL) {
         NoteDeleteResponse(rsp);
         return false;
     }
-    int actualLen = JB64Decode(p, payload);
-    if (actualLen != stateLen) {
-        _Free(p);
-        _Debug("*** discarding saved state\n");
-        NoteDeleteResponse(rsp);
-        return false;
-    }
-    memcpy(state, p, stateLen);
-    _Free(p);
+    uint32_t actualLen = (uint32_t) JB64Decode((char *)p, payload);
+
+    // Fill out the payload descriptor
+    desc->data = p;
+    desc->alloc = allocLen;
+    desc->length = actualLen;
 
     // State restored
-    _Debug("STATE RESTORED\n");
-
+    _Debug("AWAKENED SUCCESSFULLY\n");
     NoteDeleteResponse(rsp);
     return true;
 }
@@ -1691,4 +1769,160 @@ uint32_t NoteMemAvailable()
 
     return total;
 
+}
+
+//**************************************************************************/
+/*!
+  @brief  Create a desc from a buffer, or initialize a new to-be-allocated desc
+		  if the buf is null
+  @param   desc Pointer to the payload descriptor
+  @param   buf Pointer to the buffer to initialize the desc with (or NULL)
+  @param   buflen Length of the buffer to initialize the desc with (or 0)
+*/
+/**************************************************************************/
+void NotePayloadSet(NotePayloadDesc *desc, uint8_t *buf, uint32_t buflen)
+{
+    desc->data = buf;
+    desc->alloc = buflen;
+    desc->length = buflen;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Free the payload pointed to by the descriptor
+  @param   desc Pointer to the payload descriptor
+*/
+/**************************************************************************/
+void NotePayloadFree(NotePayloadDesc *desc)
+{
+    if (desc->data != NULL) {
+        _Free(desc->data);
+    }
+    desc->data = NULL;
+    desc->alloc = 0;
+    desc->length = 0;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Add a segment to the specified binary with 4-character type code
+  @param   desc Pointer to the payload descriptor
+  @param   segtype Pointer to the 4-character payload identifier
+  @param   data Pointer to the data segment to be appended
+  @param   len Length of data segment
+  @returns boolean. `true` if named segment is appended successfully
+*/
+/**************************************************************************/
+bool NotePayloadAddSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *data, uint32_t len)
+{
+    uint32_t alloc = 512;
+    uint32_t hlen = len + NP_SEGHDR_LEN;
+    if (hlen > alloc) {
+        alloc += hlen;
+    }
+    if (desc->data == NULL) {
+        uint8_t *base = _Malloc(alloc);
+        if (base == NULL) {
+            return false;
+        }
+        uint8_t *p = base;
+        memcpy(p, segtype, NP_SEGTYPE_LEN);
+        p += NP_SEGTYPE_LEN;
+        memcpy(p, &len, NP_SEGLEN_LEN);
+        p += NP_SEGLEN_LEN;
+        memcpy(p, data, len);
+        desc->data = base;
+        desc->alloc = alloc;
+        desc->length = hlen;
+    } else if ((desc->alloc - desc->length) < hlen) {
+        uint8_t *base = _Malloc(desc->alloc + alloc);
+        if (base == NULL) {
+            return false;
+        }
+        uint8_t *p = base;
+        memcpy(p, desc->data, desc->length);
+        p += desc->length;
+        memcpy(p, segtype, NP_SEGTYPE_LEN);
+        p += NP_SEGTYPE_LEN;
+        memcpy(p, &len, NP_SEGLEN_LEN);
+        p += NP_SEGLEN_LEN;
+        memcpy(p, data, len);
+        _Free(desc->data);
+        desc->data = base;
+        desc->alloc = desc->alloc + alloc;
+        desc->length += hlen;
+    } else {
+        uint8_t *p = desc->data + desc->length;
+        memcpy(p, segtype, NP_SEGTYPE_LEN);
+        p += NP_SEGTYPE_LEN;
+        memcpy(p, &len, NP_SEGLEN_LEN);
+        p += NP_SEGLEN_LEN;
+        memcpy(p, data, len);
+        desc->length += hlen;
+    }
+    return true;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Find and copy a named segment from a segmented payload
+  @param   desc Pointer to the payload descriptor
+  @param   segtype Pointer to the 4-character payload identifier
+  @param   pdata Pointer to the found segment if return is true
+  @param   len The expected length of the returned segment
+  @returns boolean. `true` if named segment is restored successfully
+*/
+/**************************************************************************/
+bool NotePayloadGetSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t len)
+{
+    uint8_t *data;
+    uint32_t datalen;
+    bool success = NotePayloadFindSegment(desc, segtype, &data, &datalen);
+    if (success && datalen == len) {
+        memcpy(pdata, data, len);
+        return true;
+    }
+    return false;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Find a named segment within a segmented payload
+  @param   desc Pointer to the payload descriptor
+  @param   segtype Pointer to the 4-character payload identifier
+  @param   pdata Pointer to the found segment if return is true
+  @param   plen Pointer to the returned segment length if return is true
+  @returns boolean. `true` if named segment is found
+*/
+/**************************************************************************/
+bool NotePayloadFindSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t *plen)
+{
+
+    // Preset returns
+    * (uint8_t **) pdata = NULL;
+    *plen = 0;
+
+    // Locate the segment
+    uint8_t *p = desc->data;
+    uint32_t left = desc->length;
+    if (p == NULL) {
+        return false;
+    }
+    while (left >= NP_SEGHDR_LEN) {
+        uint32_t len;
+        memcpy(&len, p + NP_SEGTYPE_LEN, sizeof(len));
+        if (memcmp(p, segtype, NP_SEGTYPE_LEN) == 0) {
+            *plen = len;
+            * (uint8_t **) pdata = p + NP_SEGHDR_LEN;
+            return true;
+        }
+        len += NP_SEGHDR_LEN;
+        p += len;
+        if (len > left) {
+            left = 0;
+        } else {
+            left -= len;
+        }
+    }
+    return false;
 }

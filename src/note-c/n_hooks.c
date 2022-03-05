@@ -323,7 +323,24 @@ void NoteSetFnDisabled()
 
 //**************************************************************************/
 /*!
-  @brief  Write a to the debug stream and output a newline.
+  @brief  Write a number to the debug stream and output a newline.
+  @param   line  A debug string for output.
+*/
+/**************************************************************************/
+void NoteDebugIntln(const char *line, int n)
+{
+    if (line != NULL) {
+        NoteDebug(line);
+    }
+    char str[16];
+    JItoA(n, str);
+    NoteDebug(str);
+    NoteDebug(c_newline);
+}
+
+//**************************************************************************/
+/*!
+  @brief  Write text to the debug stream and output a newline.
   @param   line  A debug string for output.
 */
 /**************************************************************************/

@@ -335,9 +335,12 @@ J *NoteTransaction(J *req)
     const char *reqType = JGetString(req, "req");
     const char *cmdType = JGetString(req, "cmd");
 
-    // Add the user agent object if appropriate
+    // Add the user agent object only when we're doing a hub.set and only when we're
+    // specifying the product UID.  The intent is that we only piggyback user agent
+    // data when the host is initializing the Notecard, as opposed to every time
+    // the host does a hub.set to change mode.
 #ifndef NOTE_DISABLE_USER_AGENT
-    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0)) {
+    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0) && JIsPresent(req, "product")) {
         J *body = NoteUserAgent();
         if (body != NULL) {
             JAddItemToObject(req, "body", body);
