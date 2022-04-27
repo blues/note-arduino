@@ -104,7 +104,8 @@
 #ifdef B0
 #undef B0
 #endif
-#define B0 CS
+#define B0 PH3
+#define B0_V1 CS
 
 #else
 
