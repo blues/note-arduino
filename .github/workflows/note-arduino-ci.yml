@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  validate_code: # job id
+  validate_library: # job id
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -26,3 +26,40 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+  validate_examples: # job id
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        example-sketch:
+          - ./examples/Example0_LibrarylessCommunication/Example0_LibrarylessCommunication.ino
+          - ./examples/Example1_NotecardBasics/Example1_NotecardBasics.ino
+          # - ./examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino
+          - ./examples/Example3_InboundPolling/Example3_InboundPolling.ino
+          - ./examples/Example4_InboundInterrupts/Example4_InboundInterrupts.ino
+          - ./examples/Example5_UsingTemplates/Example5_UsingTemplates.ino
+          # - ./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino
+          - ./examples/Example7_PowerControl/Example7_PowerControl.ino
+        fully-qualified-board-name:
+          # - STMicroelectronics:stm32:BluesW:pnum=SWAN_R5
+          - esp32:esp32:featheresp32
+          # - adafruit:samd:adafruit_feather_m4
+          # - STMicroelectronics:stm32:GenF4:pnum=FEATHER_F405
+          - arduino:mbed_nano:nano33ble
+          - SparkFun:apollo3:sfe_artemis_thing_plus
+          # - STMicroelectronics:stm32:Disco:pnum=B_G431B_ESC1
+          # - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_F031K6
+          - rp2040:rp2040:rpipico
+          # - arduino:avr:mega
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Compile Examples
+        id: compile_examples
+        uses: ./.github/actions/compile-examples
+        with:
+          example-sketch: ${{ matrix.example-sketch }}
+          fully-qualified-board-name: ${{ matrix.fully-qualified-board-name }}

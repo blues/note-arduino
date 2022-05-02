@@ -1,0 +1,16 @@
+name: 'Compile Examples'
+author: 'Zachary J. Fields'
+description: 'Validate examples by compiling for supported platforms'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  entrypoint: arduino-cli
+  args:
+    - compile
+    - --build-property
+    - build.extra_flags=-Werror
+    - --fqbn
+    - ${{ inputs.fully-qualified-board-name }}
+    - --warnings
+    - all
+    - ${{ inputs.example-sketch }}
