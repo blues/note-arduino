@@ -9,21 +9,22 @@
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-buildpack
 
 # Define global arguments
+ARG ARDUINO_CLI_VERSION=0.22.0
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG UID=1000
-ARG USER="blues"
+# ARG UID=1000
+# ARG USER="blues"
 
 # POSIX compatible (Linux/Unix) base image
 FROM debian:stable-slim
 
 # Import global arguments
+ARG ARDUINO_CLI_VERSION
 ARG DEBIAN_FRONTEND
 # ARG UID
 # ARG USER
 
 # Define local arguments
 # ARG ARDUINO_CLI_CHECKSUM="068f0a69ffecd5688e0b4bc02609720af57ec1aa60e5ea6a2879af3ed1dc0d9b"
-ARG ARDUINO_CLI_VERSION=0.21.1
 ARG BINDIR=/usr/local/bin
 ARG ECHO_BC_FILE='$bcfile'
 
@@ -58,6 +59,7 @@ RUN ["dash", "-c", "\
      python3 \
      python3-pip \
      ssh \
+     tree \
  && pip install \
      pyserial \
  && apt-get clean \

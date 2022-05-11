@@ -3,14 +3,12 @@ author: 'Zachary J. Fields'
 description: 'Validate examples by compiling for supported platforms'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
-  entrypoint: arduino-cli
+  image: './Dockerfile'
+  entrypoint: 'bash'
   args:
-    - compile
-    - --build-property
-    - build.extra_flags=-Werror
-    - --fqbn
-    - ${{ inputs.fully-qualified-board-name }}
-    - --warnings
-    - all
-    - ${{ inputs.example-sketch }}
+    - -c
+    - "HOME=/root arduino-cli compile \
+      --build-property compiler.cpp.extra_flags='-Wno-unused-parameter -Werror' \
+      --fqbn ${{ inputs.fully-qualified-board-name }} \
+      --warnings all \
+      ${{ inputs.example-sketch }}"
