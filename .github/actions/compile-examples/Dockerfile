@@ -3,10 +3,10 @@
 # copyright holder including that found in the LICENSE file.
 
 # Build development environment
-# docker build --file Dockerfile.arduino-cli --tag arduino-buildpack .
+# docker build --file Dockerfile.arduino-cli --tag arduino-cli .
 
 # Launch development environment
-# docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-buildpack
+# docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
 ARG ARDUINO_CLI_VERSION=0.22.0

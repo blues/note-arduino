@@ -48,8 +48,9 @@ jobs:
           - arduino:mbed_nano:nano33ble
           - SparkFun:apollo3:sfe_artemis_thing_plus
           - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
+          # - adafruit:nrf52:feather52840:softdevice=s140v6
           - rp2040:rp2040:rpipico
-          - arduino:avr:mega
+          - arduino:avr:uno
     steps:
       - name: Checkout Code
         id: checkout

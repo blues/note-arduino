@@ -16,9 +16,9 @@
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
-#if defined(ARDUINO_FEATHER_F405)
+#if defined(ARDUINO_ARCH_AVR) && not defined(HAVE_HWSERIAL1)
 #define serialNotecard Serial
-#elif defined(ARDUINO_NUCLEO_L432KC)
+#elif defined(ARDUINO_ARCH_STM32) && not defined(HAVE_HWSERIAL1)
 #define serialNotecard Serial
 #else
 #define serialNotecard Serial1
