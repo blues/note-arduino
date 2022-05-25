@@ -14,11 +14,11 @@
 //    this would mean placing a jumper wire between the pin marked "5" and the pin marked "ATTN".
 // 2. Get the device up and running the code below, successfully connecting to the servie
 // 3. Use the "Devices" view on notehub.io to determine the DeviceUID of the device, which
-//    is a unique string that looks like "imei:000000000000000"
+//    is a unique string that looks like "dev:000000000000000"
 // 4. Use the "Settings / Project" view on notehub.io to determine the App UID of your project,
 //    a unique string that looks like "app:00000000-0000-0000-0000-000000000000"
 // 5. At the command line of your PC, send an HTTP message to the service such as:
-//    curl -L 'http://api.notefile.net/req?project="app:00000000-0000-0000-0000-000000000000"&device="imei:000000000000000"' -d '{"req":"note.add","file":"my-inbound.qi","body":{"my-request-type":"my-request"}}'
+//    curl -L 'http://api.notefile.net/req?project="app:00000000-0000-0000-0000-000000000000"&device="dev:000000000000000"' -d '{"req":"note.add","file":"my-inbound.qi","body":{"my-request-type":"my-request"}}'
 //
 
 #include <Notecard.h>
