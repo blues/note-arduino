@@ -7,7 +7,8 @@ runs:
   entrypoint: 'bash'
   args:
     - -c
-    - "HOME=/root arduino-cli compile \
+    - "cp -r . /root/Arduino/libraries/Blues_Wireless_Notecard \
+      && HOME=/root arduino-cli compile \
       --build-property compiler.cpp.extra_flags='-Wno-unused-parameter -Werror' \
       --fqbn ${{ inputs.fully-qualified-board-name }} \
       --warnings all \

@@ -100,7 +100,6 @@ RUN ["dash", "-c", "\
  && arduino-cli core install adafruit:nrf52 \
  && arduino-cli core install adafruit:samd \
  && arduino-cli core install rp2040:rp2040 \
- && arduino-cli lib install \"Blues Wireless Notecard\" \
  && arduino-cli lib install \"Adafruit BME680 Library\" \
 "]
 
