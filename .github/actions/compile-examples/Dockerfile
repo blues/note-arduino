@@ -11,8 +11,8 @@
 # Define global arguments
 ARG ARDUINO_CLI_VERSION=0.22.0
 ARG DEBIAN_FRONTEND="noninteractive"
-# ARG UID=1000
-# ARG USER="blues"
+ARG UID=1000
+ARG USER="blues"
 
 # POSIX compatible (Linux/Unix) base image
 FROM debian:stable-slim
@@ -20,11 +20,10 @@ FROM debian:stable-slim
 # Import global arguments
 ARG ARDUINO_CLI_VERSION
 ARG DEBIAN_FRONTEND
-# ARG UID
-# ARG USER
+ARG UID
+ARG USER
 
 # Define local arguments
-# ARG ARDUINO_CLI_CHECKSUM="068f0a69ffecd5688e0b4bc02609720af57ec1aa60e5ea6a2879af3ed1dc0d9b"
 ARG BINDIR=/usr/local/bin
 ARG ECHO_BC_FILE='$bcfile'
 
@@ -32,21 +31,21 @@ ARG ECHO_BC_FILE='$bcfile'
 ENV ARDUINO_UPDATER_ENABLE_NOTIFICATION=false
 
 # Create Non-Root User
-# RUN ["dash", "-c", "\
-#     addgroup \
-#      --gid ${UID} \
-#      \"${USER}\" \
-#  && adduser \
-#      --disabled-password \
-#      --gecos \"\" \
-#      --ingroup \"${USER}\" \
-#      --uid ${UID} \
-#      \"${USER}\" \
-#  && usermod \
-#      --append \
-#      --groups \"dialout,plugdev\" \
-#      \"${USER}\" \
-# "]
+RUN ["dash", "-c", "\
+    addgroup \
+     --gid ${UID} \
+     \"${USER}\" \
+ && adduser \
+     --disabled-password \
+     --gecos \"\" \
+     --ingroup \"${USER}\" \
+     --uid ${UID} \
+     \"${USER}\" \
+ && usermod \
+     --append \
+     --groups \"dialout,plugdev\" \
+     \"${USER}\" \
+"]
 
 # Establish development environment
 RUN ["dash", "-c", "\
@@ -61,6 +60,7 @@ RUN ["dash", "-c", "\
      ssh \
      tree \
  && pip install \
+     adafruit-nrfutil \
      pyserial \
  && apt-get clean \
  && apt-get purge \
@@ -81,7 +81,7 @@ RUN ["dash", "-c", "\
 "]
 
 # Configure Arduino CLI
-# USER ${USER}
+USER ${USER}
 RUN ["dash", "-c", "\
     arduino-cli config init \
  && arduino-cli config add board_manager.additional_urls \
@@ -91,20 +91,21 @@ RUN ["dash", "-c", "\
      https://raw.githubusercontent.com/adafruit/arduino-board-index/gh-pages/package_adafruit_index.json \
      https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json \
  && arduino-cli core update-index \
+ && arduino-cli core install adafruit:nrf52 \
+ && arduino-cli core install adafruit:samd \
  && arduino-cli core install arduino:avr \
  && arduino-cli core install arduino:mbed_nano \
  && arduino-cli core install arduino:samd \
- && arduino-cli core install STMicroelectronics:stm32 \
  && arduino-cli core install esp32:esp32 \
- && arduino-cli core install SparkFun:apollo3 \
- && arduino-cli core install adafruit:nrf52 \
- && arduino-cli core install adafruit:samd \
  && arduino-cli core install rp2040:rp2040 \
+ && arduino-cli core install SparkFun:apollo3 \
+ && arduino-cli core install STMicroelectronics:stm32 \
  && arduino-cli lib install \"Adafruit BME680 Library\" \
 "]
 
 # Set Execution Environment
-# WORKDIR /host-volume
+USER root
+WORKDIR /host-volume
 
 ENTRYPOINT ["arduino-cli"]
 
