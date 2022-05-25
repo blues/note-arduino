@@ -57,13 +57,6 @@ void setup()
     notecard.begin();
 #endif
 
-    // This request marks this device as a "development device".  For development devices, the service
-    // accepts inbound HTTP requests in an open, unauthenticated manner for developer convenience.
-    // No devices should ever be deployed in this mode, for obvious reasons!
-    J *req = notecard.newRequest("card.io");
-    JAddStringToObject(req, "mode", "development-on");
-    notecard.sendRequest(req);
-
     // Configure the productUID, and instruct the Notecard to stay connected to the service
     req = notecard.newRequest("hub.set");
     JAddStringToObject(req, "product", myProductID);
