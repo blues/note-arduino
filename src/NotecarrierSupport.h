@@ -116,6 +116,13 @@
 #endif
 #define B0 0
 
+#elif defined(ARDUINO_FEATHER_M4)
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 4
+
 #elif defined(ARDUINO_APOLLO3_SFE_ARTEMIS_THING_PLUS)
 
 #ifdef B0
