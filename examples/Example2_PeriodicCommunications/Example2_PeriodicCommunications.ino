@@ -8,28 +8,40 @@
 // gather sensor measurements "offline", then perform uploads on a periodic basis.
 //
 
+#define ledPin              LED_BUILTIN
+
 // Define the pin number of the pushbutton pin
-#if defined(ARDUINO_ARCH_ESP32)
-#define buttonPin     21
+#define buttonPin           B0
 #define buttonPressedState  LOW
-#define ledPin        13
-#elif defined(ARDUINO_ARCH_NRF52)
-#define buttonPin     7
-#define buttonPressedState  LOW
-#define ledPin        LED_RED
-#elif defined(ARDUINO_ARCH_AVR)
-#define buttonPin     6
-#define buttonPressedState  LOW
-#define ledPin        4
+
+#if defined(ARDUINO_FEATHER_F405)
+  #define NON_AF_COMPAT_FEATHER
+#elif defined(ARDUINO_ARCH_APOLLO3)
+//  #undef buttonPin
+//  #define buttonPin 10
+#elif defined(ARDUINO_NUCLEO_L432KC)
+  #define BREADBOARD_REQUIRED
 #elif defined(ARDUINO_ARCH_STM32)
-#define buttonPin     USER_BTN
-#define buttonPressedState  LOW
-#define ledPin        LED_BUILTIN
-#else
-#error "please add a board definition for button and led"
-#define buttonPin     ?       // Change to any GPIO pin where there is an active-high button
-#define buttonPressedState  ?       // Active high, or active low
-#define ledPin        ?       // Change to any GPIO pin where there is an LED
+  #undef buttonPin
+  #define buttonPin USER_BTN
+#elif defined(ARDUINO_NRF52840_FEATHER)
+  #undef buttonPin
+  #define buttonPin 7
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+  #define BREADBOARD_REQUIRED
+#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MBED)
+  #define BREADBOARD_REQUIRED
+#endif
+
+#ifdef NON_AF_COMPAT_FEATHER
+  #pragma message("This feather does not support the Notecarrier-AF button, additional hardware is required.")
+  #undef buttonPin
+  #define buttonPin A5
+#endif
+#ifdef BREADBOARD_REQUIRED
+  #pragma message("The board selected requires additional hardware.")
+  #undef buttonPin
+  #define buttonPin 3
 #endif
 
 // Include the Arduino library for the Notecard
@@ -47,8 +59,8 @@
 Notecard notecard;
 
 // Button handling
-#define BUTTON_IDLE     0
-#define BUTTON_PRESS    1
+#define BUTTON_IDLE         0
+#define BUTTON_PRESS        1
 #define BUTTON_DOUBLEPRESS  2
 int buttonPress(void);
 

@@ -16,7 +16,17 @@
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
 //  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
+#if defined(ARDUINO_ARCH_AVR) && not defined(HAVE_HWSERIAL1)
+#define serialNotecard Serial
+#elif defined(ARDUINO_ARCH_STM32) && not defined(HAVE_HWSERIAL1)
+#define serialNotecard Serial
+#else
 #define serialNotecard Serial1
+#endif
+
+#ifdef ARDUINO_NRF52840_FEATHER
+#include "Adafruit_TinyUSB.h"
+#endif
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge

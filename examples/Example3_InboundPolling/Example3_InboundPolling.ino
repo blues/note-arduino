@@ -58,7 +58,7 @@ void setup()
 #endif
 
     // Configure the productUID, and instruct the Notecard to stay connected to the service
-    req = notecard.newRequest("hub.set");
+    J *req = notecard.newRequest("hub.set");
     JAddStringToObject(req, "product", myProductID);
 #if myLiveDemo
     JAddStringToObject(req, "mode", "continuous");
