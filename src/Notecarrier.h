@@ -48,7 +48,49 @@
 #define D13 13
 #endif
 
-#if defined(ARDUINO_FEATHER_ESP32)
+#if defined(ARDUINO_APOLLO3_SFE_ARTEMIS_THING_PLUS)
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 2
+
+#ifdef D5
+#undef D5
+#endif
+#define D5 3
+
+#ifdef D6
+#undef D6
+#endif
+#define D6 4
+
+#ifdef D9
+#undef D9
+#endif
+#define D9 5
+
+#ifdef D10
+#undef D10
+#endif
+#define D10 6
+
+#ifdef D11
+#undef D11
+#endif
+#define D11 7
+
+#ifdef D12
+#undef D12
+#endif
+#define D12 8
+
+#ifdef D13
+#undef D13
+#endif
+#define D13 9
+
+#elif defined(ARDUINO_FEATHER_ESP32)
 
 #ifdef B0
 #undef B0
@@ -97,6 +139,20 @@
 #endif
 #define B0 PNUM_NOT_DEFINED
 
+#elif defined(ARDUINO_FEATHER_M4)
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 4
+
+#elif defined(ARDUINO_NRF52840_FEATHER)
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 0
+
 #elif defined(ARDUINO_SWAN_R5)
 
 #ifdef CS
@@ -108,62 +164,6 @@
 #undef B0
 #endif
 #define B0 CS
-
-#elif defined(ARDUINO_NRF52840_FEATHER)
-
-#ifdef B0
-#undef B0
-#endif
-#define B0 0
-
-#elif defined(ARDUINO_FEATHER_M4)
-
-#ifdef B0
-#undef B0
-#endif
-#define B0 4
-
-#elif defined(ARDUINO_APOLLO3_SFE_ARTEMIS_THING_PLUS)
-
-#ifdef B0
-#undef B0
-#endif
-#define B0 2
-
-#ifdef D5
-#undef D5
-#endif
-#define D5 3
-
-#ifdef D6
-#undef D6
-#endif
-#define D6 4
-
-#ifdef D9
-#undef D9
-#endif
-#define D9 5
-
-#ifdef D10
-#undef D10
-#endif
-#define D10 6
-
-#ifdef D11
-#undef D11
-#endif
-#define D11 7
-
-#ifdef D12
-#undef D12
-#endif
-#define D12 8
-
-#ifdef D13
-#undef D13
-#endif
-#define D13 9
 
 #endif
 

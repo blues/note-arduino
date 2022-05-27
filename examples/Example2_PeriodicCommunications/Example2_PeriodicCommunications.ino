@@ -46,6 +46,7 @@
 
 // Include the Arduino library for the Notecard
 #include <Notecard.h>
+#include <Notecarrier.h>
 #include <Wire.h>
 
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
