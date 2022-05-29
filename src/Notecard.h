@@ -36,10 +36,6 @@
 #include "mock/mock-parameters.hpp"
 #endif
 
-#ifndef REMOVE_NOTECARRIER_SUPPORT
-#include "NotecarrierSupport.h"
-#endif
-
 /**************************************************************************/
 /*!
     @brief  Class that stores state and functions for interacting with the

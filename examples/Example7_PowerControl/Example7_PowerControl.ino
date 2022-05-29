@@ -60,7 +60,7 @@ void setup()
 	// restarting after having been put to sleep by the Notecard.
 	NotePayloadDesc payload;
 	bool retrieved = NotePayloadRetrieveAfterSleep(&payload);
-	
+
 	// If the payload was successfully retrieved, attempt to restore state from the payload
 	if (retrieved) {
 
@@ -73,7 +73,7 @@ void setup()
 		NotePayloadFree(&payload);
 
 	}
-		
+
 	// If this is our first time through, initialize the Notecard and state
 	if (!retrieved) {
 
