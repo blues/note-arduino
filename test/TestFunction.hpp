@@ -31,11 +31,11 @@ public:
             std::cout << "[";
             if (0 == (result = tests_[i]()))
             {
-                std::cout << "passed";
+                std::cout << "\33[32mpassed\33[0m";
             }
             else
             {
-                std::cout << "FAILED";
+                std::cout << "\33[31mFAILED\33[0m";
             }
 
             std::cout << "] " << tests_[i].name << std::endl;
