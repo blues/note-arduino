@@ -27,9 +27,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef NOTE_MOCK
+#include "NoteLog.hpp"
+
+#ifdef ARDUINO
 #include <Arduino.h>
 #include <Wire.h>
+#endif
+
+#ifndef NOTE_MOCK
 #include <note-c/note.h>
 #else
 #include "mock/mock-arduino.hpp"
@@ -50,7 +55,10 @@ public:
                uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
                TwoWire &wirePort = Wire);
     void begin(HardwareSerial &serial, int speed = 9600);
+#ifdef ARDUINO
     void setDebugOutputStream(Stream &dbgserial);
+#endif
+    void setDebugOutputStream(NoteLog::channel_t logChannel);
     void clearDebugOutputStream(void);
     J *newRequest(const char *request);
     J *newCommand(const char *request);

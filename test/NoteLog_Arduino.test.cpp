@@ -66,6 +66,7 @@ int test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_a
     return result;
 }
 
+//int test_make_note_log_returns_nullptr_when_nullptr_is_passed_as_parameter()
 int test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter()
 {
     int result;

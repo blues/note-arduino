@@ -14,6 +14,7 @@ FROM alpine:3.14
 RUN ["ash", "-c", "\
     apk add --no-cache \
       g++ \
+      gdb \
       valgrind \
 "]
 

@@ -66,6 +66,7 @@ int test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_a
   return result;
 }
 
+//int test_make_note_i2c_returns_nullptr_when_nullptr_is_passed_as_parameter()
 int test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter()
 {
   int result;

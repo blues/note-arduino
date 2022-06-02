@@ -222,6 +222,7 @@ void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
                     noteSerialAvailable, noteSerialReceive);
 }
 
+#ifdef ARDUINO
 /**************************************************************************/
 /*!
     @brief  Set the debug output source.
@@ -236,6 +237,28 @@ void Notecard::setDebugOutputStream(Stream &dbgserial)
 {
     noteLog = make_note_log(&dbgserial);
     NoteSetFnDebugOutput(noteLogPrint);
+}
+#endif
+
+/**************************************************************************/
+/*!
+    @brief  Set the debug output source.
+            A NoteLog object will be constructed via `make_note_log()`
+            using a platform specific logging channel (for example, `Serial`
+            on Arduino). The specified channel will be configured as the
+            source for debug messages provided to `notecard.logDebug()`.
+    @param    logChannel
+              A platform specific channel to be used for debug output.
+*/
+/**************************************************************************/
+void Notecard::setDebugOutputStream(NoteLog::channel_t logChannel)
+{
+    noteLog = make_note_log(logChannel);
+    if (noteLog) {
+        NoteSetFnDebugOutput(noteLogPrint);
+    } else {
+        NoteSetFnDebugOutput(nullptr);
+    }
 }
 
 /**************************************************************************/
@@ -252,7 +275,7 @@ void Notecard::clearDebugOutputStream()
 /*!
     @brief  Creates a new request object for population by the host.
             This function accepts a request string (for example, `"note.add"`)
-      and initializes a JSON Object to return to the host.
+            and initializes a JSON Object to return to the host.
     @param    request
               The request name, for example, `note.add`.
     @return A `J` JSON Object populated with the request name.
@@ -267,7 +290,7 @@ J *Notecard::newRequest(const char *request)
 /*!
     @brief  Creates a new command object for population by the host.
             This function accepts a command string (for example, `"note.add"`)
-      and initializes a JSON Object to return to the host.
+            and initializes a JSON Object to return to the host.
     @param    request
               The command name, for example, `note.add`.
     @return A `J` JSON Object populated with the request name.
@@ -282,11 +305,11 @@ J *Notecard::newCommand(const char *request)
 /*!
     @brief  Sends a request to the Notecard.
             This function takes a populated `J` JSON request object
-      and sends it to the Notecard.
+            and sends it to the Notecard.
     @param    req
               A `J` JSON request object.
     @return `True` if the message was successfully sent to the Notecard,
-      `False` if there was an error.
+            `False` if there was an error.
 */
 /**************************************************************************/
 bool Notecard::sendRequest(J *req)
@@ -353,13 +376,13 @@ void Notecard::logDebugf(const char *format, ...)
 
 /**************************************************************************/
 /*!
-    @brief  Periodically show Notecard sync status,
-      returning TRUE if something was displayed to the debug stream.
+    @brief  Periodically show Notecard sync status, returning `TRUE`
+            if something was displayed to the debug stream.
     @param    pollFrequencyMs
               The frequency to poll the Notecard for sync status.
-  @param    maxLevel
-        The maximum log level to output to the debug console. Pass
-        -1 for all.
+    @param    maxLevel
+              The maximum log level to output to the debug console. Pass
+              -1 for all.
     @return `True` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/

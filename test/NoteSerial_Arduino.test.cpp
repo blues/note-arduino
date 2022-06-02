@@ -66,6 +66,7 @@ int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object
     return result;
 }
 
+//int test_make_note_serial_returns_nullptr_when_nullptr_is_passed_as_parameter()
 int test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter()
 {
     int result;

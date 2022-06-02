@@ -5,6 +5,7 @@
 *.gcda
 *.gcno
 *.gcov
+vgcore.*
 
 coverage/
 

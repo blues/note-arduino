@@ -6,6 +6,12 @@
 
 #include "NoteLog.hpp"
 
+class NoteLog_Mock final : public NoteLog
+{
+public:
+    size_t print(const char * message) override;
+};
+
 struct MakeNoteLog_Parameters {
     MakeNoteLog_Parameters(
         void
