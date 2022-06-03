@@ -46,6 +46,10 @@
 #include "NoteI2c.hpp"
 #include "NoteSerial.hpp"
 
+/***************************************************************************
+ SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
+ ***************************************************************************/
+
 namespace
 {
 NoteI2c *noteI2c(nullptr);
@@ -139,7 +143,6 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
 }
 }
 
-
 /***************************************************************************
  PRIVATE FUNCTIONS
  ***************************************************************************/
@@ -161,6 +164,33 @@ extern "C" {
         delay((unsigned long int) ms);
     }
 
+}
+
+
+/**************************************************************************/
+/*!
+    @brief  Platform Initialization for the Notecard.
+            This function configures system functions to be used
+            by the Notecard.
+    @param    assignCallbacks
+              When `true` the system callbacks will be assigned,
+              when `false` the system callbacks will be cleared.
+    @param    i2cmax
+              The max length of each message to send from the host to
+              the Notecard. Used to ensure the messages are sized appropriately
+              for the host.
+    @param    wirePort
+              The TwoWire implementation to use for I2C communication.
+*/
+/**************************************************************************/
+void Notecard::platformInit (bool assignCallbacks)
+{
+    NoteSetUserAgent((char *)"note-arduino");
+    if (assignCallbacks) {
+        NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
+    } else {
+        NoteSetFnDefault(nullptr, nullptr, nullptr, nullptr);
+    }
 }
 
 /***************************************************************************
@@ -192,12 +222,11 @@ Notecard::~Notecard (void)
 /**************************************************************************/
 void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
 {
-    NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
     noteI2c = make_note_i2c(&wirePort);
-
     NoteSetFnI2C(i2caddress, i2cmax, noteI2cReset,
                  noteI2cTransmit, noteI2cReceive);
+    NoteSetUserAgent((char *)"note-arduino");
+    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
 }
 
 /**************************************************************************/
@@ -205,40 +234,26 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
     @brief  Initialize the Notecard for Serial communication.
             This function configures the Notecard to use Serial
             for communication with the host.
-    @param    selectedSerialPort
-              The HardwareSerial bus to use.
-    @param    selectedSpeed
-              The baud rate to use for communicating with the Notecard
-              from the host.
+    @param    serialChannel
+              The serial channel to use for communicating with the
+              Notecard from the host.
+    @param    baudRate
+              The rate to communicate with the Notecard. The preconfigured
+              baud rate of the Notecard is 9600 baud, therefore the default
+              for this function has been selected to match.
 */
 /**************************************************************************/
-void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
+void Notecard::begin(NoteSerial::channel_t serialChannel, int baudRate)
 {
-    NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
-    noteSerial = make_note_serial(&selectedSerialPort, selectedSpeed);
-
-    NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
-                    noteSerialAvailable, noteSerialReceive);
+    noteSerial = make_note_serial(serialChannel, baudRate);
+    platformInit(noteSerial);
+    if (noteSerial) {
+        NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
+                        noteSerialAvailable, noteSerialReceive);
+    } else {
+        NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+    }
 }
-
-#ifdef ARDUINO
-/**************************************************************************/
-/*!
-    @brief  Set the debug output source.
-            This function takes a Stream object (for example, `Serial`)
-            and configures it as a source for writing debug messages
-            during development.
-    @param    dbgserial
-              The Stream object to use for debug output.
-*/
-/**************************************************************************/
-void Notecard::setDebugOutputStream(Stream &dbgserial)
-{
-    noteLog = make_note_log(&dbgserial);
-    NoteSetFnDebugOutput(noteLogPrint);
-}
-#endif
 
 /**************************************************************************/
 /*!
@@ -266,8 +281,9 @@ void Notecard::setDebugOutputStream(NoteLog::channel_t logChannel)
     @brief  Clear the debug output source.
 */
 /**************************************************************************/
-void Notecard::clearDebugOutputStream()
+void Notecard::clearDebugOutputStream(void)
 {
+    noteLog = nullptr;
     NoteSetFnDebugOutput(nullptr);
 }
 

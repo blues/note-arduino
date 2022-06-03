@@ -1,0 +1,78 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+			"name": "Debug Failed Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/failed_test_run",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+        {
+			"name": "Debug Notecard Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/notecard.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile Notecard Tests",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+        {
+			"name": "Debug NoteI2c Arduino Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/notei2c_arduino.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile NoteI2c Arduino Tests",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+        {
+			"name": "Debug NoteI2c Arduino Unit-tests (-DWIRE_HAS_END)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/notei2c_arduino_wire_has_end.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile NoteI2c Arduino Tests (-DWIRE_HAS_END)",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+        {
+			"name": "Debug NoteLog Arduino Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/notelog_arduino.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile NoteLog Arduino Tests",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+        {
+			"name": "Debug NoteSerial Arduino Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/noteserial_arduino.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile NoteSerial Arduino Tests",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
+    ]
+}

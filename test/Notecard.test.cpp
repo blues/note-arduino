@@ -5,7 +5,6 @@
 
 #include "Notecard.h"
 #include "NoteI2c_Arduino.hpp"
-#include "NoteSerial_Arduino.hpp"
 #include "TestFunction.hpp"
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
@@ -13,7 +12,7 @@
 #include "mock/NoteLog_Mock.hpp"
 #include "mock/NoteSerial_Mock.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
 {
@@ -498,6 +497,81 @@ int test_notecard_begin_i2c_sets_user_agent_to_note_arduino()
   return result;
 }
 
+int test_notecard_begin_serial_sets_user_agent_to_note_arduino()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  static const char * const EXPECTED_USER_AGENT = "note-arduino";
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetUserAgent_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL);
+
+   // Assert
+  ///////////
+
+  if (noteSetUserAgent_Parameters.agent && !strcmp(EXPECTED_USER_AGENT, noteSetUserAgent_Parameters.agent))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetUserAgent_Parameters.agent == " << noteSetUserAgent_Parameters.agent << ", EXPECTED: " << EXPECTED_USER_AGENT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  static const char * const EXPECTED_USER_AGENT = "note-arduino";
+  Notecard notecard;
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  noteSetUserAgent_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL);
+
+   // Assert
+  ///////////
+
+  if (noteSetUserAgent_Parameters.agent && !strcmp(EXPECTED_USER_AGENT, noteSetUserAgent_Parameters.agent))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetUserAgent_Parameters.agent == " << noteSetUserAgent_Parameters.agent << ", EXPECTED: " << EXPECTED_USER_AGENT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer()
 {
   int result;
@@ -505,14 +579,17 @@ int test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
   noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -532,7 +609,7 @@ int test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
+int test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -540,13 +617,51 @@ int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
   ////////////
 
   Notecard notecard;
-
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
   noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnDefault_Parameters.mallocfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.mallocfn == 0x" << std::hex << noteSetFnDefault_Parameters.mallocfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -566,7 +681,7 @@ int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_delay_functon_pointer()
+int test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -574,13 +689,51 @@ int test_notecard_begin_serial_shares_a_delay_functon_pointer()
   ////////////
 
   Notecard notecard;
-
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
   noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnDefault_Parameters.freefn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.freefn == 0x" << std::hex << noteSetFnDefault_Parameters.freefn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_delay_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -600,7 +753,7 @@ int test_notecard_begin_serial_shares_a_delay_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_millis_functon_pointer()
+int test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -608,18 +761,56 @@ int test_notecard_begin_serial_shares_a_millis_functon_pointer()
   ////////////
 
   Notecard notecard;
-
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
   noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
 
    // Assert
   ///////////
 
-  if (nullptr != noteSetFnDefault_Parameters.millisfn)
+  if (!noteSetFnDefault_Parameters.delayfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.delayfn == 0x" << std::hex << noteSetFnDefault_Parameters.delayfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_millis_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
+
+   // Assert
+  ///////////
+
+  if (noteSetFnDefault_Parameters.millisfn)
   {
     result = 0;
   }
@@ -634,7 +825,7 @@ int test_notecard_begin_serial_shares_a_millis_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
+int test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -642,13 +833,51 @@ int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
   ////////////
 
   Notecard notecard;
-
-  noteSetFnSerial_Parameters.reset();
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnDefault_Parameters.millisfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.millisfn == 0x" << std::hex << noteSetFnDefault_Parameters.millisfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -668,7 +897,7 @@ int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
+int test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -676,13 +905,51 @@ int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
   ////////////
 
   Notecard notecard;
-
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
   noteSetFnSerial_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnSerial_Parameters.resetfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.resetfn == 0x" << std::hex << noteSetFnSerial_Parameters.resetfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -702,7 +969,7 @@ int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
+int test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -710,13 +977,51 @@ int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
   ////////////
 
   Notecard notecard;
-
-  noteSetFnSerial_Parameters.reset();
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnSerial_Parameters.writefn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.writefn == 0x" << std::hex << noteSetFnSerial_Parameters.writefn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -736,7 +1041,7 @@ int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
+int test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -744,13 +1049,51 @@ int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
   ////////////
 
   Notecard notecard;
-
-  noteSetFnSerial_Parameters.reset();
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  noteSetFnDefault_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, 9600);
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnSerial_Parameters.availfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.availfn == 0x" << std::hex << noteSetFnSerial_Parameters.availfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(MOCK_SERIAL_CHANNEL, 9600);
 
    // Assert
   ///////////
@@ -770,7 +1113,7 @@ int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed()
+int test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -778,14 +1121,50 @@ int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_pr
   ////////////
 
   Notecard notecard;
-  const unsigned int EXPECTED_BAUD_RATE = 9600;
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  noteSetFnDefault_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.begin(nullptr, 9600);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnSerial_Parameters.readfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.readfn == 0x" << std::hex << noteSetFnSerial_Parameters.readfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  static const unsigned int EXPECTED_BAUD_RATE = 9600;
+  Notecard notecard;
 
   make_note_serial_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial, EXPECTED_BAUD_RATE);
+  notecard.begin(MOCK_SERIAL_CHANNEL, EXPECTED_BAUD_RATE);
 
    // Assert
   ///////////
@@ -812,15 +1191,16 @@ int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_de
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  static const unsigned int EXPECTED_BAUD_RATE = 9600;
   Notecard notecard;
-  const unsigned int EXPECTED_BAUD_RATE = 9600;
 
   make_note_serial_Parameters.reset();
 
    // Action
   ///////////
 
-  notecard.begin(Serial);
+  notecard.begin(MOCK_SERIAL_CHANNEL);
 
    // Assert
   ///////////
@@ -840,41 +1220,6 @@ int test_notecard_begin_serial_initializes_the_provided_serial_interface_with_de
   return result;
 }
 
-int test_notecard_begin_serial_sets_user_agent_to_note_arduino()
-{
-  int result;
-
-   // Arrange
-  ////////////
-
-  const char * const EXPECTED_USER_AGENT = "note-arduino";
-  Notecard notecard;
-
-  noteSetUserAgent_Parameters.reset();
-
-   // Action
-  ///////////
-
-  notecard.begin(Serial);
-
-   // Assert
-  ///////////
-
-  if (noteSetUserAgent_Parameters.agent && !strcmp(EXPECTED_USER_AGENT, noteSetUserAgent_Parameters.agent))
-  {
-    result = 0;
-  }
-  else
-  {
-    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
-    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetUserAgent_Parameters.agent == " << noteSetUserAgent_Parameters.agent << ", EXPECTED: " << EXPECTED_USER_AGENT << std::endl;
-    std::cout << "[";
-  }
-
-  return result;
-}
-
 int test_notecard_setDebugOutputStream_does_not_modify_log_channel_parameter_before_passing_to_make_note_log()
 {
   int result;
@@ -882,6 +1227,7 @@ int test_notecard_setDebugOutputStream_does_not_modify_log_channel_parameter_bef
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
 
   make_note_log_Parameters.reset();
@@ -889,12 +1235,12 @@ int test_notecard_setDebugOutputStream_does_not_modify_log_channel_parameter_bef
    // Action
   ///////////
 
-  notecard.setDebugOutputStream(&Serial);
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);
 
    // Assert
   ///////////
 
-  if (&Serial == make_note_log_Parameters.log_channel)
+  if (MOCK_SERIAL_CHANNEL == make_note_log_Parameters.log_channel)
   {
     result = 0;
   }
@@ -916,17 +1262,18 @@ int test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+  NoteLog_Mock mockLog;
 
   make_note_log_Parameters.reset();
+  make_note_log_Parameters.result = &mockLog;
   noteSetFnDebugOutput_Parameters.reset();
-
-  make_note_log_Parameters.result = reinterpret_cast<NoteLog *>(&result);
 
    // Action
   ///////////
 
-  notecard.setDebugOutputStream(&Serial);
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);
 
    // Assert
   ///////////
@@ -2458,14 +2805,15 @@ int test_static_callback_note_log_print_invokes_notelog_print()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   const char message[] = "Test passed!";
 
   Notecard notecard;
   NoteLog_Mock mockLog;  // Instantiate NoteLog (mocked)
   make_note_log_Parameters.reset();
   make_note_log_Parameters.result = &mockLog;  // Return mocked interface
-  notecard.setDebugOutputStream(&result);  // Provides access to the hidden static callback methods through `note-c` mocks
-  size_t(*noteLogPrint)(const char *) = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  debugOutputFn noteLogPrint = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
   noteLogPrint_Parameters.reset();  // Clear the structure for testing NoteLog::print results
 
    // Action
@@ -2498,14 +2846,15 @@ int test_static_callback_note_log_print_does_not_modify_message_parameter_before
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   const char message[] = "Test passed!";
 
   Notecard notecard;
   NoteLog_Mock mockLog;  // Instantiate NoteLog (mocked)
   make_note_log_Parameters.reset();
   make_note_log_Parameters.result = &mockLog;  // Return mocked interface
-  notecard.setDebugOutputStream(&result);  // Provides access to the hidden static callback methods through `note-c` mocks
-  size_t(*noteLogPrint)(const char *) = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  debugOutputFn noteLogPrint = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
   noteLogPrint_Parameters.reset();  // Clear the structure for testing NoteLog::print results
 
    // Action
@@ -2538,14 +2887,15 @@ int test_static_callback_note_log_print_does_not_modify_interface_method_return_
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   const char message[] = "Test passed!";
 
   Notecard notecard;
   NoteLog_Mock mockLog;  // Instantiate NoteLog (mocked)
   make_note_log_Parameters.reset();
   make_note_log_Parameters.result = &mockLog;  // Return mocked interface
-  notecard.setDebugOutputStream(&result);  // Provides access to the hidden static callback methods through `note-c` mocks
-  size_t(*noteLogPrint)(const char *) = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  debugOutputFn noteLogPrint = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
   noteLogPrint_Parameters.reset();  // Clear the structure for testing NoteLog::print results
   noteLogPrint_Parameters.result = sizeof(message);
 
@@ -2579,19 +2929,22 @@ int test_static_callback_note_log_print_does_not_call_interface_method_when_inte
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   const char message[] = "Test passed!";
 
   Notecard notecard;
 
   // Capture the internal Notecard log function, `noteLogPrint`
+  NoteLog_Mock mockLog;
   make_note_log_Parameters.reset();
-  make_note_log_Parameters.result = reinterpret_cast<NoteLog *>(&result);
-  notecard.setDebugOutputStream(&result);  // Provides access to the internal static callback methods through `note-c` mocks
-  size_t(*noteLogPrint)(const char *) = noteSetFnDebugOutput_Parameters.fn;
+  make_note_log_Parameters.result = &mockLog;
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);  // Provides access to the internal static callback methods through `note-c` mocks
+  debugOutputFn noteLogPrint = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
 
-  // Ensure interface is not instantiated
+  // Reset to ensure interface is not instantiated
   make_note_log_Parameters.reset();
-  notecard.setDebugOutputStream(nullptr);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_log_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);
   noteLogPrint_Parameters.reset();  // Clear the structure for testing NoteLog::print results
 
    // Action
@@ -2624,20 +2977,24 @@ int test_static_callback_note_log_print_returns_false_when_interface_has_not_bee
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   const char message[] = "Test passed!";
 
   Notecard notecard;
 
   // Capture the internal Notecard log function, `noteLogPrint`
+  NoteLog_Mock mockLog;
   make_note_log_Parameters.reset();
-  make_note_log_Parameters.result = reinterpret_cast<NoteLog *>(&result);
-  notecard.setDebugOutputStream(&result);  // Provides access to the internal static callback methods through `note-c` mocks
-  size_t(*noteLogPrint)(const char *) = noteSetFnDebugOutput_Parameters.fn;
+  make_note_log_Parameters.result = &mockLog;
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);  // Provides access to the internal static callback methods through `note-c` mocks
+  debugOutputFn noteLogPrint = noteSetFnDebugOutput_Parameters.fn;  // Capture the internal Notecard log function, `noteLogPrint`
 
-  // Ensure interface is not instantiated
+  // Reset to ensure interface is not instantiated
   make_note_log_Parameters.reset();
-  notecard.setDebugOutputStream(&result);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_log_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.setDebugOutputStream(MOCK_SERIAL_CHANNEL);
   noteLogPrint_Parameters.reset();  // Clear the structure for testing NoteLog::print results
+  noteLogPrint_Parameters.result = sizeof(message);  // Ensure that if the mock were to be invoked the test would fail
 
    // Action
   ///////////
@@ -2647,7 +3004,7 @@ int test_static_callback_note_log_print_returns_false_when_interface_has_not_bee
    // Assert
   ///////////
 
-  if (!ACTUAL_RESULT)
+  if (!ACTUAL_RESULT && !noteLogPrint_Parameters.invoked)
   {
     result = 0;
   }
@@ -2669,17 +3026,19 @@ int test_static_callback_note_serial_available_invokes_noteserial_available()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.availfn();
+  noteSerialAvailable();
 
    // Assert
   ///////////
@@ -2706,18 +3065,20 @@ int test_static_callback_note_serial_available_does_not_modify_interface_method_
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
   noteSerialAvailable_Parameters.result = true;
 
    // Action
   ///////////
 
-  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.availfn();
+  const bool ACTUAL_RESULT = noteSerialAvailable();
 
    // Assert
   ///////////
@@ -2744,15 +3105,26 @@ int test_static_callback_note_serial_available_does_not_call_interface_method_wh
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.availfn();
+  noteSerialAvailable();
 
    // Assert
   ///////////
@@ -2779,15 +3151,27 @@ int test_static_callback_note_serial_available_returns_false_when_interface_has_
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
+  noteSerialAvailable_Parameters.result = true;  // Ensure that if the mock were to be invoked the test would fail
 
    // Action
   ///////////
 
-  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.availfn();
+  const bool ACTUAL_RESULT = noteSerialAvailable();
 
    // Assert
   ///////////
@@ -2814,17 +3198,19 @@ int test_static_callback_note_serial_receive_invokes_noteserial_receive()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.readfn();
+  noteSerialReceive();
 
    // Assert
   ///////////
@@ -2851,18 +3237,20 @@ int test_static_callback_note_serial_receive_does_not_modify_interface_method_re
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
   noteSerialReceive_Parameters.result = 'Z';
 
    // Action
   ///////////
 
-  const char ACTUAL_RESULT = noteSetFnSerial_Parameters.readfn();
+  const char ACTUAL_RESULT = noteSerialReceive();
 
    // Assert
   ///////////
@@ -2889,15 +3277,26 @@ int test_static_callback_note_serial_receive_does_not_call_interface_method_when
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.readfn();
+  noteSerialReceive();
 
    // Assert
   ///////////
@@ -2924,16 +3323,28 @@ int test_static_callback_note_serial_receive_returns_false_when_interface_has_no
    // Arrange
   ////////////
 
-  const char EXPECTED_RESULT = '\0';
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
+  static const char EXPECTED_RESULT = '\0';
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
+  noteSerialReceive_Parameters.result = 'Z';
 
    // Action
   ///////////
 
-  const char ACTUAL_RESULT = noteSetFnSerial_Parameters.readfn();
+  const char ACTUAL_RESULT = noteSerialReceive();
 
    // Assert
   ///////////
@@ -2960,17 +3371,19 @@ int test_static_callback_note_serial_reset_invokes_noteserial_reset()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.resetfn();
+  noteSerialReset();
 
    // Assert
   ///////////
@@ -2997,18 +3410,20 @@ int test_static_callback_note_serial_reset_does_not_modify_interface_method_retu
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
   noteSerialReset_Parameters.result = true;
 
    // Action
   ///////////
 
-  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.resetfn();
+  const bool ACTUAL_RESULT = noteSerialReset();
 
    // Assert
   ///////////
@@ -3035,15 +3450,26 @@ int test_static_callback_note_serial_reset_does_not_call_interface_method_when_i
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.resetfn();
+  noteSerialReset();
 
    // Assert
   ///////////
@@ -3070,15 +3496,27 @@ int test_static_callback_note_serial_reset_returns_false_when_interface_has_not_
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
+  noteSerialReset_Parameters.result = true;
 
    // Action
   ///////////
 
-  const bool ACTUAL_RESULT = noteSetFnSerial_Parameters.resetfn();
+  const bool ACTUAL_RESULT = noteSerialReset();
 
    // Assert
   ///////////
@@ -3105,21 +3543,23 @@ int test_static_callback_note_serial_transmit_invokes_noteserial_transmit()
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   uint8_t text[] = "Test passed!";
-  const size_t LEN = sizeof(text);
-  const bool FLUSH = true;
+  static const size_t LEN = sizeof(text);
+  static const bool FLUSH = true;
 
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.writefn(text, LEN, FLUSH);
+  noteSerialTransmit(text, LEN, FLUSH);
 
    // Assert
   ///////////
@@ -3146,21 +3586,23 @@ int test_static_callback_note_serial_transmit_does_not_modify_text_parameter_bef
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   uint8_t expected_text[] = "Test passed!";
   const size_t LEN = sizeof(expected_text);
   const bool FLUSH = true;
 
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.writefn(expected_text, LEN, FLUSH);
+  noteSerialTransmit(expected_text, LEN, FLUSH);
 
    // Assert
   ///////////
@@ -3187,21 +3629,23 @@ int test_static_callback_note_serial_transmit_does_not_modify_length_parameter_b
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   uint8_t text[] = "Test passed!";
   const size_t EXPECTED_LEN = sizeof(text);
   const bool FLUSH = true;
 
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.writefn(text, EXPECTED_LEN, FLUSH);
+  noteSerialTransmit(text, EXPECTED_LEN, FLUSH);
 
    // Assert
   ///////////
@@ -3228,21 +3672,23 @@ int test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_be
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   uint8_t text[] = "Test passed!";
   const size_t LEN = sizeof(text);
   const bool EXPECTED_FLUSH = true;
 
   Notecard notecard;
-  NoteSerial_Arduino mockSerial_arduino(Serial,9600);  // Instantiate NoteSerial (mocked)
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.result = &mockSerial_arduino;  // Return mocked interface
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.writefn(text, LEN, EXPECTED_FLUSH);
+  noteSerialTransmit(text, LEN, EXPECTED_FLUSH);
 
    // Assert
   ///////////
@@ -3269,19 +3715,30 @@ int test_static_callback_note_serial_transmit_does_not_call_interface_method_whe
    // Arrange
   ////////////
 
+  static NoteSerial::channel_t MOCK_SERIAL_CHANNEL = reinterpret_cast<void *>(0x19790917);
   uint8_t text[] = "Test passed!";
   const size_t LEN = sizeof(text);
   const bool EXPECTED_FLUSH = true;
 
   Notecard notecard;
+
+  // Capture the internal Notecard log function, `noteSerialAvailable`
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  notecard.begin(Serial);  // Provides access to the hidden static callback methods through `note-c` mocks
+  make_note_serial_Parameters.result = &mockSerial;  // Return mocked interface
+  notecard.begin(MOCK_SERIAL_CHANNEL);  // Provides access to the hidden static callback methods through `note-c` mocks
+  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+
+  // Reset to ensure the interface is not instantiated
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.result = nullptr;  // Ensure interface is not instantiated
+  notecard.begin(MOCK_SERIAL_CHANNEL);
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
   ///////////
 
-  noteSetFnSerial_Parameters.writefn(text, LEN, EXPECTED_FLUSH);
+  noteSerialTransmit(text, LEN, EXPECTED_FLUSH);
 
    // Assert
   ///////////
@@ -3318,17 +3775,26 @@ int main(void)
       {test_notecard_begin_i2c_default_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wire, "test_notecard_begin_i2c_default_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wire"},
       {test_notecard_begin_i2c_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wirePort, "test_notecard_begin_i2c_parameter_for_wirePort_instantiates_the_note_i2c_interface_with_wirePort"},
       {test_notecard_begin_i2c_sets_user_agent_to_note_arduino, "test_notecard_begin_i2c_sets_user_agent_to_note_arduino"},
+      {test_notecard_begin_serial_sets_user_agent_to_note_arduino, "test_notecard_begin_serial_sets_user_agent_to_note_arduino"},
+      {test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer, "test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer"},
+      {test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_memory_free_functon_pointer, "test_notecard_begin_serial_shares_a_memory_free_functon_pointer"},
+      {test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_delay_functon_pointer, "test_notecard_begin_serial_shares_a_delay_functon_pointer"},
+      {test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_millis_functon_pointer, "test_notecard_begin_serial_shares_a_millis_functon_pointer"},
+      {test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_serial_reset_functon_pointer, "test_notecard_begin_serial_shares_a_serial_reset_functon_pointer"},
+      {test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer, "test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer"},
+      {test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_serial_available_functon_pointer, "test_notecard_begin_serial_shares_a_serial_available_functon_pointer"},
+      {test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_serial_receive_functon_pointer, "test_notecard_begin_serial_shares_a_serial_receive_functon_pointer"},
+      {test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed, "test_notecard_begin_serial_initializes_the_provided_serial_interface_with_provided_speed"},
       {test_notecard_begin_serial_initializes_the_provided_serial_interface_with_default_speed, "test_notecard_begin_serial_initializes_the_provided_serial_interface_with_default_speed"},
-      {test_notecard_begin_serial_sets_user_agent_to_note_arduino, "test_notecard_begin_serial_sets_user_agent_to_note_arduino"},
       {test_notecard_setDebugOutputStream_does_not_modify_log_channel_parameter_before_passing_to_make_note_log, "test_notecard_setDebugOutputStream_does_not_modify_log_channel_parameter_before_passing_to_make_note_log"},
       {test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when_nullptr_is_provided"},

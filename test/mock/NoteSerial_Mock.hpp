@@ -6,6 +6,15 @@
 
 #include "NoteSerial.hpp"
 
+class NoteSerial_Mock final : public NoteSerial
+{
+public:
+    size_t available(void) override;
+    char receive(void) override;
+    bool reset(void) override;
+    size_t transmit(uint8_t * buffer, size_t size, bool flush) override;
+};
+
 struct MakeNoteSerial_Parameters {
     MakeNoteSerial_Parameters(
         void
