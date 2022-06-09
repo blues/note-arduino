@@ -27,23 +27,35 @@
 const char *serialNoteTransaction(char *json, char **jsonResponse)
 {
 
+    // Append newline to the transaction
+    int jsonLen = strlen(json);
+    uint8_t *transmitBuf = (uint8_t *) _Malloc(jsonLen+c_newline_len);
+    if (transmitBuf == NULL) {
+        return ERRSTR("insufficient memory",c_mem);
+    }
+    memcpy(transmitBuf, json, jsonLen);
+    memcpy(&transmitBuf[jsonLen], c_newline, c_newline_len);
+    jsonLen += c_newline_len;
+
     // Transmit the request in segments so as not to overwhelm the notecard's interrupt buffers
     uint32_t segOff = 0;
-    uint32_t segLeft = strlen(json);
+    uint32_t segLeft = jsonLen;
     while (true) {
         size_t segLen = segLeft;
         if (segLen > CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN) {
             segLen = CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN;
         }
+        _SerialTransmit((uint8_t *)&transmitBuf[segOff], segLen, false);
+        segOff += segLen;
         segLeft -= segLen;
-        _SerialTransmit((uint8_t *)&json[segOff], segLen, false);
         if (segLeft == 0) {
-            _SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
             break;
         }
-        segOff += segLen;
         _DelayMs(CARD_REQUEST_SERIAL_SEGMENT_DELAY_MS);
     }
+
+    // Free the transmit buffer
+    _Free(transmitBuf);
 
     // If no reply expected, we're done
     if (jsonResponse == NULL) {

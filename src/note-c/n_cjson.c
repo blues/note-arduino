@@ -296,6 +296,9 @@ loop_end:
 /* don't ask me, but the original JSetNumberValue returns an integer or JNUMBER */
 N_CJSON_PUBLIC(JNUMBER) JSetNumberHelper(J *object, JNUMBER number)
 {
+    if (object == NULL) {
+        return number;
+    }
     if (number >= LONG_MAX) {
         object->valueint = LONG_MAX;
     } else if (number <= LONG_MIN) {
@@ -391,6 +394,10 @@ static void update_offset(printbuffer * const buffer)
 /* Render the number nicely from the given item into a string. */
 static Jbool print_number(const J * const item, printbuffer * const output_buffer)
 {
+    if (item == NULL) {
+        return false;
+    }
+
     unsigned char *output_pointer = NULL;
     JNUMBER d = item->valuenumber;
     int length = 0;
@@ -995,17 +1002,27 @@ fail:
 /* Render a J item/entity/structure to text. */
 N_CJSON_PUBLIC(char *) JPrint(const J *item)
 {
+    if (item == NULL) {
+        return (char *)"";
+    }
     return (char*)print(item, true);
 }
 
 N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
 {
+    if (item == NULL) {
+        return (char *)"";
+    }
     return (char*)print(item, false);
 }
 
 N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
 {
     printbuffer p = { 0, 0, 0, 0, 0, 0 };
+
+    if (item == NULL) {
+        return (char *)"";
+    }
 
     if (prebuffer < 0) {
         return NULL;
@@ -1033,6 +1050,9 @@ N_CJSON_PUBLIC(Jbool) JPrintPreallocated(J *item, char *buf, const int len, cons
 {
     printbuffer p = { 0, 0, 0, 0, 0, 0 };
 
+    if (item == NULL) {
+        return false;
+    }
     if ((len < 0) || (buf == NULL)) {
         return false;
     }
@@ -1049,6 +1069,9 @@ N_CJSON_PUBLIC(Jbool) JPrintPreallocated(J *item, char *buf, const int len, cons
 /* Parser core - when encountering text, process appropriately. */
 static Jbool parse_value(J * const item, parse_buffer * const input_buffer)
 {
+    if (item == NULL) {
+        return false;
+    }
     if ((input_buffer == NULL) || (input_buffer->content == NULL)) {
         return false; /* no input */
     }
@@ -1526,6 +1549,9 @@ static J* get_array_item(const J *array, size_t index)
 
 N_CJSON_PUBLIC(J *) JGetArrayItem(const J *array, int index)
 {
+    if (array == NULL) {
+        return NULL;
+    }
     if (index < 0) {
         return NULL;
     }
@@ -1557,16 +1583,25 @@ static J *get_object_item(const J * const object, const char * const name, const
 
 N_CJSON_PUBLIC(J *) JGetObjectItem(const J * const object, const char * const string)
 {
+    if (object == NULL) {
+        return NULL;
+    }
     return get_object_item(object, string, false);
 }
 
 N_CJSON_PUBLIC(J *) JGetObjectItemCaseSensitive(const J * const object, const char * const string)
 {
+    if (object == NULL) {
+        return NULL;
+    }
     return get_object_item(object, string, true);
 }
 
 N_CJSON_PUBLIC(Jbool) JHasObjectItem(const J *object, const char *string)
 {
+    if (object == NULL) {
+        return false;
+    }
     return JGetObjectItem(object, string) ? 1 : 0;
 }
 
@@ -1624,6 +1659,9 @@ static Jbool add_item_to_array(J *array, J *item)
 /* Add item to array/object. */
 N_CJSON_PUBLIC(void) JAddItemToArray(J *array, J *item)
 {
+    if (array == NULL || item == NULL) {
+        return;
+    }
     add_item_to_array(array, item);
 }
 
@@ -1676,35 +1714,42 @@ static Jbool add_item_to_object(J * const object, const char * const string, J *
 
 N_CJSON_PUBLIC(void) JAddItemToObject(J *object, const char *string, J *item)
 {
+    if (object == NULL || string == NULL || item == NULL) {
+        return;
+    }
     add_item_to_object(object, string, item, false);
 }
 
 /* Add an item to an object with constant string as key */
 N_CJSON_PUBLIC(void) JAddItemToObjectCS(J *object, const char *string, J *item)
 {
+    if (object == NULL || string == NULL || item == NULL) {
+        return;
+    }
     add_item_to_object(object, string, item, true);
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToArray(J *array, J *item)
 {
-    if (array == NULL) {
+    if (array == NULL || item == NULL) {
         return;
     }
-
     add_item_to_array(array, create_reference(item));
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToObject(J *object, const char *string, J *item)
 {
-    if ((object == NULL) || (string == NULL)) {
+    if (object == NULL || string == NULL || item == NULL) {
         return;
     }
-
     add_item_to_object(object, string, create_reference(item), false);
 }
 
 N_CJSON_PUBLIC(J*) JAddNullToObject(J * const object, const char * const name)
 {
+    if (object == NULL) {
+        return NULL;
+    }
     J *null = JCreateNull();
     if (add_item_to_object(object, name, null, false)) {
         return null;
@@ -1716,6 +1761,10 @@ N_CJSON_PUBLIC(J*) JAddNullToObject(J * const object, const char * const name)
 
 N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *true_item = JCreateTrue();
     if (add_item_to_object(object, name, true_item, false)) {
         return true_item;
@@ -1727,6 +1776,10 @@ N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name)
 
 N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *false_item = JCreateFalse();
     if (add_item_to_object(object, name, false_item, false)) {
         return false_item;
@@ -1738,6 +1791,10 @@ N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name)
 
 N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, const Jbool boolean)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *bool_item = JCreateBool(boolean);
     if (add_item_to_object(object, name, bool_item, false)) {
         return bool_item;
@@ -1749,6 +1806,10 @@ N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, c
 
 N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const JNUMBER number)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *number_item = JCreateNumber(number);
     if (add_item_to_object(object, name, number_item, false)) {
         return number_item;
@@ -1760,6 +1821,10 @@ N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name,
 
 N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name, const char * const string)
 {
+    if (object == NULL || string == NULL) {
+        return NULL;
+    }
+
     J *string_item = JCreateString(string);
     if (add_item_to_object(object, name, string_item, false)) {
         return string_item;
@@ -1771,6 +1836,10 @@ N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name,
 
 N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, const char * const raw)
 {
+    if (object == NULL || raw == NULL) {
+        return NULL;
+    }
+
     J *raw_item = JCreateRaw(raw);
     if (add_item_to_object(object, name, raw_item, false)) {
         return raw_item;
@@ -1782,6 +1851,10 @@ N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, co
 
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *object_item = JCreateObject();
     if (add_item_to_object(object, name, object_item, false)) {
         return object_item;
@@ -1793,6 +1866,10 @@ N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name)
 
 N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *array = JCreateArray();
     if (add_item_to_object(object, name, array, false)) {
         return array;
@@ -1804,7 +1881,7 @@ N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name)
 
 N_CJSON_PUBLIC(J *) JDetachItemViaPointer(J *parent, J * const item)
 {
-    if ((parent == NULL) || (item == NULL)) {
+    if (parent == NULL || item == NULL) {
         return NULL;
     }
 
@@ -1830,6 +1907,9 @@ N_CJSON_PUBLIC(J *) JDetachItemViaPointer(J *parent, J * const item)
 
 N_CJSON_PUBLIC(J *) JDetachItemFromArray(J *array, int which)
 {
+    if (array == NULL) {
+        return NULL;
+    }
     if (which < 0) {
         return NULL;
     }
@@ -1839,11 +1919,18 @@ N_CJSON_PUBLIC(J *) JDetachItemFromArray(J *array, int which)
 
 N_CJSON_PUBLIC(void) JDeleteItemFromArray(J *array, int which)
 {
+    if (array == NULL) {
+        return;
+    }
     JDelete(JDetachItemFromArray(array, which));
 }
 
 N_CJSON_PUBLIC(J *) JDetachItemFromObject(J *object, const char *string)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *to_detach = JGetObjectItem(object, string);
 
     return JDetachItemViaPointer(object, to_detach);
@@ -1851,6 +1938,10 @@ N_CJSON_PUBLIC(J *) JDetachItemFromObject(J *object, const char *string)
 
 N_CJSON_PUBLIC(J *) JDetachItemFromObjectCaseSensitive(J *object, const char *string)
 {
+    if (object == NULL) {
+        return NULL;
+    }
+
     J *to_detach = JGetObjectItemCaseSensitive(object, string);
 
     return JDetachItemViaPointer(object, to_detach);
@@ -1858,17 +1949,27 @@ N_CJSON_PUBLIC(J *) JDetachItemFromObjectCaseSensitive(J *object, const char *st
 
 N_CJSON_PUBLIC(void) JDeleteItemFromObject(J *object, const char *string)
 {
+    if (object == NULL) {
+        return;
+    }
     JDelete(JDetachItemFromObject(object, string));
 }
 
 N_CJSON_PUBLIC(void) JDeleteItemFromObjectCaseSensitive(J *object, const char *string)
 {
+    if (object == NULL) {
+        return;
+    }
     JDelete(JDetachItemFromObjectCaseSensitive(object, string));
 }
 
 /* Replace array/object items with new ones. */
 N_CJSON_PUBLIC(void) JInsertItemInArray(J *array, int which, J *newitem)
 {
+    if (array == NULL || newitem == NULL) {
+        return;
+    }
+
     J *after_inserted = NULL;
 
     if (which < 0) {
@@ -1893,7 +1994,7 @@ N_CJSON_PUBLIC(void) JInsertItemInArray(J *array, int which, J *newitem)
 
 N_CJSON_PUBLIC(Jbool) JReplaceItemViaPointer(J * const parent, J * const item, J * replacement)
 {
-    if ((parent == NULL) || (replacement == NULL) || (item == NULL)) {
+    if (parent == NULL || replacement == NULL || item == NULL) {
         return false;
     }
 
@@ -1923,6 +2024,10 @@ N_CJSON_PUBLIC(Jbool) JReplaceItemViaPointer(J * const parent, J * const item, J
 
 N_CJSON_PUBLIC(void) JReplaceItemInArray(J *array, int which, J *newitem)
 {
+    if (array == NULL || newitem == NULL) {
+        return;
+    }
+
     if (which < 0) {
         return;
     }
@@ -1932,7 +2037,7 @@ N_CJSON_PUBLIC(void) JReplaceItemInArray(J *array, int which, J *newitem)
 
 static Jbool replace_item_in_object(J *object, const char *string, J *replacement, Jbool case_sensitive)
 {
-    if ((replacement == NULL) || (string == NULL)) {
+    if (object == NULL || replacement == NULL || string == NULL) {
         return false;
     }
 
@@ -1950,11 +2055,17 @@ static Jbool replace_item_in_object(J *object, const char *string, J *replacemen
 
 N_CJSON_PUBLIC(void) JReplaceItemInObject(J *object, const char *string, J *newitem)
 {
+    if (object == NULL || newitem == NULL) {
+        return;
+    }
     replace_item_in_object(object, string, newitem, false);
 }
 
 N_CJSON_PUBLIC(void) JReplaceItemInObjectCaseSensitive(J *object, const char *string, J *newitem)
 {
+    if (object == NULL || newitem == NULL) {
+        return;
+    }
     replace_item_in_object(object, string, newitem, true);
 }
 
@@ -1965,7 +2076,6 @@ N_CJSON_PUBLIC(J *) JCreateNull(void)
     if(item) {
         item->type = JNULL;
     }
-
     return item;
 }
 
@@ -1975,7 +2085,6 @@ N_CJSON_PUBLIC(J *) JCreateTrue(void)
     if(item) {
         item->type = JTrue;
     }
-
     return item;
 }
 
@@ -1985,7 +2094,6 @@ N_CJSON_PUBLIC(J *) JCreateFalse(void)
     if(item) {
         item->type = JFalse;
     }
-
     return item;
 }
 
@@ -1995,7 +2103,6 @@ N_CJSON_PUBLIC(J *) JCreateBool(Jbool b)
     if(item) {
         item->type = b ? JTrue : JFalse;
     }
-
     return item;
 }
 
@@ -2005,7 +2112,6 @@ N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num)
     if(item) {
         item->type = JNumber;
         item->valuenumber = num;
-
         /* use saturation in case of overflow */
         if (num >= LONG_MAX) {
             item->valueint = LONG_MAX;
@@ -2015,7 +2121,6 @@ N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num)
             item->valueint = (long int)num;
         }
     }
-
     return item;
 }
 
@@ -2030,7 +2135,6 @@ N_CJSON_PUBLIC(J *) JCreateString(const char *string)
             return NULL;
         }
     }
-
     return item;
 }
 
@@ -2041,29 +2145,32 @@ N_CJSON_PUBLIC(J *) JCreateStringReference(const char *string)
         item->type = JString | JIsReference;
         item->valuestring = (char*)cast_away_const(string);
     }
-
     return item;
 }
 
 N_CJSON_PUBLIC(J *) JCreateObjectReference(const J *child)
 {
+    if (child == NULL) {
+        return NULL;
+    }
     J *item = JNew_Item();
     if (item != NULL) {
         item->type = JObject | JIsReference;
         item->child = (J*)cast_away_const(child);
     }
-
     return item;
 }
 
 N_CJSON_PUBLIC(J *) JCreateArrayReference(const J *child)
 {
+    if (child == NULL) {
+        return NULL;
+    }
     J *item = JNew_Item();
     if (item != NULL) {
         item->type = JArray | JIsReference;
         item->child = (J*)cast_away_const(child);
     }
-
     return item;
 }
 
@@ -2078,7 +2185,6 @@ N_CJSON_PUBLIC(J *) JCreateRaw(const char *raw)
             return NULL;
         }
     }
-
     return item;
 }
 
@@ -2088,7 +2194,6 @@ N_CJSON_PUBLIC(J *) JCreateArray(void)
     if(item) {
         item->type=JArray;
     }
-
     return item;
 }
 
@@ -2098,7 +2203,6 @@ N_CJSON_PUBLIC(J *) JCreateObject(void)
     if (item) {
         item->type = JObject;
     }
-
     return item;
 }
 
@@ -2313,7 +2417,6 @@ N_CJSON_PUBLIC(Jbool) JIsInvalid(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JInvalid;
 }
 
@@ -2322,7 +2425,6 @@ N_CJSON_PUBLIC(Jbool) JIsFalse(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JFalse;
 }
 
@@ -2331,7 +2433,6 @@ N_CJSON_PUBLIC(Jbool) JIsTrue(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xff) == JTrue;
 }
 
@@ -2341,7 +2442,6 @@ N_CJSON_PUBLIC(Jbool) JIsBool(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & (JTrue | JFalse)) != 0;
 }
 N_CJSON_PUBLIC(Jbool) JIsNull(const J * const item)
@@ -2349,7 +2449,6 @@ N_CJSON_PUBLIC(Jbool) JIsNull(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JNULL;
 }
 
@@ -2358,7 +2457,6 @@ N_CJSON_PUBLIC(Jbool) JIsNumber(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JNumber;
 }
 
@@ -2367,7 +2465,6 @@ N_CJSON_PUBLIC(Jbool) JIsString(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JString;
 }
 
@@ -2376,7 +2473,6 @@ N_CJSON_PUBLIC(Jbool) JIsArray(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JArray;
 }
 
@@ -2385,7 +2481,6 @@ N_CJSON_PUBLIC(Jbool) JIsObject(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JObject;
 }
 
@@ -2394,7 +2489,6 @@ N_CJSON_PUBLIC(Jbool) JIsRaw(const J * const item)
     if (item == NULL) {
         return false;
     }
-
     return (item->type & 0xFF) == JRaw;
 }
 

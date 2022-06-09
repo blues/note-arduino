@@ -17,8 +17,8 @@
 
 Adafruit_BME680 bmeSensor;
 
-//#define serialNotecard Serial1
-#define serialDebug Serial
+//#define txRxPinsSerial Serial1
+#define usbSerial Serial
 
 #define productUID "com.your-company.your-name:your_project"
 Notecard notecard;
@@ -26,15 +26,15 @@ Notecard notecard;
 // One-time Arduino initialization
 void setup()
 {
-#ifdef serialDebug
+#ifdef usbSerial
     delay(2500);
-    serialDebug.begin(115200);
-    notecard.setDebugOutputStream(serialDebug);
+    usbSerial.begin(115200);
+    notecard.setDebugOutputStream(usbSerial);
 #endif
 
     // Initialize the physical I/O channel to the Notecard
-#ifdef serialNotecard
-    notecard.begin(serialNotecard, 9600);
+#ifdef txRxPinsSerial
+    notecard.begin(txRxPinsSerial, 9600);
 #else
     Wire.begin();
 
@@ -47,9 +47,9 @@ void setup()
     notecard.sendRequest(req);
 
     if (!bmeSensor.begin()) {
-        serialDebug.println("Could not find a valid BME680 sensor...");
+        usbSerial.println("Could not find a valid BME680 sensor...");
     } else {
-        serialDebug.println("BME680 Connected...");
+        usbSerial.println("BME680 Connected...");
     }
 
     bmeSensor.setTemperatureOversampling(BME680_OS_8X);
@@ -59,18 +59,18 @@ void setup()
 void loop()
 {
     if (! bmeSensor.performReading()) {
-        serialDebug.println("Failed to obtain a reading...");
+        usbSerial.println("Failed to obtain a reading...");
         delay(15000);
         return;
     }
 
-    serialDebug.print("Temperature = ");
-    serialDebug.print(bmeSensor.temperature);
-    serialDebug.println(" *C");
+    usbSerial.print("Temperature = ");
+    usbSerial.print(bmeSensor.temperature);
+    usbSerial.println(" *C");
 
-    serialDebug.print("Humidity = ");
-    serialDebug.print(bmeSensor.humidity);
-    serialDebug.println(" %");
+    usbSerial.print("Humidity = ");
+    usbSerial.print(bmeSensor.humidity);
+    usbSerial.println(" %");
 
     J *req = notecard.newRequest("note.add");
     if (req != NULL) {

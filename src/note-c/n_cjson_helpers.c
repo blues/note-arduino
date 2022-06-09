@@ -314,6 +314,9 @@ bool JContainsString(J *rsp, const char *field, const char *substr)
 /**************************************************************************/
 bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, uint32_t binaryDataLen)
 {
+    if (req == NULL) {
+        return false;
+    }
     unsigned stringDataLen = JB64EncodeLen(binaryDataLen);
     char *stringData = (char *) _Malloc(stringDataLen);
     if (stringData == NULL) {
@@ -335,24 +338,42 @@ bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, u
     @param   rsp The JSON object containing the  field.
     @param   fieldName The field to get data from.
     @param   retBinaryData The binary data object allocated.  (Use standard "free" method to free it.)
+			 Note that, as a convenience to the caller in case the "binary data" is actually a string,
+			 one byte extra is allocated in the return buffer which is filled with '\0'.  This byte
+			 is not included in the retBinaryDataLen length.
     @param   retBinaryDataLen The length of the binary data.
     @returns bool. Whether the binary data was allocated and returned.
 */
 /**************************************************************************/
 bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData, uint32_t *retBinaryDataLen)
 {
+    if (rsp == NULL) {
+        return false;
+    }
 
-    char *payload = JGetString(rsp, fieldName);
+    // In some cases, the caller may already have extracted the string from a different field, in which
+    // case "rsp" will be set to the payload pointer.
+    char *payload;
+    if (fieldName == NULL) {
+        payload = (char *) rsp;
+    } else {
+        payload = JGetString(rsp, fieldName);
+    }
     if (payload[0] == '\0') {
         return false;
     }
 
-    // Allocate a buffer for the payload
-    char *p = (char *) _Malloc(JB64DecodeLen(payload));
+    // Allocate a buffer for the payload, with an extra 'convenience byte' for null termination.  (see below)
+    char *p = (char *) _Malloc(JB64DecodeLen(payload)+1);
     if (p == NULL) {
         return false;
     }
     uint32_t actualLen = JB64Decode(p, payload);
+
+    // As a convenience to the caller, null-terminate the returned buffer in case it's a string.
+    // (If we didn't do this, the caller would be forced to alloc another buffer of length+1 and
+    // copy it to add the null terminator, while it's easy for us to do it here.)
+    p[actualLen] = '\0';
 
     // Return the binary to the caller
     *retBinaryData = (uint8_t *)p;
@@ -370,7 +391,7 @@ bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData
 /**************************************************************************/
 const char *JGetItemName(const J * item)
 {
-    if (item->string == NULL) {
+    if (item == NULL || item->string == NULL) {
         return "";
     }
     return item->string;

@@ -537,7 +537,7 @@ const char *NoteActiveInterface()
 //**************************************************************************/
 /*!
   @brief  Reset the Serial bus using the platform-specific hook.
-  @returns A boolean indicating whether the Serial bus was reset.
+  @returns A boolean indicating whether the Serial bus was reset successfully.
 */
 /**************************************************************************/
 bool NoteSerialReset()
@@ -545,7 +545,7 @@ bool NoteSerialReset()
     if (hookActiveInterface == interfaceSerial && hookSerialReset != NULL) {
         return hookSerialReset();
     }
-    return false;
+    return true;
 }
 
 //**************************************************************************/
@@ -596,7 +596,7 @@ char NoteSerialReceive()
 //**************************************************************************/
 /*!
   @brief  Reset the I2C bus using the platform-specific hook.
-  @returns A boolean indicating whether the I2C bus was reset.
+  @returns A boolean indicating whether the I2C bus was reset successfully.
 */
 /**************************************************************************/
 bool NoteI2CReset(uint16_t DevAddress)
@@ -604,7 +604,7 @@ bool NoteI2CReset(uint16_t DevAddress)
     if (hookActiveInterface == interfaceI2C && hookI2CReset != NULL) {
         return hookI2CReset(DevAddress);
     }
-    return false;
+    return true;
 }
 
 //**************************************************************************/
@@ -695,13 +695,13 @@ uint32_t NoteI2CMax()
 /*!
   @brief  Perform a hard reset on the Notecard using the platform-specific
   hook.
-  @returns A boolean indicating whether the Notecard has been reset.
+  @returns A boolean indicating whether the Notecard has been reset successfully.
 */
 /**************************************************************************/
 bool NoteHardReset()
 {
     if (notecardReset == NULL) {
-        return false;
+        return true;
     }
     return notecardReset();
 }
