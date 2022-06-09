@@ -19,7 +19,7 @@
 #define	hostSleepSeconds		60
 
 // Arduino serial debug monitor port definitions
-#define serialDebug Serial
+#define usbSerial Serial
 
 // Notecard I2C port definitions
 Notecard notecard;
@@ -49,8 +49,8 @@ void setup()
 	// Arduino IDE requires a delay to move the serial port over
 	// from programming the MCU to the debug monitor.
     delay(2500);
-    serialDebug.begin(115200);
-    notecard.setDebugOutputStream(serialDebug);
+    usbSerial.begin(115200);
+    notecard.setDebugOutputStream(usbSerial);
 
     // Initialize the physical I2C I/O channel to the Notecard
     Wire.begin();

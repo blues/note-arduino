@@ -14,14 +14,14 @@
 // would use Serial2.
 //
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
-//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove txRxPinsSerial if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
 
 #if defined(ARDUINO_ARCH_AVR) && not defined(HAVE_HWSERIAL1)
-#define serialNotecard Serial
+#define txRxPinsSerial Serial
 #elif defined(ARDUINO_ARCH_STM32) && not defined(HAVE_HWSERIAL1)
-#define serialNotecard Serial
+#define txRxPinsSerial Serial
 #else
-#define serialNotecard Serial1
+#define txRxPinsSerial Serial1
 #endif
 
 #ifdef ARDUINO_NRF52840_FEATHER
@@ -44,21 +44,21 @@ void setup()
     // Initialize the serial port being used by the Notecard, and send a newline to clear out any data
     // that the Arduino software may have pending so that we always start sending commands "cleanly".
     // We use the speed of 9600 because the Notecard's RX/TX pins are always configured for that speed.
-    serialNotecard.begin(9600);
-    serialNotecard.println("\n");
+    txRxPinsSerial.begin(9600);
+    txRxPinsSerial.println("\n");
 
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
-    serialNotecard.println("{\"req\":\"service.set\",\"product\":\"" myProductID "\"}");
+    txRxPinsSerial.println("{\"req\":\"service.set\",\"product\":\"" myProductID "\"}");
 
     // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
 #if myLiveDemo
-    serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
+    txRxPinsSerial.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
 #else
-    serialNotecard.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"outbound\":60}");
+    txRxPinsSerial.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"outbound\":60}");
 #endif
 
 }
@@ -97,7 +97,7 @@ void loop()
              (int)temperature, abs(((int)(temperature*100.0)%100)),
              (int)voltage, (int)(voltage*100.0)%100,
              eventCounter);
-    serialNotecard.println(message);
+    txRxPinsSerial.println(message);
 
     // Delay between simulated measurements
 #if myLiveDemo

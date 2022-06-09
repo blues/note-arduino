@@ -30,11 +30,11 @@
 // can use any available port.
 //
 // Note that both of these definitions are optional; just prefix either line with // to remove it.
-//  Remove serialNotecard if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
-//  Remove serialDebug if you don't want the Notecard library to output debug information
+//  Remove txRxPinsSerial if you wired your Notecard using I2C SDA/SCL pins instead of serial RX/TX
+//  Remove usbSerial if you don't want the Notecard library to output debug information
 
-//#define serialNotecard Serial1
-#define serialDebugOut Serial
+//#define txRxPinsSerial Serial1
+#define usbSerial Serial
 
 // This is the unique Product Identifier for your device.  This Product ID tells the Notecard what
 // type of device has embedded the Notecard, and by extension which vendor or customer is in charge
@@ -57,15 +57,15 @@ void setup()
     // Note that the initial 2.5s delay is required by some Arduino cards before debug
     // UART output can be successfully displayed in the Arduino IDE, including the
     // Adafruit Feather nRF52840 Express.
-#ifdef serialDebugOut
+#ifdef usbSerial
     delay(2500);
-    serialDebugOut.begin(115200);
-    notecard.setDebugOutputStream(serialDebugOut);
+    usbSerial.begin(115200);
+    notecard.setDebugOutputStream(usbSerial);
 #endif
 
     // Initialize the physical I/O channel to the Notecard
-#ifdef serialNotecard
-    notecard.begin(serialNotecard, 9600);
+#ifdef txRxPinsSerial
+    notecard.begin(txRxPinsSerial, 9600);
 #else
     Wire.begin();
 
