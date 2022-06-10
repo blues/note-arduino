@@ -45,13 +45,12 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 
     // Append newline to the transaction
     int jsonLen = strlen(json);
-    uint8_t *transmitBuf = (uint8_t *) _Malloc(jsonLen+c_newline_len);
+    uint8_t *transmitBuf = (uint8_t *) _Malloc(jsonLen+1);
     if (transmitBuf == NULL) {
         return ERRSTR("insufficient memory",c_mem);
     }
     memcpy(transmitBuf, json, jsonLen);
-    memcpy(&transmitBuf[jsonLen], c_newline, c_newline_len);
-    jsonLen += c_newline_len;
+	transmitBuf[jsonLen++] = '\n';
 
     // Transmit the request in chunks, but also in segments so as not to overwhelm the notecard's interrupt buffers
     const char *estr;
