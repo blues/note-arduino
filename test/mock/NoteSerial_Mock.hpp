@@ -1,5 +1,5 @@
-#ifndef MOCK_SERIAL_ARDUINO_HPP
-#define MOCK_SERIAL_ARDUINO_HPP
+#ifndef MOCK_NOTE_SERIAL_HPP
+#define MOCK_NOTE_SERIAL_HPP
 
 #include <stddef.h>
 #include <stdint.h>
@@ -121,4 +121,4 @@ extern NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 extern NoteSerialReset_Parameters noteSerialReset_Parameters;
 extern NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
 
-#endif // MOCK_SERIAL_ARDUINO_HPP
+#endif // MOCK_NOTE_SERIAL_HPP

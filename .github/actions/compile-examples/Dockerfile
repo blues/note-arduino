@@ -9,7 +9,7 @@
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
-ARG ARDUINO_CLI_VERSION=0.22.0
+ARG ARDUINO_CLI_VERSION=0.23.0
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UID=1000
 ARG USER="blues"
@@ -52,6 +52,7 @@ RUN ["dash", "-c", "\
     apt-get update --quiet \
  && apt-get install --assume-yes --no-install-recommends --quiet \
      bash \
+     bash-completion \
      ca-certificates \
      curl \
      python-is-python3 \
@@ -70,14 +71,15 @@ RUN ["dash", "-c", "\
 # Download/Install Arduino CLI
 RUN ["dash", "-c", "\
     curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=${BINDIR} sh -s ${ARDUINO_CLI_VERSION} \
-# && arduino-cli completion bash > /usr/share/bash-completion/completions/arduino-cli.sh \
  && mkdir -p /etc/bash_completion.d/ \
  && arduino-cli completion bash > /etc/bash_completion.d/arduino-cli.sh \
  && echo >> /etc/bash.bashrc \
-# && echo \"for bcfile in /usr/share/bash-completion/completions/* ; do\" >> /etc/bash.bashrc \
-#  && echo \"for bcfile in /etc/bash_completion.d/* ; do\" >> /etc/bash.bashrc \
-#  && echo \"    [ -f \\\"${ECHO_BC_FILE}\\\" ] && . \\\"${ECHO_BC_FILE}\\\"\" >> /etc/bash.bashrc \
-#  && echo \"done\" >> /etc/bash.bashrc \
+ && echo \"for bcfile in /etc/bash_completion.d/* ; do\" >> /etc/bash.bashrc \
+ && echo \"    [ -f \\\"${ECHO_BC_FILE}\\\" ] && . \\\"${ECHO_BC_FILE}\\\"\" >> /etc/bash.bashrc \
+ && echo \"done\" >> /etc/bash.bashrc \
+ && echo \"if [ -f /etc/bash_completion ]; then\" >> /etc/bash.bashrc \
+ && echo \"    . /etc/bash_completion\" >> /etc/bash.bashrc \
+ && echo \"fi\" >> /etc/bash.bashrc \
 "]
 
 # Configure Arduino CLI
