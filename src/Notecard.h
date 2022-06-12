@@ -68,7 +68,7 @@ public:
         begin(make_note_serial(&serial, speed));
     }
     inline void setDebugOutputStream(Stream &dbgserial) {
-        setDebugOutputStream(make_note_log(&dgbserial));
+        setDebugOutputStream(make_note_log(&dbgserial));
     }
 #endif
     void clearDebugOutputStream(void);
