@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "NoteI2c.hpp"
 #include "NoteLog.hpp"
 #include "NoteSerial.hpp"
 
@@ -52,19 +53,24 @@ class Notecard
 {
 public:
     ~Notecard(void);
-    void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
-               TwoWire &wirePort = Wire);
+    void begin(NoteI2c * noteI2c,
+               uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
+               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT);
+    void begin(NoteSerial * noteSerial);
+    void setDebugOutputStream(NoteLog * noteLog);
 #ifdef ARDUINO
-    inline void begin(HardwareSerial &serial, int speed = 9600) {
-        begin(reinterpret_cast<NoteSerial::channel_t>(&serial), speed);
+    inline void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
+                      uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
+                      TwoWire &wirePort = Wire) {
+        begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
+    }
+    inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
+        begin(make_note_serial(&serial, speed));
     }
     inline void setDebugOutputStream(Stream &dbgserial) {
-        setDebugOutputStream(reinterpret_cast<NoteLog::channel_t>(&dgbserial));
+        setDebugOutputStream(make_note_log(&dgbserial));
     }
 #endif
-    void begin(NoteSerial::channel_t serialChannel, int baudRate = 9600);
-    void setDebugOutputStream(NoteLog::channel_t logChannel);
     void clearDebugOutputStream(void);
     J *newRequest(const char *request);
     J *newCommand(const char *request);

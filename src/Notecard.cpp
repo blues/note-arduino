@@ -42,10 +42,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "NoteLog.hpp"
-#include "NoteI2c.hpp"
-#include "NoteSerial.hpp"
-
 /***************************************************************************
  SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
  ***************************************************************************/
@@ -208,25 +204,29 @@ Notecard::~Notecard (void)
 /**************************************************************************/
 /*!
     @brief  Initialize the Notecard for I2C.
-            This function configures the Notecard to use the I2C bus
-            for communication with the host.
-    @param    i2caddress
+            This function configures the Notecard to use the I2C
+            bus for communication with the host.
+    @param    noteI2c
+              A platform specific I2C implementation to use for
+              communicating with the Notecard from the host.
+    @param    i2cAddress
               The I2C Address to use for the Notecard.
-    @param    i2cmax
-              The max length of each message to send from the host to
-              the Notecard. Used to ensure the messages are sized appropriately
-              for the host.
-    @param    wirePort
-              The TwoWire implementation to use for I2C communication.
+    @param    i2cMax
+              The max length of each message to send from the host
+              to the Notecard. Used to ensure the messages are sized
+              appropriately for the host.
 */
 /**************************************************************************/
-void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
+void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
 {
-    noteI2c = make_note_i2c(&wirePort);
-    NoteSetFnI2C(i2caddress, i2cmax, noteI2cReset,
-                 noteI2cTransmit, noteI2cReceive);
-    NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
+    noteI2c = noteI2c_;
+    platformInit(noteI2c);
+    if (noteI2c) {
+        NoteSetFnI2C(i2cAddress_, i2cMax_, noteI2cReset,
+                    noteI2cTransmit, noteI2cReceive);
+    } else {
+        NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
+    }
 }
 
 /**************************************************************************/
@@ -234,18 +234,14 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
     @brief  Initialize the Notecard for Serial communication.
             This function configures the Notecard to use Serial
             for communication with the host.
-    @param    serialChannel
-              The serial channel to use for communicating with the
-              Notecard from the host.
-    @param    baudRate
-              The rate to communicate with the Notecard. The preconfigured
-              baud rate of the Notecard is 9600 baud, therefore the default
-              for this function has been selected to match.
+    @param    noteSerial
+              A platform specific serial implementation to use for
+              communicating with the Notecard from the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteSerial::channel_t serialChannel, int baudRate)
+void Notecard::begin(NoteSerial * noteSerial_)
 {
-    noteSerial = make_note_serial(serialChannel, baudRate);
+    noteSerial = noteSerial_;
     platformInit(noteSerial);
     if (noteSerial) {
         NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
@@ -262,13 +258,14 @@ void Notecard::begin(NoteSerial::channel_t serialChannel, int baudRate)
             using a platform specific logging channel (for example, `Serial`
             on Arduino). The specified channel will be configured as the
             source for debug messages provided to `notecard.logDebug()`.
-    @param    logChannel
-              A platform specific channel to be used for debug output.
+    @param    noteLog
+              A platform specific log implementation to be used for
+              debug output.
 */
 /**************************************************************************/
-void Notecard::setDebugOutputStream(NoteLog::channel_t logChannel)
+void Notecard::setDebugOutputStream(NoteLog * noteLog_)
 {
-    noteLog = make_note_log(logChannel);
+    noteLog = noteLog_;
     if (noteLog) {
         NoteSetFnDebugOutput(noteLogPrint);
     } else {
