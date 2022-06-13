@@ -17,18 +17,18 @@ struct MakeNoteLog_Parameters {
         void
     ) :
         invoked(0),
-        log_channel(nullptr),
+        log_parameters(nullptr),
         result(nullptr)
     { }
     void reset (
         void
     ) {
         invoked = 0;
-        log_channel = nullptr;
+        log_parameters = nullptr;
         result = nullptr;
     }
     size_t invoked;
-    NoteLog::channel_t log_channel;
+    NoteLog::param_t log_parameters;
     NoteLog * result;
 };
 

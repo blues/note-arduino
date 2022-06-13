@@ -16,7 +16,7 @@ int test_make_note_log_instantiates_notelog_object()
     NoteLog * notelog = nullptr;
 
     // Action
-    notelog = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+    notelog = make_note_log(reinterpret_cast<NoteLog::param_t>(&Serial));
 
     // Assert
     if (nullptr != notelog)
@@ -42,10 +42,10 @@ int test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_a
     int result;
 
     // Arrange
-    NoteLog * const notelog_1 = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+    NoteLog * const notelog_1 = make_note_log(reinterpret_cast<NoteLog::param_t>(&Serial));
 
     // Action
-    NoteLog * const notelog_2 = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+    NoteLog * const notelog_2 = make_note_log(reinterpret_cast<NoteLog::param_t>(&Serial));
 
     // Assert
     if (notelog_1 == notelog_2)
@@ -72,7 +72,7 @@ int test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter()
     int result;
 
     // Arrange
-    NoteLog * notelog = make_note_log(reinterpret_cast<NoteLog::channel_t>(&Serial));
+    NoteLog * notelog = make_note_log(reinterpret_cast<NoteLog::param_t>(&Serial));
     assert(notelog);
 
     // Action

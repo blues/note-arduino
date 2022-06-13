@@ -6,17 +6,17 @@ static const char *i2cerr = "i2c {io}";
 
 NoteI2c *
 make_note_i2c (
-    NoteI2c::bus_t i2c_bus_
+    NoteI2c::param_t i2c_parameters_
 )
 {
     static NoteI2c * note_i2c = nullptr;
-    if (!i2c_bus_) {
+    if (!i2c_parameters_) {
         if (note_i2c) {
             delete note_i2c;
             note_i2c = nullptr;
         }
     } else if (!note_i2c) {
-        note_i2c = new NoteI2c_Arduino(*reinterpret_cast<TwoWire *>(i2c_bus_));
+        note_i2c = new NoteI2c_Arduino(*reinterpret_cast<TwoWire *>(i2c_parameters_));
     }
     return note_i2c;
 }

@@ -9,6 +9,18 @@
 #include "mock/mock-arduino.hpp"
 #endif
 
+struct MakeNoteSerial_ArduinoParameters {
+    MakeNoteSerial_ArduinoParameters (
+        HardwareSerial & hw_serial_,
+        size_t baud_rate_
+    ) :
+        hw_serial(hw_serial_),
+        baud_rate(baud_rate_)
+    { }
+    HardwareSerial & hw_serial;
+    size_t baud_rate;
+};
+
 class NoteSerial_Arduino final : public NoteSerial
 {
 public:

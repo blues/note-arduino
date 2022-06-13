@@ -21,18 +21,18 @@ struct MakeNoteI2c_Parameters {
         void
     ) :
         invoked(0),
-        i2c_bus(nullptr),
+        i2c_parameters(nullptr),
         result(nullptr)
     { }
     void reset (
         void
     ) {
         invoked = 0;
-        i2c_bus = nullptr;
+        i2c_parameters = nullptr;
         result = nullptr;
     }
     size_t invoked;
-    NoteI2c::bus_t i2c_bus;
+    NoteI2c::param_t i2c_parameters;
     NoteI2c * result;
 };
 

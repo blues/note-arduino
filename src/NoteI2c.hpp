@@ -12,7 +12,7 @@ public:
         @brief  Type used to abstract specific hardware implementation types.
     */
     /**************************************************************************/
-    typedef void * bus_t;
+    typedef void * param_t;
 
     virtual ~NoteI2c(void) {}
 
@@ -76,11 +76,13 @@ public:
     @brief  Helper function to abstract, create and maintain a single instance
     of the NoteI2c interface implementation, as required by the underlying
     `note-c` library.
-    @param[in] i2c_bus  Pointer to the hardware specific I2C bus implementation.
+    @param[in] i2c_parameters
+               Pointer to the parameters required to instantiate
+               the platform specific I2C implementation.
 */
 /******************************************************************************/
 NoteI2c * make_note_i2c (
-    NoteI2c::bus_t i2c_bus
+    NoteI2c::param_t i2c_parameters
 );
 
 #endif // NOTE_I2C_HPP

@@ -8,16 +8,14 @@ NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
 
 NoteSerial *
 make_note_serial (
-    NoteSerial::channel_t serial_channel_,
-    size_t baud_rate_
+    NoteSerial::param_t serial_parameters_
 )
 {
     // Record invocation(s)
     ++make_note_serial_Parameters.invoked;
 
     // Stash parameter(s)
-    make_note_serial_Parameters.serial_channel = serial_channel_;
-    make_note_serial_Parameters.baud_rate = baud_rate_;
+    make_note_serial_Parameters.serial_parameters = serial_parameters_;
 
     // Return user-supplied result
     return make_note_serial_Parameters.result;

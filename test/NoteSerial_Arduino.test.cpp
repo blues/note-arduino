@@ -14,9 +14,10 @@ int test_make_note_serial_instantiates_noteserial_object()
 
     // Arrange
     NoteSerial * noteserial = nullptr;
+    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
 
     // Action
-    noteserial = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+    noteserial = make_note_serial(&arduino_parameters);
 
     // Assert
     if (nullptr != noteserial)
@@ -32,7 +33,7 @@ int test_make_note_serial_instantiates_noteserial_object()
     }
 
     // Clean-up
-    make_note_serial(nullptr,0);
+    make_note_serial(nullptr);
 
     return result;
 }
@@ -42,10 +43,11 @@ int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object
     int result;
 
     // Arrange
-    NoteSerial * const noteserial_1 = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
+    NoteSerial * const noteserial_1 = make_note_serial(&arduino_parameters);
 
     // Action
-    NoteSerial * const noteserial_2 = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+    NoteSerial * const noteserial_2 = make_note_serial(&arduino_parameters);
 
     // Assert
     if (noteserial_1 == noteserial_2)
@@ -61,7 +63,7 @@ int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object
     }
 
     // Clean-up
-    make_note_serial(nullptr,0);
+    make_note_serial(nullptr);
 
     return result;
 }
@@ -72,11 +74,12 @@ int test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter(
     int result;
 
     // Arrange
-    NoteSerial * noteserial = make_note_serial(reinterpret_cast<NoteSerial::channel_t>(&Serial),9600);
+    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
+    NoteSerial * noteserial = make_note_serial(&arduino_parameters);
     assert(noteserial);
 
     // Action
-    noteserial = make_note_serial(nullptr,0);
+    noteserial = make_note_serial(nullptr);
 
     // Assert
     if (nullptr == noteserial)

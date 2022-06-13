@@ -7,14 +7,14 @@ NoteI2cTransmit_Parameters noteI2cTransmit_Parameters;
 
 NoteI2c *
 make_note_i2c (
-    NoteI2c::bus_t i2c_bus_
+    NoteI2c::param_t i2c_parameters_
 )
 {
     // Record invocation(s)
     ++make_note_i2c_Parameters.invoked;
 
     // Stash parameter(s)
-    make_note_i2c_Parameters.i2c_bus = i2c_bus_;
+    make_note_i2c_Parameters.i2c_parameters = i2c_parameters_;
 
     // Return user-supplied result
     return make_note_i2c_Parameters.result;

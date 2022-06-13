@@ -5,14 +5,14 @@ NoteLogPrint_Parameters noteLogPrint_Parameters;
 
 NoteLog *
 make_note_log (
-    NoteLog::channel_t log_channel_
+    NoteLog::param_t log_parameters_
 )
 {
     // Record invocation(s)
     ++make_note_log_Parameters.invoked;
 
     // Stash parameter(s)
-    make_note_log_Parameters.log_channel = log_channel_;
+    make_note_log_Parameters.log_parameters = log_parameters_;
 
     // Return user-supplied result
     return make_note_log_Parameters.result;

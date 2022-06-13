@@ -2,17 +2,17 @@
 
 NoteLog *
 make_note_log (
-    NoteLog::channel_t log_channel_
+    NoteLog::param_t log_parameters_
 )
 {
     static NoteLog * note_log = nullptr;
-    if (!log_channel_) {
+    if (!log_parameters_) {
         if (note_log) {
             delete note_log;
             note_log = nullptr;
         }
     } else if (!note_log) {
-        note_log = new NoteLog_Arduino(reinterpret_cast<Stream *>(log_channel_));
+        note_log = new NoteLog_Arduino(reinterpret_cast<Stream *>(log_parameters_));
     }
     return note_log;
 }

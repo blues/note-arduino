@@ -20,21 +20,18 @@ struct MakeNoteSerial_Parameters {
         void
     ) :
         invoked(0),
-        serial_channel(nullptr),
-        baud_rate(0),
+        serial_parameters(nullptr),
         result(nullptr)
     { }
     void reset (
         void
     ) {
         invoked = 0;
-        serial_channel = nullptr;
-        baud_rate = 0;
+        serial_parameters = nullptr;
         result = nullptr;
     }
     size_t invoked;
-    NoteSerial::channel_t serial_channel;
-    size_t baud_rate;
+    NoteSerial::param_t serial_parameters;
     NoteSerial * result;
 };
 
