@@ -11,7 +11,7 @@
 #include "mock/NoteLog_Mock.hpp"
 #include "mock/NoteSerial_Mock.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp mock/NoteTime_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_sets_user_agent_to_note_arduino()
 {

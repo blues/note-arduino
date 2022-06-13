@@ -42,6 +42,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "NoteTime.h"
+
 /***************************************************************************
  SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
  ***************************************************************************/
@@ -139,30 +141,6 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
 }
 }
 
-/***************************************************************************
- PRIVATE FUNCTIONS
- ***************************************************************************/
-
-/* These functions are necessary because some platforms define types
-   for delay and millis differently */
-
-extern "C" {
-
-    static uint32_t platform_millis(void);
-    static uint32_t platform_millis(void)
-    {
-        return (uint32_t) millis();
-    }
-
-    static void platform_delay(uint32_t ms);
-    static void platform_delay(uint32_t ms)
-    {
-        delay((unsigned long int) ms);
-    }
-
-}
-
-
 /**************************************************************************/
 /*!
     @brief  Platform Initialization for the Notecard.
@@ -183,7 +161,7 @@ void Notecard::platformInit (bool assignCallbacks)
 {
     NoteSetUserAgent((char *)"note-arduino");
     if (assignCallbacks) {
-        NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
+        NoteSetFnDefault(malloc, free, noteDelay, noteMillis);
     } else {
         NoteSetFnDefault(nullptr, nullptr, nullptr, nullptr);
     }

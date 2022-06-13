@@ -17,6 +17,7 @@ if [ 0 -eq $all_tests_result ]; then
     test/mock/NoteI2c_Mock.cpp \
     test/mock/NoteLog_Mock.cpp \
     test/mock/NoteSerial_Mock.cpp \
+    test/mock/NoteTime_Mock.cpp \
     -Isrc \
     -Itest \
     -DNOTE_MOCK \
