@@ -2,18 +2,18 @@
 
 NoteSerial *
 make_note_serial (
-    NoteSerial::channel_t serial_channel_,
-    size_t baud_rate_
+    NoteSerial::param_t serial_parameters_
 )
 {
     static NoteSerial * note_serial = nullptr;
-    if (!serial_channel_) {
+    if (!serial_parameters_) {
         if (note_serial) {
             delete note_serial;
             note_serial = nullptr;
         }
     } else if (!note_serial) {
-        note_serial = new NoteSerial_Arduino(*reinterpret_cast<HardwareSerial *>(serial_channel_), baud_rate_);
+        MakeNoteSerial_ArduinoParameters * arduino_parameters = reinterpret_cast<MakeNoteSerial_ArduinoParameters *>(serial_parameters_);
+        note_serial = new NoteSerial_Arduino(arduino_parameters->hw_serial, arduino_parameters->baud_rate);
     }
     return note_serial;
 }

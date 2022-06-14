@@ -1,7 +1,5 @@
 #include "mock/NoteSerial_Mock.hpp"
 
-#include "NoteSerial_Arduino.hpp"
-
 MakeNoteSerial_Parameters make_note_serial_Parameters;
 NoteSerialAvailable_Parameters noteSerialAvailable_Parameters;
 NoteSerialReceive_Parameters noteSerialReceive_Parameters;
@@ -10,33 +8,21 @@ NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
 
 NoteSerial *
 make_note_serial (
-    NoteSerial::channel_t serial_channel_,
-    size_t baud_rate_
+    NoteSerial::param_t serial_parameters_
 )
 {
     // Record invocation(s)
     ++make_note_serial_Parameters.invoked;
 
     // Stash parameter(s)
-    make_note_serial_Parameters.serial_channel = serial_channel_;
-    make_note_serial_Parameters.baud_rate = baud_rate_;
+    make_note_serial_Parameters.serial_parameters = serial_parameters_;
 
     // Return user-supplied result
     return make_note_serial_Parameters.result;
 }
 
-NoteSerial_Arduino::NoteSerial_Arduino (
-    HardwareSerial & hw_serial_,
-    size_t baud_rate_
-) :
-    _notecardSerial(hw_serial_),
-    _notecardSerialSpeed(baud_rate_)
-{
-
-}
-
 size_t
-NoteSerial_Arduino::available (
+NoteSerial_Mock::available (
     void
 )
 {
@@ -50,7 +36,7 @@ NoteSerial_Arduino::available (
 }
 
 char
-NoteSerial_Arduino::receive (
+NoteSerial_Mock::receive (
     void
 )
 {
@@ -64,7 +50,7 @@ NoteSerial_Arduino::receive (
 }
 
 bool
-NoteSerial_Arduino::reset (
+NoteSerial_Mock::reset (
     void
 )
 {
@@ -78,7 +64,7 @@ NoteSerial_Arduino::reset (
 }
 
 size_t
-NoteSerial_Arduino::transmit (
+NoteSerial_Mock::transmit (
     uint8_t *buffer_,
     size_t size_,
     bool flush_

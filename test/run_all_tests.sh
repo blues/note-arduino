@@ -17,11 +17,13 @@ if [ 0 -eq $all_tests_result ]; then
     test/mock/NoteI2c_Mock.cpp \
     test/mock/NoteLog_Mock.cpp \
     test/mock/NoteSerial_Mock.cpp \
+    test/mock/NoteTime_Mock.cpp \
     -Isrc \
     -Itest \
-    -DNOTE_MOCK
+    -DNOTE_MOCK \
+    -o failed_test_run
   if [ 0 -eq $? ]; then
-    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
     tests_result=$?
     if [ 0 -eq ${tests_result} ]; then
       echo -e "${GREEN}Notecard tests passed!${DEFAULT}"
@@ -43,9 +45,10 @@ if [ 0 -eq $all_tests_result ]; then
     test/mock/mock-note-c-note.c \
     -Isrc \
     -Itest \
-    -DNOTE_MOCK
+    -DNOTE_MOCK \
+    -o failed_test_run
   if [ 0 -eq $? ]; then
-    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
     tests_result=$?
     if [ 0 -eq ${tests_result} ]; then
       echo -e "${GREEN}NoteI2c_Arduino tests passed!${DEFAULT}"
@@ -68,9 +71,10 @@ if [ 0 -eq $all_tests_result ]; then
     -Isrc \
     -Itest \
     -DNOTE_MOCK \
-    -DWIRE_HAS_END
+    -DWIRE_HAS_END \
+    -o failed_test_run
   if [ 0 -eq $? ]; then
-    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
     tests_result=$?
     if [ 0 -eq ${tests_result} ]; then
       echo -e "${GREEN}NoteI2c_Arduino tests passed! (-DWIRE_HAS_END)${DEFAULT}"
@@ -91,9 +95,10 @@ if [ 0 -eq $all_tests_result ]; then
     test/mock/mock-arduino.cpp \
     -Isrc \
     -Itest \
-    -DNOTE_MOCK
+    -DNOTE_MOCK \
+    -o failed_test_run
   if [ 0 -eq $? ]; then
-    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
     tests_result=$?
     if [ 0 -eq ${tests_result} ]; then
       echo -e "${GREEN}NoteLog_Arduino tests passed!${DEFAULT}"
@@ -114,9 +119,10 @@ if [ 0 -eq $all_tests_result ]; then
     test/mock/mock-arduino.cpp \
     -Isrc \
     -Itest \
-    -DNOTE_MOCK
+    -DNOTE_MOCK \
+    -o failed_test_run
   if [ 0 -eq $? ]; then
-    valgrind --leak-check=full --error-exitcode=66 ./a.out
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
     tests_result=$?
     if [ 0 -eq ${tests_result} ]; then
       echo -e "${GREEN}NoteSerial_Arduino tests passed!${DEFAULT}"
@@ -151,11 +157,12 @@ if [ 0 -eq ${all_tests_result} ]; then
       lcov --summary ./coverage/lcov.info
     fi
   fi
+  rm -f failed_test_run
 else
   echo && echo -e "${RED}TESTS FAILED!!!${DEFAULT}"
 fi
 
 # Clean testing artifacts
-rm -f *.gcda *.gcno ./a.out
+rm -f *.gcda *.gcno
 
 exit $all_tests_result

@@ -42,9 +42,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "NoteLog.hpp"
-#include "NoteI2c.hpp"
-#include "NoteSerial.hpp"
+#include "NoteTime.h"
+
+/***************************************************************************
+ SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
+ ***************************************************************************/
 
 namespace
 {
@@ -139,28 +141,30 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
 }
 }
 
-
-/***************************************************************************
- PRIVATE FUNCTIONS
- ***************************************************************************/
-
-/* These functions are necessary because some platforms define types
-   for delay and millis differently */
-
-extern "C" {
-
-    static uint32_t platform_millis(void);
-    static uint32_t platform_millis(void)
-    {
-        return (uint32_t) millis();
+/**************************************************************************/
+/*!
+    @brief  Platform Initialization for the Notecard.
+            This function configures system functions to be used
+            by the Notecard.
+    @param    assignCallbacks
+              When `true` the system callbacks will be assigned,
+              when `false` the system callbacks will be cleared.
+    @param    i2cmax
+              The max length of each message to send from the host to
+              the Notecard. Used to ensure the messages are sized appropriately
+              for the host.
+    @param    wirePort
+              The TwoWire implementation to use for I2C communication.
+*/
+/**************************************************************************/
+void Notecard::platformInit (bool assignCallbacks)
+{
+    NoteSetUserAgent((char *)"note-arduino");
+    if (assignCallbacks) {
+        NoteSetFnDefault(malloc, free, noteDelay, noteMillis);
+    } else {
+        NoteSetFnDefault(nullptr, nullptr, nullptr, nullptr);
     }
-
-    static void platform_delay(uint32_t ms);
-    static void platform_delay(uint32_t ms)
-    {
-        delay((unsigned long int) ms);
-    }
-
 }
 
 /***************************************************************************
@@ -172,32 +176,35 @@ Notecard::~Notecard (void)
     // Delete Singleton(s)
     noteI2c = make_note_i2c(nullptr);
     noteLog = make_note_log(nullptr);
-    noteSerial = make_note_serial(nullptr, 0);
+    noteSerial = make_note_serial(nullptr);
 }
 
 /**************************************************************************/
 /*!
     @brief  Initialize the Notecard for I2C.
-            This function configures the Notecard to use the I2C bus
-            for communication with the host.
-    @param    i2caddress
+            This function configures the Notecard to use the I2C
+            bus for communication with the host.
+    @param    noteI2c
+              A platform specific I2C implementation to use for
+              communicating with the Notecard from the host.
+    @param    i2cAddress
               The I2C Address to use for the Notecard.
-    @param    i2cmax
-              The max length of each message to send from the host to
-              the Notecard. Used to ensure the messages are sized appropriately
-              for the host.
-    @param    wirePort
-              The TwoWire implementation to use for I2C communication.
+    @param    i2cMax
+              The max length of each message to send from the host
+              to the Notecard. Used to ensure the messages are sized
+              appropriately for the host.
 */
 /**************************************************************************/
-void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
+void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
 {
-    NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
-    noteI2c = make_note_i2c(&wirePort);
-
-    NoteSetFnI2C(i2caddress, i2cmax, noteI2cReset,
-                 noteI2cTransmit, noteI2cReceive);
+    noteI2c = noteI2c_;
+    platformInit(noteI2c);
+    if (noteI2c) {
+        NoteSetFnI2C(i2cAddress_, i2cMax_, noteI2cReset,
+                    noteI2cTransmit, noteI2cReceive);
+    } else {
+        NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
+    }
 }
 
 /**************************************************************************/
@@ -205,37 +212,43 @@ void Notecard::begin(uint32_t i2caddress, uint32_t i2cmax, TwoWire &wirePort)
     @brief  Initialize the Notecard for Serial communication.
             This function configures the Notecard to use Serial
             for communication with the host.
-    @param    selectedSerialPort
-              The HardwareSerial bus to use.
-    @param    selectedSpeed
-              The baud rate to use for communicating with the Notecard
-              from the host.
+    @param    noteSerial
+              A platform specific serial implementation to use for
+              communicating with the Notecard from the host.
 */
 /**************************************************************************/
-void Notecard::begin(HardwareSerial &selectedSerialPort, int selectedSpeed)
+void Notecard::begin(NoteSerial * noteSerial_)
 {
-    NoteSetUserAgent((char *)"note-arduino");
-    NoteSetFnDefault(malloc, free, platform_delay, platform_millis);
-    noteSerial = make_note_serial(&selectedSerialPort, selectedSpeed);
-
-    NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
-                    noteSerialAvailable, noteSerialReceive);
+    noteSerial = noteSerial_;
+    platformInit(noteSerial);
+    if (noteSerial) {
+        NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
+                        noteSerialAvailable, noteSerialReceive);
+    } else {
+        NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+    }
 }
 
 /**************************************************************************/
 /*!
     @brief  Set the debug output source.
-            This function takes a Stream object (for example, `Serial`)
-            and configures it as a source for writing debug messages
-            during development.
-    @param    dbgserial
-              The Stream object to use for debug output.
+            A NoteLog object will be constructed via `make_note_log()`
+            using a platform specific logging channel (for example, `Serial`
+            on Arduino). The specified channel will be configured as the
+            source for debug messages provided to `notecard.logDebug()`.
+    @param    noteLog
+              A platform specific log implementation to be used for
+              debug output.
 */
 /**************************************************************************/
-void Notecard::setDebugOutputStream(Stream &dbgserial)
+void Notecard::setDebugOutputStream(NoteLog * noteLog_)
 {
-    noteLog = make_note_log(&dbgserial);
-    NoteSetFnDebugOutput(noteLogPrint);
+    noteLog = noteLog_;
+    if (noteLog) {
+        NoteSetFnDebugOutput(noteLogPrint);
+    } else {
+        NoteSetFnDebugOutput(nullptr);
+    }
 }
 
 /**************************************************************************/
@@ -243,8 +256,9 @@ void Notecard::setDebugOutputStream(Stream &dbgserial)
     @brief  Clear the debug output source.
 */
 /**************************************************************************/
-void Notecard::clearDebugOutputStream()
+void Notecard::clearDebugOutputStream(void)
 {
+    noteLog = nullptr;
     NoteSetFnDebugOutput(nullptr);
 }
 
@@ -252,7 +266,7 @@ void Notecard::clearDebugOutputStream()
 /*!
     @brief  Creates a new request object for population by the host.
             This function accepts a request string (for example, `"note.add"`)
-      and initializes a JSON Object to return to the host.
+            and initializes a JSON Object to return to the host.
     @param    request
               The request name, for example, `note.add`.
     @return A `J` JSON Object populated with the request name.
@@ -267,7 +281,7 @@ J *Notecard::newRequest(const char *request)
 /*!
     @brief  Creates a new command object for population by the host.
             This function accepts a command string (for example, `"note.add"`)
-      and initializes a JSON Object to return to the host.
+            and initializes a JSON Object to return to the host.
     @param    request
               The command name, for example, `note.add`.
     @return A `J` JSON Object populated with the request name.
@@ -282,11 +296,11 @@ J *Notecard::newCommand(const char *request)
 /*!
     @brief  Sends a request to the Notecard.
             This function takes a populated `J` JSON request object
-      and sends it to the Notecard.
+            and sends it to the Notecard.
     @param    req
               A `J` JSON request object.
     @return `True` if the message was successfully sent to the Notecard,
-      `False` if there was an error.
+            `False` if there was an error.
 */
 /**************************************************************************/
 bool Notecard::sendRequest(J *req)
@@ -353,13 +367,13 @@ void Notecard::logDebugf(const char *format, ...)
 
 /**************************************************************************/
 /*!
-    @brief  Periodically show Notecard sync status,
-      returning TRUE if something was displayed to the debug stream.
+    @brief  Periodically show Notecard sync status, returning `TRUE`
+            if something was displayed to the debug stream.
     @param    pollFrequencyMs
               The frequency to poll the Notecard for sync status.
-  @param    maxLevel
-        The maximum log level to output to the debug console. Pass
-        -1 for all.
+    @param    maxLevel
+              The maximum log level to output to the debug console. Pass
+              -1 for all.
     @return `True` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/

@@ -16,7 +16,7 @@ int test_make_note_i2c_instantiates_notei2c_object()
   NoteI2c * notei2c = nullptr;
 
   // Action
-  notei2c = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+  notei2c = make_note_i2c(reinterpret_cast<NoteI2c::param_t>(&Wire));
 
   // Assert
   if (nullptr != notei2c)
@@ -42,10 +42,10 @@ int test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_a
   int result;
 
   // Arrange
-  NoteI2c * const notei2c_1 = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+  NoteI2c * const notei2c_1 = make_note_i2c(reinterpret_cast<NoteI2c::param_t>(&Wire));
 
   // Action
-  NoteI2c * const notei2c_2 = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+  NoteI2c * const notei2c_2 = make_note_i2c(reinterpret_cast<NoteI2c::param_t>(&Wire));
 
   // Assert
   if (notei2c_1 == notei2c_2)
@@ -66,12 +66,13 @@ int test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_a
   return result;
 }
 
+//int test_make_note_i2c_returns_nullptr_when_nullptr_is_passed_as_parameter()
 int test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter()
 {
   int result;
 
   // Arrange
-  NoteI2c * notei2c = make_note_i2c(reinterpret_cast<NoteI2c::bus_t>(&Wire));
+  NoteI2c * notei2c = make_note_i2c(reinterpret_cast<NoteI2c::param_t>(&Wire));
   assert(notei2c);
 
   // Action

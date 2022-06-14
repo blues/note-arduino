@@ -11,7 +11,7 @@ public:
         @brief  Type used to abstract specific hardware implementation types.
     */
     /**************************************************************************/
-    typedef void * channel_t;
+    typedef void * param_t;
 
     virtual ~NoteLog(void) {}
 
@@ -31,12 +31,13 @@ public:
     @brief  Helper function to abstract, create and maintain a single instance
     of the NoteLog interface implementation, as required by the underlying
     `note-c` library.
-    @param[in] log_channel  Pointer to the hardware specific serial stream
-    implementation.
+    @param[in] log_parameters
+               Pointer to the parameters required to instantiate
+               the platform specific log output implementation.
 */
 /******************************************************************************/
 NoteLog * make_note_log (
-    NoteLog::channel_t log_channel
+    NoteLog::param_t log_parameters
 );
 
 #endif // NOTE_LOG_HPP

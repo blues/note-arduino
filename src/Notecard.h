@@ -27,9 +27,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef NOTE_MOCK
+#include "NoteI2c.hpp"
+#include "NoteLog.hpp"
+#include "NoteSerial.hpp"
+
+#ifdef ARDUINO
 #include <Arduino.h>
 #include <Wire.h>
+#include "NoteSerial_Arduino.hpp"
+#endif
+
+#ifndef NOTE_MOCK
 #include <note-c/note.h>
 #else
 #include "mock/mock-arduino.hpp"
@@ -46,11 +54,25 @@ class Notecard
 {
 public:
     ~Notecard(void);
-    void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
-               TwoWire &wirePort = Wire);
-    void begin(HardwareSerial &serial, int speed = 9600);
-    void setDebugOutputStream(Stream &dbgserial);
+#ifdef ARDUINO
+    inline void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
+                      uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
+                      TwoWire &wirePort = Wire) {
+        begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
+    }
+    inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
+        MakeNoteSerial_ArduinoParameters arduino_parameters(serial, speed);
+        begin(make_note_serial(&arduino_parameters));
+    }
+    inline void setDebugOutputStream(Stream &dbgserial) {
+        setDebugOutputStream(make_note_log(&dbgserial));
+    }
+#endif
+    void begin(NoteI2c * noteI2c,
+               uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
+               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT);
+    void begin(NoteSerial * noteSerial);
+    void setDebugOutputStream(NoteLog * noteLog);
     void clearDebugOutputStream(void);
     J *newRequest(const char *request);
     J *newCommand(const char *request);
@@ -61,6 +83,9 @@ public:
     void logDebugf(const char *format, ...);
     bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
     bool responseError(J *rsp);
+
+private:
+    void platformInit (bool assignCallbacks);
 };
 
 #endif

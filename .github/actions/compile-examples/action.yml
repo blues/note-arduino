@@ -11,5 +11,7 @@ runs:
       && HOME=/home/blues arduino-cli compile \
       --build-property compiler.cpp.extra_flags='-Wno-unused-parameter -Werror' \
       --fqbn ${{ inputs.fully-qualified-board-name }} \
+      --log-level trace \
+      --verbose \
       --warnings all \
       ${{ inputs.example-sketch }}"

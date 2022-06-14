@@ -1,31 +1,37 @@
-#ifndef MOCK_SERIAL_ARDUINO_HPP
-#define MOCK_SERIAL_ARDUINO_HPP
+#ifndef MOCK_NOTE_SERIAL_HPP
+#define MOCK_NOTE_SERIAL_HPP
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "NoteSerial.hpp"
 
+class NoteSerial_Mock final : public NoteSerial
+{
+public:
+    size_t available(void) override;
+    char receive(void) override;
+    bool reset(void) override;
+    size_t transmit(uint8_t * buffer, size_t size, bool flush) override;
+};
+
 struct MakeNoteSerial_Parameters {
     MakeNoteSerial_Parameters(
         void
     ) :
         invoked(0),
-        serial_channel(nullptr),
-        baud_rate(0),
+        serial_parameters(nullptr),
         result(nullptr)
     { }
     void reset (
         void
     ) {
         invoked = 0;
-        serial_channel = nullptr;
-        baud_rate = 0;
+        serial_parameters = nullptr;
         result = nullptr;
     }
     size_t invoked;
-    NoteSerial::channel_t serial_channel;
-    size_t baud_rate;
+    NoteSerial::param_t serial_parameters;
     NoteSerial * result;
 };
 
@@ -112,4 +118,4 @@ extern NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 extern NoteSerialReset_Parameters noteSerialReset_Parameters;
 extern NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
 
-#endif // MOCK_SERIAL_ARDUINO_HPP
+#endif // MOCK_NOTE_SERIAL_HPP

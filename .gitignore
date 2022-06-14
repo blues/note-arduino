@@ -1,10 +1,10 @@
-.vscode/
 .DS_Store
 *.gch
 *.out
 *.gcda
 *.gcno
 *.gcov
+vgcore.*
 
 coverage/
 

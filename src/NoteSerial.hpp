@@ -12,7 +12,7 @@ public:
         @brief  Type used to abstract specific hardware implementation types.
     */
     /**************************************************************************/
-    typedef void * channel_t;
+    typedef void * param_t;
 
     virtual ~NoteSerial(void) {}
 
@@ -44,11 +44,11 @@ public:
     /*!
         @brief  Writes a message to the Notecard Serial port.
         @param    buffer
-                The bytes to write.
+                  The bytes to write.
         @param    size
-                The number of bytes to write.
+                  The number of bytes to write.
         @param    flush
-                Use `true` to flush to Serial.
+                  Use `true` to flush to Serial.
         @return The number of bytes transmitted.
     */
     /**************************************************************************/
@@ -60,14 +60,13 @@ public:
     @brief  Helper function to abstract, create and maintain a single instance
     of the NoteSerial interface implementation, as required by the underlying
     `note-c` library.
-    @param[in] serial_channel  Pointer to the hardware specific UART
-    implementation.
-    @param[in] baut_rate       The operating baud rate for the UART.
+    @param[in] serial_parameters
+               Pointer to the parameters required to instantiate
+               the platform specific UART implementation.
 */
 /******************************************************************************/
 NoteSerial * make_note_serial (
-    NoteSerial::channel_t serial_channel,
-    size_t baud_rate
+    NoteSerial::param_t serial_parameters
 );
 
 #endif // NOTE_SERIAL_HPP
