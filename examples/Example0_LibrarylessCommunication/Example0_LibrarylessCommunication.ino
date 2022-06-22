@@ -43,9 +43,11 @@ void setup()
 
     // Initialize the serial port being used by the Notecard, and send a newline to clear out any data
     // that the Arduino software may have pending so that we always start sending commands "cleanly".
-    // We use the speed of 9600 because the Notecard's RX/TX pins are always configured for that speed.
+    // By delaying for 250ms, we ensure the any pending commands can be processed or discarded. We use
+    // the speed of 9600 because the Notecard's RX/TX pins are always configured for that speed.
     txRxPinsSerial.begin(9600);
     txRxPinsSerial.println("\n");
+    delay(250);
 
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
