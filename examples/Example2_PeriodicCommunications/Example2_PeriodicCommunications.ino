@@ -55,8 +55,13 @@
 // #define txRxPinsSerial Serial1
 #define usbSerial Serial
 
-// This is the unique Product Identifier for your device.
-#define myProductID "com.your-company.your-name:your_project"
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+
+#define myProductID PRODUCT_UID
 Notecard notecard;
 
 // Button handling
@@ -96,8 +101,9 @@ void setup()
 
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
-    JAddStringToObject(req, "product", myProductID);
-
+    if (myProductID[0]) {
+        JAddStringToObject(req, "product", myProductID);
+    }
     // This sets the notecard's connectivity mode to periodic, rather than being continuously connected
     JAddStringToObject(req, "mode", "periodic");
 

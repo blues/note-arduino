@@ -34,7 +34,12 @@
 // "claim" a unique product ID for your device.  It could be something as simple as as your email
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
 
-#define myProductID "com.your-company.your-name:your_project"
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+#define myProductID PRODUCT_UID
 #define myLiveDemo  true
 
 // One-time Arduino initialization
@@ -51,16 +56,17 @@ void setup()
 
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
-    txRxPinsSerial.println("{\"req\":\"service.set\",\"product\":\"" myProductID "\"}");
-
+    if (myProductID[0]) {
+        txRxPinsSerial.println("{\"req\":\"hub.set\",\"product\":\"" myProductID "\"}");
+    }
     // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
 #if myLiveDemo
-    txRxPinsSerial.println("{\"req\":\"service.set\",\"mode\":\"continuous\"}");
+    txRxPinsSerial.println("{\"req\":\"hub.set\",\"mode\":\"continuous\"}");
 #else
-    txRxPinsSerial.println("{\"req\":\"service.set\",\"mode\":\"periodic\",\"outbound\":60}");
+    txRxPinsSerial.println("{\"req\":\"hub.set\",\"mode\":\"periodic\",\"outbound\":60}");
 #endif
 
 }

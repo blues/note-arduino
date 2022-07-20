@@ -20,7 +20,13 @@ Adafruit_BME680 bmeSensor;
 //#define txRxPinsSerial Serial1
 #define usbSerial Serial
 
-#define productUID "com.your-company.your-name:your_project"
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+
+#define myProductID PRODUCT_UID
 Notecard notecard;
 
 // One-time Arduino initialization
@@ -42,7 +48,9 @@ void setup()
 #endif
 
     J *req = notecard.newRequest("hub.set");
-    JAddStringToObject(req, "product", productUID);
+    if (myProductID[0]) {
+        JAddStringToObject(req, "product", myProductID);
+    }
     JAddStringToObject(req, "mode", "continuous");
     notecard.sendRequest(req);
 

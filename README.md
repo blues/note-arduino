@@ -112,6 +112,11 @@ with:
 - [Handling inbound requests with polling](examples/Example3_InboundPolling/Example3_InboundPolling.ino)
 - [Handling inbound interrupts](examples/Example4_InboundInterrupts/Example4_InboundInterrupts.ino)
 - [Using Note templates](examples/Example5_UsingTemplates/Example5_UsingTemplates.ino)
+- [Sensor tutorial](examples/Example6_SensorTutorial/Example6_SensorTutorial.ino)
+- [Power control](examples/Example7_PowerControl/Example7_PowerControl.ino)
+
+Before running an example, you will need to set the Product Identifier, either in code or on your connected Notecard. Steps on how to do this can be found at [https://dev.blues.io/tools-and-sdks/samples/product-uid](https://dev.blues.io/tools-and-sdks/samples/product-uid).
+
 
 ## Contributing
 

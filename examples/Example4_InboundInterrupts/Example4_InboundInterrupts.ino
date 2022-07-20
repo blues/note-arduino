@@ -37,8 +37,13 @@
 // #define txRxPinsSerial Serial1
 #define usbSerial Serial
 
-// This is the unique Product Identifier for your device.
-#define myProductID "com.your-company.your-name:your_project"
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+
+#define myProductID PRODUCT_UID
 Notecard notecard;
 #define myLiveDemo  true
 
@@ -70,7 +75,9 @@ void setup()
 
     // Configure the productUID, and instruct the Notecard to stay connected to the service
     J *req = notecard.newRequest("hub.set");
-    JAddStringToObject(req, "product", myProductID);
+    if (myProductID[0]) {
+        JAddStringToObject(req, "product", myProductID);
+    }
 #if myLiveDemo
     JAddStringToObject(req, "mode", "continuous");
     JAddBoolToObject(req, "sync", true);
