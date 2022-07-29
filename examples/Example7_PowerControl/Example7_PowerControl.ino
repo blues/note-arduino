@@ -14,7 +14,16 @@
 #include <Wire.h>
 
 // Parameters for this example
-#define notehubProductUID		"com.your_company.your_name:your_project"	// if you're your_name@your_company.com
+
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+
+#define myProductID PRODUCT_UID
+
+#define notehubProductUID		PRODUCT_UID
 #define notehubUploadPeriodMins	10
 #define	hostSleepSeconds		60
 
@@ -84,7 +93,9 @@ void setup()
 
 		// Initialize the Notecard
 	    J *req = NoteNewRequest("hub.set");
-	    JAddStringToObject(req, "product", notehubProductUID);
+		if (notehubProductUID[0]) {
+		    JAddStringToObject(req, "product", notehubProductUID);
+		}
 	    JAddStringToObject(req, "mode", "periodic");
 	    JAddNumberToObject(req, "outbound", notehubUploadPeriodMins);
 	    NoteRequest(req);

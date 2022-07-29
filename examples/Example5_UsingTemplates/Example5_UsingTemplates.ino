@@ -41,7 +41,14 @@
 // of "managing" it.  In order to set this value, you must first register with notehub.io and
 // "claim" a unique product ID for your device.  It could be something as simple as as your email
 // address in reverse, such as "com.gmail.smith.lisa.test-device" or "com.outlook.gates.bill.demo"
-#define myProductID "com.your-company.your-name:your_project"
+
+// This is the unique Product Identifier for your device
+#ifndef PRODUCT_UID
+#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
+#endif
+
+#define myProductID PRODUCT_UID
 Notecard notecard;
 
 // A sample binary object, just for binary payload simulation
@@ -77,8 +84,9 @@ void setup()
 
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
-    JAddStringToObject(req, "product", myProductID);
-
+    if (myProductID[0]) {
+        JAddStringToObject(req, "product", myProductID);
+    }
     // This command determines how often the Notecard connects to the service.
     JAddStringToObject(req, "mode", "periodic");
     JAddNumberToObject(req, "outbound", 5);
