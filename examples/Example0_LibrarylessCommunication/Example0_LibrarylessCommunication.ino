@@ -57,16 +57,16 @@ void setup()
     // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
     // this Product ID.  (see above)
     if (myProductID[0]) {
-        txRxPinsSerial.println("{\"req\":\"hub.set\",\"product\":\"" myProductID "\"}");
+        txRxPinsSerial.println("{\"cmd\":\"hub.set\",\"product\":\"" myProductID "\"}");
     }
     // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
     // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
     // Because of the power requirements of a continuous connection, a battery powered device would instead
     // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
 #if myLiveDemo
-    txRxPinsSerial.println("{\"req\":\"hub.set\",\"mode\":\"continuous\"}");
+    txRxPinsSerial.println("{\"cmd\":\"hub.set\",\"mode\":\"continuous\"}");
 #else
-    txRxPinsSerial.println("{\"req\":\"hub.set\",\"mode\":\"periodic\",\"outbound\":60}");
+    txRxPinsSerial.println("{\"cmd\":\"hub.set\",\"mode\":\"periodic\",\"outbound\":60}");
 #endif
 
 }
@@ -96,7 +96,7 @@ void loop()
     char message[150];
     snprintf(message, sizeof(message),
              "{"
-             "\"req\":\"note.add\""
+             "\"cmd\":\"note.add\""
              ","
              "\"sync\":true"
              ","
