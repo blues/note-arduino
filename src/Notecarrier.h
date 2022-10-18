@@ -155,15 +155,22 @@
 
 #elif defined(ARDUINO_SWAN_R5)
 
+// Swan v1 (deprecated)
 #ifdef CS
 #undef CS
 #endif
 #define CS PD0
 
+#ifdef B0_V1
+#undef B0_V1
+#endif
+#define B0_V1 CS
+
+// Swan v3
 #ifdef B0
 #undef B0
 #endif
-#define B0 CS
+#define B0 PH3
 
 #endif
 
