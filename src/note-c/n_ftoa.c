@@ -63,7 +63,7 @@ char * JNtoA(JNUMBER f, char * buf, int precision)
     }
     fmtflt(buf, &len, JNTOA_MAX, f, -1, precision, flags, &overflow);
     if (overflow) {
-        strcpy(buf, "*");
+        strcpy(buf, c_asterisk);
     }
     buf[len] = '\0';
     return buf;
@@ -113,9 +113,9 @@ fmtflt(char *str, size_t *len, size_t size, JNUMBER fvalue, int width,
     }
 
     if (isnan(fvalue)) {
-        infnan = (flags & PRINT_F_UP) ? "NAN" : "nan";
+        infnan = (flags & PRINT_F_UP) ? c_NAN : c_nan;
     } else if (isinf(fvalue)) {
-        infnan = (flags & PRINT_F_UP) ? "INF" : "inf";
+        infnan = (flags & PRINT_F_UP) ? c_INF : c_inf;
     }
 
     if (infnan != NULL) {
@@ -376,7 +376,7 @@ static void fmtstr(char *str, size_t *len, size_t size, const char *value, int w
     int noprecision = (precision == -1);
 
     if (value == NULL) {	/* We're forgiving. */
-        value = "(null)";
+        value = c_null_paren;
     }
 
     /* If a precision was specified, don't read the string past it. */
@@ -441,7 +441,7 @@ static int getexponent(JNUMBER value)
 
 static int convert(uintmax_t value, char *buf, size_t size, int base, int caps)
 {
-    const char *digits = caps ? "0123456789ABCDEF" : "0123456789abcdef";
+    const char *digits = caps ? c_HEX : c_hex;
     size_t pos = 0;
 
     /* We return an unterminated buffer with the digits in reverse order. */

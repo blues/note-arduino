@@ -144,7 +144,7 @@ static unsigned char* Jstrdup(const unsigned char* string)
         return NULL;
     }
 
-    length = strlen((const char*)string) + sizeof("");
+    length = strlen((const char*)string) + 1;
     copy = (unsigned char*)_Malloc(length);
     if (copy == NULL) {
         return NULL;
@@ -412,18 +412,18 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     /* This checks for NaN and Infinity */
     if ((d * 0) != 0) {
         char *nbuf = (char *) number_buffer;
-        strcpy(nbuf, "null");
+        strcpy(nbuf, c_null);
         length = strlen(nbuf);
     } else {
 #if !MINIMIZE_CLIB_DEPENDENCIES
         JNUMBER test;
         /* Try 15 decimal places of precision to avoid nonsignificant nonzero digits */
-        length = sprintf((char*)number_buffer, "%1.15g", d);
+        length = sprintf((char*)number_buffer, c_fmt_1_15g, d);
 
         /* Check whether the original double can be recovered */
-        if ((sscanf((char*)number_buffer, "%lg", &test) != 1) || ((JNUMBER)test != d)) {
+        if ((sscanf((char*)number_buffer, c_fmt_lg, &test) != 1) || ((JNUMBER)test != d)) {
             /* If not, print with 17 decimal places of precision */
-            length = sprintf((char*)number_buffer, "%1.17g", d);
+            length = sprintf((char*)number_buffer, c_fmt_1_17g, d);
         }
 #else
         char *nbuf = (char *) number_buffer;
@@ -438,7 +438,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     }
 
     /* reserve appropriate space in the output */
-    output_pointer = ensure(output_buffer, (size_t)length + sizeof(""));
+    output_pointer = ensure(output_buffer, (size_t)length + 1);
     if (output_pointer == NULL) {
         return false;
     }
@@ -870,7 +870,7 @@ static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
         return NULL;
     }
 
-    if (can_access_at_index(buffer, 4) && (strncmp((const char*)buffer_at_offset(buffer), "\xEF\xBB\xBF", 3) == 0)) {
+    if (can_access_at_index(buffer, 4) && (strncmp((const char*)buffer_at_offset(buffer), c_utf8_bom, 3) == 0)) {
         buffer->offset += 3;
     }
 
@@ -1003,7 +1003,7 @@ fail:
 N_CJSON_PUBLIC(char *) JPrint(const J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return (char *)c_nullstring;
     }
     return (char*)print(item, true);
 }
@@ -1011,7 +1011,7 @@ N_CJSON_PUBLIC(char *) JPrint(const J *item)
 N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return (char *)c_nullstring;
     }
     return (char*)print(item, false);
 }
@@ -1021,7 +1021,7 @@ N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
     printbuffer p = { 0, 0, 0, 0, 0, 0 };
 
     if (item == NULL) {
-        return (char *)"";
+        return (char *)c_nullstring;
     }
 
     if (prebuffer < 0) {

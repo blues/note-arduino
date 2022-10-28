@@ -11,9 +11,11 @@
  *
  */
 
+#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+
 #include "n_lib.h"
 
 // When interfacing with the Notecard, it is generally encouraged that the JSON object manipulation and
@@ -36,7 +38,7 @@ static bool zoneStillUnavailable = true;
 static bool zoneForceRefresh = false;
 static char curZone[10] = {0};
 static char curArea[64] = {0};
-static char curCountry[8] = "";
+static char curCountry[8] = {0};
 static int curZoneOffsetMins = 0;
 
 // Location-related suppression timer and cache
@@ -60,9 +62,9 @@ static char scService[128] = {0};
 
 // For date conversions
 #define daysByMonth(y) ((y)&03||(y)==0?normalYearDaysByMonth:leapYearDaysByMonth)
-static short leapYearDaysByMonth[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
-static short normalYearDaysByMonth[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-static const char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const short leapYearDaysByMonth[] PROGMEM = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
+static const short normalYearDaysByMonth[] PROGMEM = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+static const char * const daynames[] PROGMEM = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 // Forwards
 static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
@@ -154,9 +156,9 @@ void NoteTimeSet(JTIME secondsUTC, int offset, char *zone, char *country, char *
         timeBaseSetManually = true;
         zoneStillUnavailable = false;
         curZoneOffsetMins = offset;
-        strlcpy(curZone, zone == NULL ? "UTC" : zone, sizeof(curZone));
-        strlcpy(curArea, area == NULL ? "" : area, sizeof(curArea));
-        strlcpy(curCountry, country == NULL ? "" : country, sizeof(curCountry));
+        strlcpy(curZone, zone == NULL ? c_UTC : zone, sizeof(curZone));
+        strlcpy(curArea, area == NULL ? c_nullstring : area, sizeof(curArea));
+        strlcpy(curCountry, country == NULL ? c_nullstring : country, sizeof(curCountry));
     }
 }
 
@@ -188,8 +190,8 @@ bool NotePrint(const char *text)
         return true;
     }
 
-    J *req = NoteNewRequest("card.log");
-    JAddStringToObject(req, "text", text);
+    J *req = NoteNewRequest(c_card_log);
+    JAddStringToObject(req, c_text, text);
     success = NoteRequest(req);
 
     return success;
@@ -227,17 +229,17 @@ JTIME NoteTimeST()
         if (timerExpiredSecs(&timeTimer, suppressionTimerSecs)) {
 
             // Request time and zone info from the card
-            J *rsp = NoteRequestResponse(NoteNewRequest("card.time"));
+            J *rsp = NoteRequestResponse(NoteNewRequest(c_card_time));
             if (rsp != NULL) {
                 if (!NoteResponseError(rsp)) {
-                    JTIME seconds = JGetInt(rsp, "time");
+                    JTIME seconds = JGetInt(rsp, c_time);
                     if (seconds != 0) {
 
                         // Set the time
                         setTime(seconds);
 
                         // Get the zone
-                        char *z = JGetString(rsp, "zone");
+                        char *z = JGetString(rsp, c_zone);
                         if (z[0] != '\0') {
                             char zone[64];
                             strlcpy(zone, z, sizeof(zone));
@@ -248,12 +250,12 @@ JTIME NoteTimeST()
                             } else {
                                 *sep = '\0';
                             }
-                            zoneStillUnavailable = (memcmp(zone, "UTC", 3) == 0);
+                            zoneStillUnavailable = (memcmp(zone, c_UTC, 3) == 0);
                             zoneForceRefresh = false;
                             strlcpy(curZone, zone, sizeof(curZone));
-                            curZoneOffsetMins = JGetInt(rsp, "minutes");
-                            strlcpy(curCountry, JGetString(rsp, "country"), sizeof(curCountry));
-                            strlcpy(curArea, JGetString(rsp, "area"), sizeof(curArea));
+                            curZoneOffsetMins = JGetInt(rsp, c_minutes);
+                            strlcpy(curCountry, JGetString(rsp, c_country), sizeof(curCountry));
+                            strlcpy(curArea, JGetString(rsp, c_area), sizeof(curArea));
                         }
 
                     }
@@ -300,13 +302,13 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
     NoteTimeST();
     if (zoneStillUnavailable) {
         if (retCountry != NULL) {
-            *retCountry = (char *) "";
+            *retCountry = (char *) c_nullstring;
         }
         if (retArea != NULL) {
-            *retArea = (char *) "";
+            *retArea = (char *) c_nullstring;
         }
         if (retZone != NULL) {
-            *retZone = (char *) "UTC";
+            *retZone = (char *) c_UTC;
         }
         if (retZoneOffset != NULL) {
             *retZoneOffset = 0;
@@ -360,10 +362,10 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
         *retSecond = 0;
     }
     if (retWeekday != NULL) {
-        *retWeekday = (char *) "";
+        *retWeekday = (char *) c_nullstring;
     }
     if (retZone != NULL) {
-        *retZone = (char *) "";
+        *retZone = (char *) c_nullstring;
     }
 
     // Exit if time isn't yet valid
@@ -396,7 +398,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
     if (retYear != NULL) {
         *retYear = (uint16_t) year+1900;
     }
-    short *pm = daysByMonth(year);
+    const short *pm = daysByMonth(year);
     for (mon = 12; days < pm[--mon]; ) ;
     if (retMonth != NULL) {
         *retMonth = (uint8_t) mon+1;
@@ -500,13 +502,13 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen)
     }
 
     // Request location from the card
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.location"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_location));
     if (rsp == NULL) {
         return false;
     }
 
     // If valid, or the location mode is OFF, we're done
-    if (!NoteResponseError(rsp) || strcmp(JGetString(rsp, "mode"), "off") == 0) {
+    if (!NoteResponseError(rsp) || strcmp(JGetString(rsp, c_mode), c_off) == 0) {
         NoteDeleteResponse(rsp);
         locationValid = true;
         locationLastErr[0] = '\0';
@@ -517,7 +519,7 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen)
     }
 
     // Remember the error for next iteration
-    strlcpy(locationLastErr, JGetString(rsp, "err"), sizeof(locationLastErr));
+    strlcpy(locationLastErr, JGetString(rsp, c_err), sizeof(locationLastErr));
     if (errbuf != NULL) {
         strlcpy(errbuf, locationLastErr, errbuflen);
     }
@@ -537,10 +539,10 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen)
 bool NoteSetEnvDefault(const char *variable, char *buf)
 {
     bool success = false;
-    J *req = NoteNewRequest("env.default");
+    J *req = NoteNewRequest(c_env_default);
     if (req != NULL) {
-        JAddStringToObject(req, "name", variable);
-        JAddStringToObject(req, "text", buf);
+        JAddStringToObject(req, c_name, variable);
+        JAddStringToObject(req, c_text, buf);
         success = NoteRequest(req);
     }
     return success;
@@ -629,14 +631,14 @@ bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
     } else {
         strlcpy(buf, defaultVal, buflen);
     }
-    J *req = NoteNewRequest("env.get");
+    J *req = NoteNewRequest(c_env_get);
     if (req != NULL) {
-        JAddStringToObject(req, "name", variable);
+        JAddStringToObject(req, c_name, variable);
         J *rsp = NoteRequestResponse(req);
         if (rsp != NULL) {
             if (!NoteResponseError(rsp)) {
                 success = true;
-                char *val = JGetString(rsp, "text");
+                char *val = JGetString(rsp, c_text);
                 if (val[0] != '\0') {
                     strlcpy(buf, val, buflen);
                 }
@@ -668,10 +670,10 @@ bool NoteIsConnected()
 bool NoteIsConnectedST()
 {
     if (timerExpiredSecs(&connectivityTimer, suppressionTimerSecs)) {
-        J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
+        J *rsp = NoteRequestResponse(NoteNewRequest(c_hub_status));
         if (rsp != NULL) {
             if (!NoteResponseError(rsp)) {
-                cardConnected = JGetBool(rsp, "connected");
+                cardConnected = JGetBool(rsp, c_connected);
             }
             NoteDeleteResponse(rsp);
         }
@@ -691,11 +693,11 @@ bool NoteGetNetStatus(char *statusBuf, int statusBufLen)
 {
     bool success = false;
     statusBuf[0] = '\0';
-    J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_hub_status));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
-            strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
+            strlcpy(statusBuf, JGetString(rsp, c_status), statusBufLen);
         }
         NoteDeleteResponse(rsp);
     }
@@ -714,11 +716,11 @@ bool NoteGetVersion(char *versionBuf, int versionBufLen)
 {
     bool success = false;
     versionBuf[0] = '\0';
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.version"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_version));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
-            strlcpy(versionBuf, JGetString(rsp, "version"), versionBufLen);
+            strlcpy(versionBuf, JGetString(rsp, c_version), versionBufLen);
         }
         NoteDeleteResponse(rsp);
     }
@@ -751,21 +753,21 @@ bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *status
     if (time != NULL) {
         *time = 0;
     }
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.location"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_location));
     if (rsp != NULL) {
         if (statusBuf != NULL) {
-            strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
+            strlcpy(statusBuf, JGetString(rsp, c_status), statusBufLen);
         }
-        if (JIsPresent(rsp, "lat") && JIsPresent(rsp, "lon")) {
+        if (JIsPresent(rsp, c_lat) && JIsPresent(rsp, c_lon)) {
             if (retLat != NULL) {
-                *retLat = JGetNumber(rsp, "lat");
+                *retLat = JGetNumber(rsp, c_lat);
             }
             if (retLon != NULL) {
-                *retLon = JGetNumber(rsp, "lon");
+                *retLon = JGetNumber(rsp, c_lon);
             }
             locValid = true;
         }
-        JTIME seconds = JGetInt(rsp, "time");
+        JTIME seconds = JGetInt(rsp, c_time);
         if (seconds != 0 && time != NULL) {
             *time = seconds;
         }
@@ -785,11 +787,11 @@ bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *status
 bool NoteSetLocation(JNUMBER lat, JNUMBER lon)
 {
     bool success = false;
-    J *req = NoteNewRequest("card.location.mode");
+    J *req = NoteNewRequest(c_card_location_mode);
     if (req != NULL) {
-        JAddStringToObject(req, "mode", "fixed");
-        JAddNumberToObject(req, "lat", lat);
-        JAddNumberToObject(req, "lon", lon);
+        JAddStringToObject(req, c_mode, c_fixed);
+        JAddNumberToObject(req, c_lat, lat);
+        JAddNumberToObject(req, c_lon, lon);
         success = NoteRequest(req);
     }
     return success;
@@ -804,9 +806,9 @@ bool NoteSetLocation(JNUMBER lat, JNUMBER lon)
 bool NoteClearLocation()
 {
     bool success = false;
-    J *req = NoteNewRequest("card.location.mode");
+    J *req = NoteNewRequest(c_card_location_mode);
     if (req != NULL) {
-        JAddBoolToObject(req, "delete", true);
+        JAddBoolToObject(req, c_delete, true);
         success = NoteRequest(req);
     }
     return success;
@@ -824,11 +826,11 @@ bool NoteGetLocationMode(char *modeBuf, int modeBufLen)
 {
     bool success = false;
     modeBuf[0] = '\0';
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.location.mode"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_location_mode));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
-            strlcpy(modeBuf, JGetString(rsp, "mode"), modeBufLen);
+            strlcpy(modeBuf, JGetString(rsp, c_mode), modeBufLen);
         }
         NoteDeleteResponse(rsp);
     }
@@ -846,13 +848,13 @@ bool NoteGetLocationMode(char *modeBuf, int modeBufLen)
 bool NoteSetLocationMode(const char *mode, uint32_t seconds)
 {
     bool success = false;
-    J *req = NoteNewRequest("card.location.mode");
+    J *req = NoteNewRequest(c_card_location_mode);
     if (req != NULL) {
         if (mode[0] == '\0') {
-            mode = "-";
+            mode = c_hyphen;
         }
-        JAddStringToObject(req, "mode", mode);
-        JAddNumberToObject(req, "seconds", seconds);
+        JAddStringToObject(req, c_mode, mode);
+        JAddNumberToObject(req, c_seconds, seconds);
         success = NoteRequest(req);
     }
     return success;
@@ -907,14 +909,14 @@ bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBu
 
     // Use cache except for a rare refresh
     if (scProduct[0] == '\0' || scDevice[0] == '\0' || timerExpiredSecs(&serviceConfigTimer, 4*60*60)) {
-        J *rsp = NoteRequestResponse(NoteNewRequest("hub.get"));
+        J *rsp = NoteRequestResponse(NoteNewRequest(c_hub_get));
         if (rsp != NULL) {
             success = !NoteResponseError(rsp);
             if (success) {
-                strlcpy(scProduct, JGetString(rsp, "product"), sizeof(scProduct));
-                strlcpy(scService, JGetString(rsp, "host"), sizeof(scService));
-                strlcpy(scDevice, JGetString(rsp, "device"), sizeof(scDevice));
-                strlcpy(scSN, JGetString(rsp, "sn"), sizeof(scSN));
+                strlcpy(scProduct, JGetString(rsp, c_product), sizeof(scProduct));
+                strlcpy(scService, JGetString(rsp, c_host), sizeof(scService));
+                strlcpy(scDevice, JGetString(rsp, c_device), sizeof(scDevice));
+                strlcpy(scSN, JGetString(rsp, c_sn), sizeof(scSN));
             }
             NoteDeleteResponse(rsp);
         }
@@ -965,21 +967,21 @@ bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *ret
     if (retSignals != NULL) {
         *retSignals = false;
     }
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_status));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
             if (statusBuf != NULL) {
-                strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
+                strlcpy(statusBuf, JGetString(rsp, c_status), statusBufLen);
             }
             if (bootTime != NULL) {
-                *bootTime = JGetInt(rsp, "time");
+                *bootTime = JGetInt(rsp, c_time);
             }
             if (retUSB != NULL) {
-                *retUSB = JGetBool(rsp, "usb");
+                *retUSB = JGetBool(rsp, c_usb);
             }
-            if (retSignals != NULL && JGetBool(rsp, "connected")) {
-                *retSignals = (JGetInt(rsp, "signals") > 0);
+            if (retSignals != NULL && JGetBool(rsp, c_connected)) {
+                *retSignals = (JGetInt(rsp, c_signals) > 0);
             }
         }
         NoteDeleteResponse(rsp);
@@ -1010,15 +1012,15 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
 
     // Refresh if it's time to do so
     if (timerExpiredSecs(&statusTimer, suppressionTimerSecs)) {
-        J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
+        J *rsp = NoteRequestResponse(NoteNewRequest(c_card_status));
         if (rsp != NULL) {
             success = !NoteResponseError(rsp);
             if (success) {
-                strlcpy(lastStatus, JGetString(rsp, "status"), sizeof(lastStatus));
-                lastBootTime = JGetInt(rsp, "time");
-                lastUSB = JGetBool(rsp, "usb");
-                if (JGetBool(rsp, "connected")) {
-                    lastSignals = (JGetInt(rsp, "signals") > 0);
+                strlcpy(lastStatus, JGetString(rsp, c_status), sizeof(lastStatus));
+                lastBootTime = JGetInt(rsp, c_time);
+                lastUSB = JGetBool(rsp, c_usb);
+                if (JGetBool(rsp, c_connected)) {
+                    lastSignals = (JGetInt(rsp, c_signals) > 0);
                 } else {
                     lastSignals = false;
                 }
@@ -1105,33 +1107,33 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
     bool success = false;
 
     // Trace
-    _Debug("ABOUT TO SLEEP\n");
+    _Debug(c_dbg_msg_about_to_sleep);
 
     // Use a Command rather than a Request so that the Notecard doesn't try to send
     // a response back to us, which would cause a communications error on that end.
-    _Debug("requesting sleep\n");
-    J *req = NoteNewCommand("card.attn");
+    _Debug(c_dbg_msg_requesting_sleep);
+    J *req = NoteNewCommand(c_card_attn);
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
         if (stateb64 != NULL) {
             J *stringReferenceItem = JCreateStringReference(stateb64);
             if (stringReferenceItem != NULL) {
-                JAddItemToObject(req, "payload", stringReferenceItem);
+                JAddItemToObject(req, c_payload, stringReferenceItem);
             }
         }
         char modestr[64];
-        strlcpy(modestr, "sleep", sizeof(modestr));
+        strlcpy(modestr, c_sleep, sizeof(modestr));
         if (modes != NULL) {
-            strlcat(modestr, ",", sizeof(modestr));
+            strlcat(modestr, c_comma, sizeof(modestr));
             strlcat(modestr, modes, sizeof(modestr));
         }
-        JAddStringToObject(req, "mode", modestr);
-        JAddNumberToObject(req, "seconds", seconds);
+        JAddStringToObject(req, c_mode, modestr);
+        JAddNumberToObject(req, c_seconds, seconds);
         success = NoteRequest(req);
     }
 
     // Trace
-    _Debug("DIDN'T SLEEP\n");
+    _Debug(c_dbg_msg_did_not_sleep);
 
     // Done
     return success;
@@ -1181,11 +1183,11 @@ bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
     }
 
     // Send the Notecard a request to retrieve the saved state
-    J *req = NoteNewRequest("card.attn");
+    J *req = NoteNewRequest(c_card_attn);
     if (req == NULL) {
         return false;
     }
-    JAddBoolToObject(req, "start", true);
+    JAddBoolToObject(req, c_start, true);
     J *rsp = NoteRequestResponse(req);
     if (rsp == NULL) {
         return false;
@@ -1196,7 +1198,7 @@ bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
     }
 
     // Note the current time, if the field is present
-    JTIME seconds = JGetInt(rsp, "time");
+    JTIME seconds = JGetInt(rsp, c_time);
     if (seconds != 0) {
         setTime(seconds);
     }
@@ -1208,7 +1210,7 @@ bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
     }
 
     // Exit if no payload, knowing that we expected one
-    char *payload = JGetString(rsp, "payload");
+    char *payload = JGetString(rsp, c_payload);
     if (payload[0] == '\0') {
         NoteDeleteResponse(rsp);
         return false;
@@ -1230,7 +1232,7 @@ bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
     desc->length = actualLen;
 
     // State restored
-    _Debug("AWAKENED SUCCESSFULLY\n");
+    _Debug(c_dbg_msg_awakened_successfully);
     NoteDeleteResponse(rsp);
     return true;
 }
@@ -1248,9 +1250,9 @@ bool NoteFactoryReset(bool deleteConfigSettings)
     bool success = false;
 
     // Perform the restore-to-factor-settings transaction
-    J *req = NoteNewRequest("card.restore");
+    J *req = NoteNewRequest(c_card_restore);
     if (req != NULL) {
-        JAddBoolToObject(req, "delete", deleteConfigSettings);
+        JAddBoolToObject(req, c_delete, deleteConfigSettings);
         success = NoteRequest(req);
     }
 
@@ -1261,7 +1263,7 @@ bool NoteFactoryReset(bool deleteConfigSettings)
 
     // Wait for serial to stabilize after it reboots
     _DelayMs(5000);
-    _Debug("CARD RESTORED\n");
+    _Debug(c_dbg_msg_card_restored);
 
     // Reset the Notecard
     while (!NoteReset()) {
@@ -1283,12 +1285,12 @@ bool NoteFactoryReset(bool deleteConfigSettings)
 bool NoteSetProductID(const char *productID)
 {
     bool success = false;
-    J *req = NoteNewRequest("hub.set");
+    J *req = NoteNewRequest(c_hub_set);
     if (req != NULL) {
         if (productID[0] == '\0') {
-            JAddStringToObject(req, "product", "-");
+            JAddStringToObject(req, c_product, c_hyphen);
         } else {
-            JAddStringToObject(req, "product", productID);
+            JAddStringToObject(req, c_product, productID);
         }
         success = NoteRequest(req);
     }
@@ -1307,12 +1309,12 @@ bool NoteSetProductID(const char *productID)
 bool NoteSetSerialNumber(const char *sn)
 {
     bool success = false;
-    J *req = NoteNewRequest("hub.set");
+    J *req = NoteNewRequest(c_hub_set);
     if (req != NULL) {
         if (sn[0] == '\0') {
-            JAddStringToObject(req, "sn", "-");
+            JAddStringToObject(req, c_sn, c_hyphen);
         } else {
-            JAddStringToObject(req, "sn", sn);
+            JAddStringToObject(req, c_sn, sn);
         }
         success = NoteRequest(req);
     }
@@ -1337,14 +1339,14 @@ bool NoteSetSerialNumber(const char *sn)
 bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align)
 {
     bool success = false;
-    J *req = NoteNewRequest("hub.set");
+    J *req = NoteNewRequest(c_hub_set);
     if (req != NULL) {
-        JAddStringToObject(req, "mode", uploadMode);
+        JAddStringToObject(req, c_mode, uploadMode);
         if (uploadMinutes != 0) {
-            JAddNumberToObject(req, "outbound", uploadMinutes);
+            JAddNumberToObject(req, c_outbound, uploadMinutes);
             // Setting this flag aligns uploads to be grouped within the period,
             // rather than counting the number of minutes from "first modified".
-            JAddBoolToObject(req, "align", align);
+            JAddBoolToObject(req, c_align, align);
         }
         success = NoteRequest(req);
     }
@@ -1372,21 +1374,21 @@ bool NoteSetUploadMode(const char *uploadMode, int uploadMinutes, bool align)
 bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinutes, bool align, bool sync)
 {
     bool success = false;
-    J *req = NoteNewRequest("hub.set");
+    J *req = NoteNewRequest(c_hub_set);
     if (req != NULL) {
-        JAddStringToObject(req, "mode", uploadMode);
+        JAddStringToObject(req, c_mode, uploadMode);
         if (uploadMinutes != 0) {
-            JAddNumberToObject(req, "outbound", uploadMinutes);
+            JAddNumberToObject(req, c_outbound, uploadMinutes);
             // Setting this flag aligns uploads to be grouped within the period,
             // rather than counting the number of minutes from "first modified".
-            JAddBoolToObject(req, "align", align);
+            JAddBoolToObject(req, c_align, align);
         }
         if (downloadMinutes != 0) {
-            JAddNumberToObject(req, "inbound", downloadMinutes);
+            JAddNumberToObject(req, c_inbound, downloadMinutes);
         }
         // Setting this flag when mode is "continuous" causes an immediate sync
         // when a file is modified on the service side via HTTP
-        JAddBoolToObject(req, "sync", sync);
+        JAddBoolToObject(req, c_sync, sync);
         success = NoteRequest(req);
     }
     return success;
@@ -1403,13 +1405,13 @@ bool NoteSetSyncMode(const char *uploadMode, int uploadMinutes, int downloadMinu
 /**************************************************************************/
 bool NoteTemplate(const char *target, J *body)
 {
-    J *req = NoteNewRequest("note.template");
+    J *req = NoteNewRequest(c_note_template);
     if (req == NULL) {
         JDelete(body);
         return false;
     }
-    JAddStringToObject(req, "file", target);
-    JAddItemToObject(req, "body", body);
+    JAddStringToObject(req, c_file, target);
+    JAddItemToObject(req, c_body, body);
     return NoteRequest(req);
 }
 
@@ -1427,7 +1429,7 @@ bool NoteAdd(const char *target, J *body, bool urgent)
 {
 
     // Initiate the request
-    J *req = NoteNewRequest("note.add");
+    J *req = NoteNewRequest(c_note_add);
     if (req == NULL) {
         JDelete(body);
         return false;
@@ -1435,12 +1437,12 @@ bool NoteAdd(const char *target, J *body, bool urgent)
 
     // Add the target notefile and body to the request.  Note that
     // JAddItemToObject passes ownership of the object to req
-    JAddStringToObject(req, "file", target);
-    JAddItemToObject(req, "body", body);
+    JAddStringToObject(req, c_file, target);
+    JAddItemToObject(req, c_body, body);
 
     // Initiate sync NOW if it's urgent
     if (urgent) {
-        JAddBoolToObject(req, "start", true);
+        JAddBoolToObject(req, c_start, true);
     }
 
     // Perform the transaction
@@ -1463,15 +1465,15 @@ bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile,
 {
 
     // Create the new event
-    J *req = NoteNewRequest("note.event");
+    J *req = NoteNewRequest(c_note_event);
     if (req == NULL) {
         JDelete(body);
         return false;
     }
 
     // Add the body item and the Notefile name
-    JAddItemToObject(req, "body", body);
-    JAddStringToObject(req, "file", notefile);
+    JAddItemToObject(req, c_body, body);
+    JAddStringToObject(req, c_file, notefile);
 
     // Perform the transaction to convert it to an event
     J *rsp = NoteRequestResponse(req);
@@ -1486,18 +1488,18 @@ bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile,
     }
 
     // Extract the event, which we'll use as the body for the next transaction
-    body = JDetachItemFromObject(rsp, "body");
+    body = JDetachItemFromObject(rsp, c_body);
     NoteDeleteResponse(rsp);
 
     // Create the post transaction
     char request[32];
-    strlcpy(request, "web.", sizeof(request));
+    strlcpy(request, c_web_dot, sizeof(request));
     strlcat(request, method, sizeof(request));
     req = NoteNewRequest(request);
 
     // Add the body, and the alias of the route on the notehub, hard-wired here
-    JAddItemToObject(req, "body", body);
-    JAddStringToObject(req, "route", routeAlias);
+    JAddItemToObject(req, c_body, body);
+    JAddStringToObject(req, c_route, routeAlias);
 
     // Perform the transaction
     return NoteRequest(req);
@@ -1515,10 +1517,10 @@ bool NoteGetVoltage(JNUMBER *voltage)
 {
     bool success = false;
     *voltage = 0.0;
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.voltage"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_voltage));
     if (rsp != NULL) {
         if (!NoteResponseError(rsp)) {
-            *voltage = JGetNumber(rsp, "value");
+            *voltage = JGetNumber(rsp, c_value);
             success = true;
         }
         NoteDeleteResponse(rsp);
@@ -1537,10 +1539,10 @@ bool NoteGetTemperature(JNUMBER *temp)
 {
     bool success = false;
     *temp = 0.0;
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.temp"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_temp));
     if (rsp != NULL) {
         if (!NoteResponseError(rsp)) {
-            *temp = JGetNumber(rsp, "value");
+            *temp = JGetNumber(rsp, c_value);
             success = true;
         }
         NoteDeleteResponse(rsp);
@@ -1579,21 +1581,21 @@ bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, 
         *emailBuf = '\0';
     }
 
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.contact"));
+    J *rsp = NoteRequestResponse(NoteNewRequest(c_card_contact));
     if (rsp != NULL) {
         success = !NoteResponseError(rsp);
         if (success) {
             if (nameBuf != NULL) {
-                strlcpy(nameBuf, JGetString(rsp, "name"), nameBufLen);
+                strlcpy(nameBuf, JGetString(rsp, c_name), nameBufLen);
             }
             if (orgBuf != NULL) {
-                strlcpy(orgBuf, JGetString(rsp, "org"), orgBufLen);
+                strlcpy(orgBuf, JGetString(rsp, c_org), orgBufLen);
             }
             if (roleBuf != NULL) {
-                strlcpy(roleBuf, JGetString(rsp, "role"), roleBufLen);
+                strlcpy(roleBuf, JGetString(rsp, c_role), roleBufLen);
             }
             if (emailBuf != NULL) {
-                strlcpy(emailBuf, JGetString(rsp, "email"), emailBufLen);
+                strlcpy(emailBuf, JGetString(rsp, c_email), emailBufLen);
             }
         }
         NoteDeleteResponse(rsp);
@@ -1614,21 +1616,21 @@ bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, 
 /**************************************************************************/
 bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf)
 {
-    J *req = NoteNewRequest("card.contact");
+    J *req = NoteNewRequest(c_card_contact);
     if (req == NULL) {
         return false;
     }
     if (nameBuf != NULL) {
-        JAddStringToObject(req, "name", nameBuf);
+        JAddStringToObject(req, c_name, nameBuf);
     }
     if (orgBuf != NULL) {
-        JAddStringToObject(req, "org", orgBuf);
+        JAddStringToObject(req, c_org, orgBuf);
     }
     if (roleBuf != NULL) {
-        JAddStringToObject(req, "role", roleBuf);
+        JAddStringToObject(req, c_role, roleBuf);
     }
     if (emailBuf != NULL) {
-        JAddStringToObject(req, "email", emailBuf);
+        JAddStringToObject(req, c_email, emailBuf);
     }
     return NoteRequest(req);
 }
@@ -1677,12 +1679,12 @@ bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
     }
 
     // Get the next queued status note
-    J *req = NoteNewRequest("note.get");
+    J *req = NoteNewRequest(c_note_get);
     if (req == NULL) {
         return false;
     }
-    JAddStringToObject(req, "file", "_synclog.qi");
-    JAddBoolToObject(req, "delete", true);
+    JAddStringToObject(req, c_file, c_synclog_notefile);
+    JAddBoolToObject(req, c_delete, true);
     NoteSuspendTransactionDebug();
     J *rsp = NoteRequestResponse(req);
     NoteResumeTransactionDebug();
@@ -1700,14 +1702,16 @@ bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
         }
 
         // Get the note's body
-        J *body = JGetObject(rsp, "body");
+        J *body = JGetObject(rsp, c_body);
         if (body != NULL) {
-            if (maxLevel < 0 || JGetInt(body, "level") <= maxLevel) {
-                _Debug("sync: ");
-                _Debug(JGetString(body, "subsystem"));
-                _Debug(" ");
-                _Debug(JGetString(body, "text"));
-                _Debug("\n");
+            if (maxLevel < 0 || JGetInt(body, c_level) <= maxLevel) {
+                _Debug(c_sync);
+                _Debug(c_colon);
+                _Debug(c_space);
+                _Debug(JGetString(body, c_subsystem));
+                _Debug(c_space);
+                _Debug(JGetString(body, c_text));
+                _Debug(c_newline);
             }
         }
 

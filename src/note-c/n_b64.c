@@ -79,11 +79,13 @@
  * Base64 encoder/decoder. Originally Apache file ap_base64.c
  */
 
+#include <avr/pgmspace.h>
 #include <string.h>
+
 #include "n_lib.h"
 
 /* aaaack but it's fast and const should make it shared text page. */
-static const unsigned char pr2six[256] = {
+static const unsigned char pr2six[256] PROGMEM = {
     /* ASCII table */
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
@@ -163,7 +165,7 @@ int JB64Decode(char *bufplain, const char *bufcoded)
     return nbytesdecoded;
 }
 
-static const char basis_64[] =
+static const char basis_64[] PROGMEM =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 int JB64EncodeLen(int len)

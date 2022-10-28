@@ -105,8 +105,8 @@ typedef void (*txnStopFn) (void);
 bool NoteReset(void);
 void NoteResetRequired(void);
 #define NoteNewBody JCreateObject
-#define NoteAddBodyToObject(a, b) JAddItemToObject(a, "body", b)
-#define NoteGetBody(a) JGetObject(a, "body")
+#define NoteAddBodyToObject(a, b) JAddItemToObject(a, c_body, b)
+#define NoteGetBody(a) JGetObject(a, c_body)
 J *NoteNewRequest(const char *request);
 J *NoteNewCommand(const char *request);
 J *NoteRequestResponse(J *req);
@@ -122,8 +122,8 @@ void NoteResumeTransactionDebug(void);
 bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
 bool NoteRequest(J *req);
 bool NoteRequestWithRetry(J *req, uint32_t timeoutms);
-#define NoteResponseError(rsp) (!JIsNullString(rsp, "err"))
-#define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, "err", errstr))
+#define NoteResponseError(rsp) (!JIsNullString(rsp, c_err))
+#define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, c_err, errstr))
 #define NoteDeleteResponse(rsp) JDelete(rsp)
 J *NoteTransaction(J *req);
 bool NoteErrorContains(const char *errstr, const char *errtype);
