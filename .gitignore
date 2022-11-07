@@ -6,6 +6,8 @@
 *.gcov
 vgcore.*
 
+.vscode/
+build/
 coverage/
 
 Doxyfile*
