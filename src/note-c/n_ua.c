@@ -119,8 +119,10 @@ __attribute__((weak)) J *NoteUserAgent()
     n_cpu_name = (char *) "stm32f4";
 #elif defined(ARDUINO_ARCH_STM32G0)
     n_cpu_name = (char *) "stm32g0";
+#elif defined(ARDUINO_SWAN_R5)
+    n_cpu_name = (char *) "swan_r5";
 #elif defined(ARDUINO_ARCH_STM32L4)
-    n_cpu_name = (char *) "stm32f4";
+    n_cpu_name = (char *) "stm32l4";
 #elif defined(ARDUINO_ARCH_STM32U5)
     n_cpu_name = (char *) "stm32u5";
 #elif defined(ARDUINO_ARCH_STM32)

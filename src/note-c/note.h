@@ -193,6 +193,22 @@ const char *JGetItemName(const J * item);
 char *JAllocString(uint8_t *buffer, uint32_t len);
 const char *JType(J *item);
 
+#define JTYPE_NOT_PRESENT		0
+#define JTYPE_BOOL_TRUE			1
+#define JTYPE_BOOL_FALSE		2
+#define JTYPE_NULL				3
+#define JTYPE_NUMBER_ZERO		4
+#define JTYPE_NUMBER			5
+#define JTYPE_STRING_BLANK		6
+#define JTYPE_STRING_ZERO		7
+#define JTYPE_STRING_NUMBER		8
+#define JTYPE_STRING_BOOL_TRUE 	9
+#define JTYPE_STRING_BOOL_FALSE	10
+#define JTYPE_STRING			11
+#define JTYPE_OBJECT			12
+#define JTYPE_ARRAY				13
+int JGetType(J *rsp, const char *field);
+
 // Helper functions for apps that wish to limit their C library dependencies
 #define JNTOA_PRECISION (16)
 #define JNTOA_MAX       (44)

@@ -514,3 +514,72 @@ const char *JType(J *item)
     }
     return "invalid";
 }
+
+//**************************************************************************/
+/*!
+    @brief  Return the type of an item, as an int usable in a switch statement
+    @param   json object
+    @param   field within the json object
+    @returns The type
+*/
+/**************************************************************************/
+int JGetType(J *rsp, const char *field)
+{
+    const char *v;
+    if (rsp == NULL || field == NULL) {
+        return JTYPE_NOT_PRESENT;
+    }
+    J *item = JGetObjectItem(rsp, field);
+    if (item == NULL) {
+        return JTYPE_NOT_PRESENT;
+    }
+    switch (item->type & 0xff) {
+    case JTrue:
+        return JTYPE_BOOL_TRUE;
+    case JFalse:
+        return JTYPE_BOOL_FALSE;
+    case JNULL:
+        return JTYPE_NULL;
+    case JNumber:
+        if (item->valueint == 0 && item->valuenumber == 0) {
+            return JTYPE_NUMBER_ZERO;
+        }
+        return JTYPE_NUMBER;
+    case JRaw:
+    case JString:
+        v = item->valuestring;
+        if (v == NULL || v[0] == 0) {
+            return JTYPE_STRING_BLANK;
+        }
+        int vlen = strlen(v);
+        char *endstr;
+        JNUMBER value = JAtoN(v, &endstr);
+        if (endstr[0] == 0) {
+            if (value == 0) {
+                return JTYPE_STRING_ZERO;
+            }
+            return JTYPE_STRING_NUMBER;
+        }
+        if (vlen == 4 && (
+                    (v[0] == 't' || v[0] == 'T')
+                    && (v[1] == 'r' || v[1] == 'R')
+                    && (v[2] == 'u' || v[2] == 'U')
+                    && (v[3] == 'e' || v[3] == 'E'))) {
+            return JTYPE_STRING_BOOL_TRUE;
+        }
+        if (vlen == 5 && (
+                    (v[0] == 'f' || v[0] == 'F')
+                    && (v[1] == 'a' || v[1] == 'A')
+                    && (v[2] == 'l' || v[2] == 'L')
+                    && (v[3] == 's' || v[3] == 'S')
+                    && (v[4] == 'e' || v[4] == 'E'))) {
+            return JTYPE_STRING_BOOL_FALSE;
+        }
+        return JTYPE_STRING;
+    case JObject:
+        return JTYPE_OBJECT;
+    case JArray:
+        return JTYPE_ARRAY;
+    }
+    return JTYPE_NOT_PRESENT;
+}

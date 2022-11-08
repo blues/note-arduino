@@ -57,27 +57,28 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
     memcpy(transmitBuf, json, jsonLen);
     transmitBuf[jsonLen++] = '\n';
 
+    // Lock over the entire transaction
+    _LockI2C();
+
     // Transmit the request in chunks, but also in segments so as not to overwhelm the notecard's interrupt buffers
     const char *estr;
     uint8_t *chunk = transmitBuf;
     uint32_t sentInSegment = 0;
     while (jsonLen > 0) {
         int chunklen = (uint8_t) (jsonLen > (int)_I2CMax() ? (int)_I2CMax() : jsonLen);
-        _LockI2C();
         _DelayIO();
         estr = _I2CTransmit(_I2CAddress(), chunk, chunklen);
         if (estr != NULL) {
             _Free(transmitBuf);
             _I2CReset(_I2CAddress());
-            _UnlockI2C();
 #ifdef ERRDBG
             _Debug("i2c transmit: ");
             _Debug(estr);
             _Debug("\n");
 #endif
+            _UnlockI2C();
             return estr;
         }
-        _UnlockI2C();
         chunk += chunklen;
         jsonLen -= chunklen;
         sentInSegment += chunklen;
@@ -97,6 +98,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 
     // If no reply expected, we're done
     if (jsonResponse == NULL) {
+        _UnlockI2C();
         return NULL;
     }
 
@@ -110,6 +112,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 #ifdef ERRDBG
         _Debug("transaction: jsonbuf malloc failed\n");
 #endif
+        _UnlockI2C();
         return ERRSTR("insufficient memory",c_mem);
     }
 
@@ -134,6 +137,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
                 _Debug("transaction: jsonbuf grow malloc failed\n");
 #endif
                 _Free(jsonbuf);
+                _UnlockI2C();
                 return ERRSTR("insufficient memory",c_mem);
             }
             memcpy(jsonbufNew, jsonbuf, jsonbufLen);
@@ -143,15 +147,14 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 
         // Read the chunk
         uint32_t available;
-        _LockI2C();
         _DelayIO();
         const char *err = _I2CReceive(_I2CAddress(), (uint8_t *) &jsonbuf[jsonbufLen], chunklen, &available);
-        _UnlockI2C();
         if (err != NULL) {
             _Free(jsonbuf);
 #ifdef ERRDBG
             _Debug("i2c receive error\n");
 #endif
+            _UnlockI2C();
             return err;
         }
 
@@ -184,6 +187,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
 #ifdef ERRDBG
             _Debug("reply to request didn't arrive from module in time\n");
 #endif
+            _UnlockI2C();
             return ERRSTR("request or response was lost {io}",c_iotimeout);
         }
 
@@ -193,6 +197,9 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
         }
 
     }
+
+    // Done with the bus
+    _UnlockI2C();
 
     // Null-terminate it, using the +1 space that we'd allocated in the buffer
     jsonbuf[jsonbufLen] = '\0';
@@ -215,21 +222,19 @@ bool i2cNoteReset()
     // Reset the I2C subsystem and exit if failure
     _LockI2C();
     bool success = _I2CReset(_I2CAddress());
-    _UnlockI2C();
     if (!success) {
+        _UnlockI2C();
         return false;
     }
 
     // Synchronize by guaranteeing not only that I2C works, but that after we send \n that we drain
     // the remainder of any pending partial reply from a previously-aborted session.
     // If we get a failure on transmitting the \n, it means that the notecard isn't even present.
-    _LockI2C();
     _DelayIO();
     const char *transmitErr = _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
     if (!cardTurboIO) {
         _DelayMs(CARD_REQUEST_I2C_SEGMENT_DELAY_MS);
     }
-    _UnlockI2C();
 
     // This outer loop does retries on I2C error, and is simply here for robustness.
     bool notecardReady = false;
@@ -245,10 +250,8 @@ bool i2cNoteReset()
             uint8_t buffer[128];
             chunklen = (chunklen > (int)sizeof(buffer)) ? (int)sizeof(buffer) : chunklen;
             chunklen = (chunklen > (int)_I2CMax()) ? (int)_I2CMax() : chunklen;
-            _LockI2C();
             _DelayIO();
             const char *err = _I2CReceive(_I2CAddress(), buffer, chunklen, &available);
-            _UnlockI2C();
             if (err) {
                 break;
             }
@@ -273,11 +276,12 @@ bool i2cNoteReset()
 
     // Reinitialize i2c if there's no response
     if (!notecardReady) {
-        _LockI2C();
         _I2CReset(_I2CAddress());
-        _UnlockI2C();
         _Debug(ERRSTR("notecard not responding\n", "no notecard\n"));
     }
+
+    // Done with the bus
+    _UnlockI2C();
 
     // Done
     return notecardReady;
