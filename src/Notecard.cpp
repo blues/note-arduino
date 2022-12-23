@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "NoteGpio.h"
 #include "NoteTime.h"
 
 /***************************************************************************
@@ -139,6 +140,52 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
         noteSerial->transmit(text_, len_, flush_);
     }
 }
+
+uint8_t cts_pin = 0xFF;
+uint8_t rts_pin = 0xFF;
+
+void noteTransactionStop(void) {
+    if (cts_pin != 0xFF && rts_pin != 0xFF) {
+        // Release RTS pin
+        noteDigitalWrite(rts_pin, NOTE_GPIO_STATE_LOW);
+
+        // Float CTS/RTS pins
+        notePinMode(cts_pin, NOTE_GPIO_MODE_INPUT);
+        notePinMode(rts_pin, NOTE_GPIO_MODE_INPUT);
+    }
+}
+
+bool noteTransactionStart(uint32_t timeoutMs_) {
+    bool result;
+
+    if (cts_pin == 0xFF || rts_pin == 0xFF) {
+        // NoteTransaction not set, assume unnecessary
+        result = true;
+    } else {
+        result = false;
+
+        // Configure Pin for Request
+        notePinMode(cts_pin, NOTE_GPIO_MODE_INPUT_PULLUP);
+        notePinMode(rts_pin, NOTE_GPIO_MODE_OUTPUT);
+
+        // Make request
+        noteDigitalWrite(rts_pin, NOTE_GPIO_STATE_HIGH);
+        for (uint32_t timeout = (noteMillis() + timeoutMs_) ; noteMillis() < timeout ; noteDelay(1)) {
+            if (NOTE_GPIO_STATE_HIGH == noteDigitalRead(cts_pin)) {
+                result = true;
+                break;
+            }
+        }
+
+        // Abandon request on timeout
+        if (!result) {
+            noteTransactionStop();
+        }
+    }
+
+    return result;
+}
+
 }
 
 /**************************************************************************/
@@ -394,3 +441,17 @@ bool Notecard::responseError(J *rsp)
 {
     return NoteResponseError(rsp);
 }
+
+#ifdef ARDUINO
+void Notecard::setTransactionPins(uint8_t cts_pin_, uint8_t rts_pin_) {
+
+    cts_pin = cts_pin_;
+    rts_pin = rts_pin_;
+
+    if (cts_pin_ == 0xFF || rts_pin_ == 0xFF) {
+        NoteSetFnTransaction(nullptr, nullptr);
+    } else {
+        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
+    }
+}
+#endif
