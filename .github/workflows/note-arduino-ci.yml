@@ -13,8 +13,6 @@ jobs:
       - name: Checkout Code
         id: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Run Tests In Container
         id: containerized_tests
         uses: ./.github/actions/run-tests-in-container
@@ -55,8 +53,6 @@ jobs:
       - name: Checkout Code
         id: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Compile Examples
         id: compile_examples
         uses: ./.github/actions/compile-examples
