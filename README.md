@@ -65,7 +65,7 @@ function allocates a `"req` request structure using malloc() and initializes its
 "req" field with the type of request.
 
 ```cpp
-J *req = notecard.newRequest("service.set");
+J *req = notecard.newRequest("hub.set");
 JAddStringToObject(req, "product", "com.[mycompany].[myproduct]");
 JAddStringToObject(req, "mode", "continuous");
 notecard.sendRequest(req);
