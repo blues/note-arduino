@@ -141,37 +141,37 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
     }
 }
 
-uint8_t cts_pin = 0xFF;
-uint8_t rts_pin = 0xFF;
+uint8_t ctx_pin = 0xFF;
+uint8_t rtx_pin = 0xFF;
 
 void noteTransactionStop(void) {
-    if (cts_pin != 0xFF && rts_pin != 0xFF) {
+    if (ctx_pin != 0xFF && rtx_pin != 0xFF) {
         // Release RTS pin
-        noteDigitalWrite(rts_pin, NOTE_GPIO_STATE_LOW);
+        noteDigitalWrite(rtx_pin, NOTE_GPIO_STATE_LOW);
 
         // Float CTS/RTS pins
-        notePinMode(cts_pin, NOTE_GPIO_MODE_INPUT);
-        notePinMode(rts_pin, NOTE_GPIO_MODE_INPUT);
+        notePinMode(ctx_pin, NOTE_GPIO_MODE_INPUT);
+        notePinMode(rtx_pin, NOTE_GPIO_MODE_INPUT);
     }
 }
 
 bool noteTransactionStart(uint32_t timeoutMs_) {
     bool result;
 
-    if (cts_pin == 0xFF || rts_pin == 0xFF) {
+    if (ctx_pin == 0xFF || rtx_pin == 0xFF) {
         // NoteTransaction not set, assume unnecessary
         result = true;
     } else {
         result = false;
 
         // Configure Pin for Request
-        notePinMode(cts_pin, NOTE_GPIO_MODE_INPUT_PULLUP);
-        notePinMode(rts_pin, NOTE_GPIO_MODE_OUTPUT);
+        notePinMode(ctx_pin, NOTE_GPIO_MODE_INPUT_PULLUP);
+        notePinMode(rtx_pin, NOTE_GPIO_MODE_OUTPUT);
 
         // Make request
-        noteDigitalWrite(rts_pin, NOTE_GPIO_STATE_HIGH);
+        noteDigitalWrite(rtx_pin, NOTE_GPIO_STATE_HIGH);
         for (uint32_t timeout = (noteMillis() + timeoutMs_) ; noteMillis() < timeout ; noteDelay(1)) {
-            if (NOTE_GPIO_STATE_HIGH == noteDigitalRead(cts_pin)) {
+            if (NOTE_GPIO_STATE_HIGH == noteDigitalRead(ctx_pin)) {
                 result = true;
                 break;
             }
@@ -443,12 +443,12 @@ bool Notecard::responseError(J *rsp)
 }
 
 #ifdef ARDUINO
-void Notecard::setTransactionPins(uint8_t cts_pin_, uint8_t rts_pin_) {
+void Notecard::setTransactionPins(uint8_t ctx_pin_, uint8_t rtx_pin_) {
 
-    cts_pin = cts_pin_;
-    rts_pin = rts_pin_;
+    ctx_pin = ctx_pin_;
+    rtx_pin = rtx_pin_;
 
-    if (cts_pin_ == 0xFF || rts_pin_ == 0xFF) {
+    if (ctx_pin_ == 0xFF || rtx_pin_ == 0xFF) {
         NoteSetFnTransaction(nullptr, nullptr);
     } else {
         NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);

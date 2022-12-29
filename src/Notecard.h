@@ -67,7 +67,7 @@ public:
     inline void setDebugOutputStream(Stream &dbgserial) {
         setDebugOutputStream(make_note_log(&dbgserial));
     }
-    void setTransactionPins(uint8_t cts_pin, uint8_t rts_pin);
+    void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin);
 #endif
     void begin(NoteI2c * noteI2c,
                uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
