@@ -17,7 +17,7 @@
  *
  * This library is a wrapper around and depends upon the
  * <a href="https://github.com/blues/note-c">note-c library</a>, which it
- * includes as a git submodule.
+ * includes as a git subtree.
  *
  * In addition, this library requires a physical
  * connection to a Notecard over I2C or Serial to be functional.

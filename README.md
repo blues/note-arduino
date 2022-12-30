@@ -11,7 +11,7 @@ or C++. Your sketch may programmatically configure Notecard and send Notes to
 [Notehub.io][notehub].
 
 This library is a wrapper around the [note-c library][note-c], which it includes
-as a git submodule.
+as a git subtree.
 
 ## Installation
 

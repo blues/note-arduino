@@ -11,7 +11,7 @@
  *
  * This library is a wrapper around the
  * <a href="https://github.com/blues/note-c">note-c library</a>, which it
- * includes as a git submodule.
+ * includes as a git subtree.
  *
  * Written by Ray Ozzie and Brandon Satrom for Blues Inc.
  *
