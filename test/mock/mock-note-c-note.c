@@ -12,6 +12,7 @@ NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
 NoteSetFnSerial_Parameters noteSetFnSerial_Parameters;
+NoteSetFnTransaction_Parameters noteSetFnTransaction_Parameters;
 NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;
 
 void
@@ -193,6 +194,19 @@ NoteSetFnSerial(
     noteSetFnSerial_Parameters.writefn = write_fn_;
     noteSetFnSerial_Parameters.availfn = avail_fn_;
     noteSetFnSerial_Parameters.readfn = read_fn_;
+}
+
+void
+NoteSetFnTransaction(
+    txnStartFn start_fn_,
+    txnStopFn stop_fn_
+) {
+    // Record invocation(s)
+    ++noteSetFnTransaction_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteSetFnTransaction_Parameters.startfn = start_fn_;
+    noteSetFnTransaction_Parameters.stopfn = stop_fn_;
 }
 
 void

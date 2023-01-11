@@ -30,6 +30,8 @@
                 "test/mock/NoteI2c_Mock.cpp",
                 "test/mock/NoteLog_Mock.cpp",
                 "test/mock/NoteSerial_Mock.cpp",
+                "test/mock/NoteTime_Mock.cpp",
+                "test/mock/NoteTxn_Mock.cpp",
                 "src/Notecard.cpp",
                 "test/Notecard.test.cpp",
                 "-std=c++11",
