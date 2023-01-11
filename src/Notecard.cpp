@@ -42,7 +42,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "NoteGpio.h"
 #include "NoteTime.h"
 
 /***************************************************************************
@@ -141,49 +140,23 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
     }
 }
 
-uint8_t ctx_pin = 0xFF;
-uint8_t rtx_pin = 0xFF;
+NoteTxn *noteTxn(nullptr);
 
-void noteTransactionStop(void) {
-    if (ctx_pin != 0xFF && rtx_pin != 0xFF) {
-        // Release RTS pin
-        noteDigitalWrite(rtx_pin, NOTE_GPIO_STATE_LOW);
-
-        // Float CTS/RTS pins
-        notePinMode(ctx_pin, NOTE_GPIO_MODE_INPUT);
-        notePinMode(rtx_pin, NOTE_GPIO_MODE_INPUT);
-    }
-}
-
-bool noteTransactionStart(uint32_t timeoutMs_) {
+bool noteTransactionStart (uint32_t timeout_ms_) {
     bool result;
-
-    if (ctx_pin == 0xFF || rtx_pin == 0xFF) {
+    if (noteTxn) {
+        result = noteTxn->start(timeout_ms_);
+    } else {
         // NoteTransaction not set, assume unnecessary
         result = true;
-    } else {
-        result = false;
-
-        // Configure Pin for Request
-        notePinMode(ctx_pin, NOTE_GPIO_MODE_INPUT_PULLUP);
-        notePinMode(rtx_pin, NOTE_GPIO_MODE_OUTPUT);
-
-        // Make request
-        noteDigitalWrite(rtx_pin, NOTE_GPIO_STATE_HIGH);
-        for (uint32_t timeout = (noteMillis() + timeoutMs_) ; noteMillis() < timeout ; noteDelay(1)) {
-            if (NOTE_GPIO_STATE_HIGH == noteDigitalRead(ctx_pin)) {
-                result = true;
-                break;
-            }
-        }
-
-        // Abandon request on timeout
-        if (!result) {
-            noteTransactionStop();
-        }
     }
-
     return result;
+}
+
+void noteTransactionStop (void) {
+    if (noteTxn) {
+        noteTxn->stop();
+    }
 }
 
 }
@@ -224,6 +197,7 @@ Notecard::~Notecard (void)
     noteI2c = make_note_i2c(nullptr);
     noteLog = make_note_log(nullptr);
     noteSerial = make_note_serial(nullptr);
+    noteTxn = make_note_txn(nullptr);
 }
 
 /**************************************************************************/
@@ -307,6 +281,31 @@ void Notecard::clearDebugOutputStream(void)
 {
     noteLog = nullptr;
     NoteSetFnDebugOutput(nullptr);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the transaction pins.
+            A NoteTxn object will be constructed via `make_note_txn()`
+            using a platform specific tuple of digital I/O pins. The
+            pins are used to send a request to transact and a listen
+            for the clear to transact signal. Transaction pins are not
+            necessary on any legacy Notecards, and are only necessary
+            for certain Notecard SKUs. The pins allow the Notecard to
+            inform the host it has had time to awaken from deep sleep
+            and is ready to process commands.
+    @param    noteTxn
+              A platform specific tuple of digital I/O pins.
+*/
+/**************************************************************************/
+void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
+    noteTxn = noteTxn_;
+    if (noteTxn_) {
+        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
+    } else {
+        make_note_txn(nullptr);
+        NoteSetFnTransaction(nullptr, nullptr);
+    }
 }
 
 /**************************************************************************/
@@ -441,17 +440,3 @@ bool Notecard::responseError(J *rsp)
 {
     return NoteResponseError(rsp);
 }
-
-#ifdef ARDUINO
-void Notecard::setTransactionPins(uint8_t ctx_pin_, uint8_t rtx_pin_) {
-
-    ctx_pin = ctx_pin_;
-    rtx_pin = rtx_pin_;
-
-    if (ctx_pin_ == 0xFF || rtx_pin_ == 0xFF) {
-        NoteSetFnTransaction(nullptr, nullptr);
-    } else {
-        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
-    }
-}
-#endif

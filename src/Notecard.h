@@ -30,6 +30,7 @@
 #include "NoteI2c.hpp"
 #include "NoteLog.hpp"
 #include "NoteSerial.hpp"
+#include "NoteTxn.hpp"
 
 #ifdef ARDUINO
 #include <Arduino.h>
@@ -67,7 +68,10 @@ public:
     inline void setDebugOutputStream(Stream &dbgserial) {
         setDebugOutputStream(make_note_log(&dbgserial));
     }
-    void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin);
+    inline void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin) {
+        uint8_t txn_pins[2] = {ctx_pin, rtx_pin};
+        setTransactionPins(make_note_txn(txn_pins));
+    }
 #endif
     void begin(NoteI2c * noteI2c,
                uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
@@ -75,6 +79,10 @@ public:
     void begin(NoteSerial * noteSerial);
     void setDebugOutputStream(NoteLog * noteLog);
     void clearDebugOutputStream(void);
+    void setTransactionPins(NoteTxn * noteTxn);
+    inline void clearTransactionPins(void) {
+        setTransactionPins(nullptr);
+    }
     J *newRequest(const char *request);
     J *newCommand(const char *request);
     bool sendRequest(J *req);
