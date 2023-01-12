@@ -4,11 +4,124 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
-void delay (unsigned int);
-size_t millis (void);
+enum PinMode {
+    INPUT = 0x19,
+    INPUT_PULLUP,
+    OUTPUT,
+};
+
+enum PinState {
+    HIGH = 0x79,
+    LOW,
+};
+
+void delay(unsigned long ms);
+
+struct Delay_Parameters {
+    Delay_Parameters (
+        void
+    ) :
+        invoked(0),
+        mock_time(false),
+        ms(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        ms = 0;
+    }
+    size_t invoked;
+    bool mock_time;
+    unsigned long ms;
+};
+
+int digitalRead(uint8_t pin);
+
+struct DigitalRead_Parameters {
+    DigitalRead_Parameters (
+        void
+    ) :
+        pin(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked.clear();
+        pin = 0;
+        default_result.clear();
+        result.clear();
+    }
+    std::map<uint8_t, size_t> invoked;
+    uint8_t pin;
+    std::map<uint8_t, int> default_result;
+    std::map<uint8_t, std::vector<int> > result;
+};
+
+void digitalWrite(uint8_t pin, uint8_t val);
+
+struct DigitalWrite_Parameters {
+    DigitalWrite_Parameters (
+        void
+    )
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked.clear();
+        pin_val.clear();
+    }
+    std::map<uint8_t, size_t> invoked;
+    std::map<uint8_t, std::vector<uint8_t> > pin_val;
+};
+
+unsigned long millis (void);
+
+struct Millis_Parameters {
+    Millis_Parameters (
+        void
+    ) :
+        invoked(0),
+        default_result(0),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        default_result = 0;
+        result.clear();
+    }
+    size_t invoked;
+    unsigned long default_result;
+    std::vector<unsigned long> result;
+};
+
+void pinMode(uint8_t pin, uint8_t mode);
+
+struct PinMode_Parameters {
+    PinMode_Parameters (
+        void
+    )
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked.clear();
+        pin_mode.clear();
+    }
+    std::map<uint8_t, size_t> invoked;
+    std::map<uint8_t, std::vector<uint8_t> > pin_mode;
+};
 
 struct Stream {
     virtual size_t print(const char * str);
@@ -298,13 +411,21 @@ struct TwoWireWriteBuffer_Parameters {
     size_t result;
 };
 
+extern Delay_Parameters delay_Parameters;
+extern DigitalRead_Parameters digitalRead_Parameters;
+extern DigitalWrite_Parameters digitalWrite_Parameters;
+extern Millis_Parameters millis_Parameters;
+extern PinMode_Parameters pinMode_Parameters;
+
 extern HardwareSerial Serial;
 extern HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 extern HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 extern HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 extern HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 extern HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
+
 extern StreamPrint_Parameters streamPrint_Parameters;
+
 extern TwoWire Wire;
 extern TwoWireBegin_Parameters twoWireBegin_Parameters;
 extern TwoWireBeginTransmission_Parameters twoWireBeginTransmission_Parameters;

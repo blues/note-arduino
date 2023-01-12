@@ -1,6 +1,11 @@
 #include "NoteTxn_Arduino.hpp"
 
-#include <Arduino.h>
+#ifndef NOTE_MOCK
+  #include <Arduino.h>
+#else
+  #include "mock/mock-arduino.hpp"
+  #include "mock/mock-parameters.hpp"
+#endif
 
 NoteTxn *
 make_note_txn (

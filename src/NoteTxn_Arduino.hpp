@@ -3,8 +3,6 @@
 
 #include "NoteTxn.hpp"
 
-#include "Notecard.h"
-
 class NoteTxn_Arduino final : public NoteTxn
 {
 public:
