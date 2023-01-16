@@ -10,6 +10,7 @@
 #include "mock/NoteI2c_Mock.hpp"
 #include "mock/NoteLog_Mock.hpp"
 #include "mock/NoteSerial_Mock.hpp"
+#include "mock/NoteTxn_Mock.hpp"
 
 // Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp mock/NoteTime_Mock.cpp mock/NoteTxn_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
 
@@ -3795,6 +3796,294 @@ int test_static_callback_note_serial_transmit_does_not_call_interface_method_whe
   return result;
 }
 
+int test_static_callback_note_txn_start_invokes_notetxn_start()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.invoked == " << noteTxnStart_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.timeout_ms == TIMEOUT_MS)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.timeout_ms == " << noteTxnStart_Parameters.timeout_ms << ", EXPECTED: " << TIMEOUT_MS << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+  noteTxnStart_Parameters.result = true;
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.result == ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteTxnStart_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (!noteTxnStart_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.invoked == " << noteTxnStart_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const bool EXPECTED_RESULT = true;
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+  noteTxnStart_Parameters.result = false;
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (ACTUAL_RESULT == EXPECTED_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_stop_invokes_notetxn_stop()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStop`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStopFn noteTransactionStop = noteSetFnTransaction_Parameters.stopfn;  // Capture the internal Notecard serial function, `noteTransactionStop`
+  noteTxnStop_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStop();
+
+   // Assert
+  ///////////
+
+  if (noteTxnStop_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStop_Parameters.invoked == " << noteTxnStop_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStop`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStopFn noteTransactionStop = noteSetFnTransaction_Parameters.stopfn;  // Capture the internal Notecard serial function, `noteTransactionStop`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStop_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStop();
+
+   // Assert
+  ///////////
+
+  if (!noteTxnStop_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStop_Parameters.invoked == " << noteTxnStop_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int main(void)
 {
   TestFunction tests[] = {
@@ -3899,6 +4188,13 @@ int main(void)
       {test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method"},
       {test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method"},
       {test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_start_invokes_notetxn_start, "test_static_callback_note_txn_start_invokes_notetxn_start"},
+      {test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method, "test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_txn_start_does_not_modify_interface_method_return_value, "test_static_callback_note_txn_start_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_stop_invokes_notetxn_stop, "test_static_callback_note_txn_stop_invokes_notetxn_stop"},
+      {test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));

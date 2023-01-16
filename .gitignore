@@ -5,6 +5,7 @@
 *.gcno
 *.gcov
 vgcore.*
+*.tests
 
 .vscode/
 build/
