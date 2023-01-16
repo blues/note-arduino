@@ -299,11 +299,11 @@ void Notecard::clearDebugOutputStream(void)
 */
 /**************************************************************************/
 void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
-    noteTxn = noteTxn_;
+    noteTxn = noteTxn_;  // Set global interface
     if (noteTxn_) {
         NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
     } else {
-        make_note_txn(nullptr);
+        make_note_txn(nullptr);  // Clear singleton
         NoteSetFnTransaction(nullptr, nullptr);
     }
 }
