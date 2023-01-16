@@ -41,12 +41,12 @@ NoteTxn_Arduino::start (
 {
     bool result = false;
 
-    // Configure Pin for Request
-    ::pinMode(_ctx_pin, INPUT_PULLUP);
+    // Signal Request To Transact
     ::pinMode(_rtx_pin, OUTPUT);
-
-    // Make request
     ::digitalWrite(_rtx_pin, HIGH);
+
+    // Await Clear To Transact Signal
+    ::pinMode(_ctx_pin, INPUT_PULLUP);
     for (uint32_t timeout = (::millis() + timeout_ms_)
        ; ::millis() < timeout 
        ; ::delay(1)
@@ -56,6 +56,9 @@ NoteTxn_Arduino::start (
             break;
         }
     }
+
+    // Float CTX to conserve energy
+    ::pinMode(_ctx_pin, INPUT);
 
     // Abandon request on timeout
     if (!result) {
@@ -70,10 +73,9 @@ NoteTxn_Arduino::stop (
     void
 )
 {
-    // Release RTS pin
+    // Drain RTS pin
     ::digitalWrite(_rtx_pin, LOW);
 
-    // Float CTS/RTS pins
-    ::pinMode(_ctx_pin, INPUT);
+    // Float RTS pins
     ::pinMode(_rtx_pin, INPUT);
 }
