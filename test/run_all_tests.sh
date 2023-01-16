@@ -134,6 +134,30 @@ if [ 0 -eq $all_tests_result ]; then
   fi
 fi
 
+if [ 0 -eq $all_tests_result ]; then
+  echo && echo -e "${YELLOW}Compiling and running NoteTxn_Arduino Test Suite...${DEFAULT}"
+  g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
+    src/NoteTxn_Arduino.cpp \
+    test/NoteTxn_Arduino.test.cpp \
+    test/mock/mock-arduino.cpp \
+    -Isrc \
+    -Itest \
+    -DNOTE_MOCK \
+    -o failed_test_run
+  if [ 0 -eq $? ]; then
+    valgrind --leak-check=full --error-exitcode=66 ./failed_test_run
+    tests_result=$?
+    if [ 0 -eq ${tests_result} ]; then
+      echo -e "${GREEN}NoteTxn_Arduino tests passed!${DEFAULT}"
+    else
+      echo -e "${RED}NoteTxn_Arduino tests failed!${DEFAULT}"
+    fi
+    all_tests_result=$((all_tests_result+tests_result))
+  else
+    all_tests_result=999
+  fi
+fi
+
 # Print summary statement
 if [ 0 -eq ${all_tests_result} ]; then
   echo && echo -e "${GREEN}All tests have passed!${DEFAULT}" && echo

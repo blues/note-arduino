@@ -47,7 +47,10 @@ NoteTxn_Arduino::start (
 
     // Make request
     ::digitalWrite(_rtx_pin, HIGH);
-    for (uint32_t timeout = (::millis() + timeout_ms_) ; ::millis() < timeout ; ::delay(1)) {
+    for (uint32_t timeout = (::millis() + timeout_ms_)
+       ; ::millis() < timeout 
+       ; ::delay(1)
+    ) {
         if (HIGH == ::digitalRead(_ctx_pin)) {
             result = true;
             break;

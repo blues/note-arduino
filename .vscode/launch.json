@@ -74,5 +74,17 @@
 			"MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb"
 		},
+        {
+			"name": "Debug NoteTxn Arduino Unit-tests",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceRoot}/notetxn_arduino.tests",
+            "args": [],
+			"cwd": "${workspaceRoot}",
+            "preLaunchTask": "Compile NoteTxn Arduino Tests",
+            "postDebugTask": "Clear Test Binaries",
+			"MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+		},
     ]
 }

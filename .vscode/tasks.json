@@ -179,6 +179,37 @@
             }
         },
         {
+            "type": "cppbuild",
+            "label": "Compile NoteTxn Arduino Tests",
+            "command": "g++",
+            "args": [
+                "-Wall",
+                "-Wextra",
+                "-Wpedantic",
+                "test/mock/mock-arduino.cpp",
+                "test/mock/mock-note-c-note.c",
+                "src/NoteTxn_Arduino.cpp",
+                "test/NoteTxn_Arduino.test.cpp",
+                "-std=c++11",
+                "-Itest",
+                "-Isrc",
+                "-DNOTE_MOCK",
+                "-o",
+                "notetxn_arduino.tests",
+                "-g",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
             "type": "shell",
             "label": "Clear Test Binaries",
             "command": "rm -rf *.tests",
