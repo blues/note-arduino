@@ -292,6 +292,27 @@ struct NoteSetFnSerial_Parameters {
     serialReceiveFn readfn;
 };
 
+struct NoteSetFnTransaction_Parameters {
+    NoteSetFnTransaction_Parameters(
+        void
+    ) :
+        invoked(0),
+        startfn(nullptr),
+        stopfn(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        startfn = nullptr;
+        stopfn = nullptr;
+    }
+    size_t invoked;
+    txnStartFn startfn;
+    txnStopFn stopfn;
+};
+
 struct NoteSetUserAgent_Parameters {
     NoteSetUserAgent_Parameters(
         void
@@ -324,6 +345,7 @@ extern NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 extern NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 extern NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
 extern NoteSetFnSerial_Parameters noteSetFnSerial_Parameters;
+extern NoteSetFnTransaction_Parameters noteSetFnTransaction_Parameters;
 extern NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;
 
 #endif // MOCK_PARAMETERS_HPP

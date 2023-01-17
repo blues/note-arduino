@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cstring>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
 
 int test_make_note_i2c_instantiates_notei2c_object()
 {

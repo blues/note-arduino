@@ -30,6 +30,8 @@
                 "test/mock/NoteI2c_Mock.cpp",
                 "test/mock/NoteLog_Mock.cpp",
                 "test/mock/NoteSerial_Mock.cpp",
+                "test/mock/NoteTime_Mock.cpp",
+                "test/mock/NoteTxn_Mock.cpp",
                 "src/Notecard.cpp",
                 "test/Notecard.test.cpp",
                 "-std=c++11",
@@ -163,6 +165,37 @@
                 "-DNOTE_MOCK",
                 "-o",
                 "noteserial_arduino.tests",
+                "-g",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "Compile NoteTxn Arduino Tests",
+            "command": "g++",
+            "args": [
+                "-Wall",
+                "-Wextra",
+                "-Wpedantic",
+                "test/mock/mock-arduino.cpp",
+                "test/mock/mock-note-c-note.c",
+                "src/NoteTxn_Arduino.cpp",
+                "test/NoteTxn_Arduino.test.cpp",
+                "-std=c++11",
+                "-Itest",
+                "-Isrc",
+                "-DNOTE_MOCK",
+                "-o",
+                "notetxn_arduino.tests",
                 "-g",
             ],
             "options": {

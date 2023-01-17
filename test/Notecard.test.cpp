@@ -10,8 +10,9 @@
 #include "mock/NoteI2c_Mock.hpp"
 #include "mock/NoteLog_Mock.hpp"
 #include "mock/NoteSerial_Mock.hpp"
+#include "mock/NoteTxn_Mock.hpp"
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp mock/NoteTime_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c mock/NoteI2c_Mock.cpp mock/NoteLog_Mock.cpp mock/NoteSerial_Mock.cpp mock/NoteTime_Mock.cpp mock/NoteTxn_Mock.cpp ../src/Notecard.cpp Notecard.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -o notecard.tests && ./notecard.tests || echo "Tests Result: $?"
 
 int test_notecard_begin_i2c_sets_user_agent_to_note_arduino()
 {
@@ -83,7 +84,7 @@ int test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interface_has_n
   return result;
 }
 
-int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
+int test_notecard_begin_i2c_shares_a_memory_allocation_function_pointer()
 {
   int result;
 
@@ -117,7 +118,7 @@ int test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -150,7 +151,7 @@ int test_notecard_begin_i2c_sets_memory_allocation_functon_pointer_to_nullptr_wh
   return result;
 }
 
-int test_notecard_begin_i2c_shares_a_memory_free_functon_pointer()
+int test_notecard_begin_i2c_shares_a_memory_free_function_pointer()
 {
   int result;
 
@@ -184,7 +185,7 @@ int test_notecard_begin_i2c_shares_a_memory_free_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -217,7 +218,7 @@ int test_notecard_begin_i2c_sets_memory_free_functon_pointer_to_nullptr_when_int
   return result;
 }
 
-int test_notecard_begin_i2c_shares_a_delay_functon_pointer()
+int test_notecard_begin_i2c_shares_a_delay_function_pointer()
 {
   int result;
 
@@ -251,7 +252,7 @@ int test_notecard_begin_i2c_shares_a_delay_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -284,7 +285,7 @@ int test_notecard_begin_i2c_sets_delay_functon_pointer_to_nullptr_when_interface
   return result;
 }
 
-int test_notecard_begin_i2c_shares_a_millis_functon_pointer()
+int test_notecard_begin_i2c_shares_a_millis_function_pointer()
 {
   int result;
 
@@ -318,7 +319,7 @@ int test_notecard_begin_i2c_shares_a_millis_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -495,7 +496,7 @@ int test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_not
   return result;
 }
 
-int test_notecard_begin_i2c_shares_an_i2c_reset_functon_pointer()
+int test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer()
 {
   int result;
 
@@ -529,7 +530,7 @@ int test_notecard_begin_i2c_shares_an_i2c_reset_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_i2c_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -562,7 +563,7 @@ int test_notecard_begin_i2c_sets_i2c_reset_functon_pointer_to_nullptr_when_inter
   return result;
 }
 
-int test_notecard_begin_i2c_shares_an_i2c_transmit_functon_pointer()
+int test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer()
 {
   int result;
 
@@ -596,7 +597,7 @@ int test_notecard_begin_i2c_shares_an_i2c_transmit_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_i2c_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -629,7 +630,7 @@ int test_notecard_begin_i2c_sets_i2c_transmit_functon_pointer_to_nullptr_when_in
   return result;
 }
 
-int test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer()
+int test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer()
 {
   int result;
 
@@ -663,7 +664,7 @@ int test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_i2c_sets_i2c_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -835,7 +836,7 @@ int test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_ha
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer()
+int test_notecard_begin_serial_shares_a_memory_allocation_function_pointer()
 {
   int result;
 
@@ -869,7 +870,7 @@ int test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -902,7 +903,7 @@ int test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
+int test_notecard_begin_serial_shares_a_memory_free_function_pointer()
 {
   int result;
 
@@ -936,7 +937,7 @@ int test_notecard_begin_serial_shares_a_memory_free_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -969,7 +970,7 @@ int test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_delay_functon_pointer()
+int test_notecard_begin_serial_shares_a_delay_function_pointer()
 {
   int result;
 
@@ -1003,7 +1004,7 @@ int test_notecard_begin_serial_shares_a_delay_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1036,7 +1037,7 @@ int test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interf
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_millis_functon_pointer()
+int test_notecard_begin_serial_shares_a_millis_function_pointer()
 {
   int result;
 
@@ -1070,7 +1071,7 @@ int test_notecard_begin_serial_shares_a_millis_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1103,7 +1104,7 @@ int test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_inter
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
+int test_notecard_begin_serial_shares_a_serial_reset_function_pointer()
 {
   int result;
 
@@ -1137,7 +1138,7 @@ int test_notecard_begin_serial_shares_a_serial_reset_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_serial_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1170,7 +1171,7 @@ int test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
+int test_notecard_begin_serial_shares_a_serial_transmit_function_pointer()
 {
   int result;
 
@@ -1204,7 +1205,7 @@ int test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1237,7 +1238,7 @@ int test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_int
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
+int test_notecard_begin_serial_shares_a_serial_available_function_pointer()
 {
   int result;
 
@@ -1271,7 +1272,7 @@ int test_notecard_begin_serial_shares_a_serial_available_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1304,7 +1305,7 @@ int test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_
   return result;
 }
 
-int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
+int test_notecard_begin_serial_shares_a_serial_receive_function_pointer()
 {
   int result;
 
@@ -1338,7 +1339,7 @@ int test_notecard_begin_serial_shares_a_serial_receive_functon_pointer()
   return result;
 }
 
-int test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated()
+int test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -1371,7 +1372,7 @@ int test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_wh
   return result;
 }
 
-int test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer()
+int test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer()
 {
   int result;
 
@@ -1405,7 +1406,7 @@ int test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer()
   return result;
 }
 
-int test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when_nullptr_is_provided()
+int test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided()
 {
   int result;
 
@@ -1439,7 +1440,7 @@ int test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when
   return result;
 }
 
-int test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer()
+int test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer()
 {
   int result;
 
@@ -1468,6 +1469,144 @@ int test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer()
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tnoteSetFnDebugOutput_Parameters.fn == " << !!noteSetFnDebugOutput_Parameters.fn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteTxn_Mock mockTxn;
+  noteSetFnTransaction_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setTransactionPins(&mockTxn);
+
+   // Assert
+  ///////////
+
+  if (noteSetFnTransaction_Parameters.startfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnTransaction_Parameters.startfn == " << !!noteSetFnTransaction_Parameters.startfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteTxn_Mock mockTxn;
+  noteSetFnTransaction_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setTransactionPins(&mockTxn);
+
+   // Assert
+  ///////////
+
+  if (noteSetFnTransaction_Parameters.stopfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnTransaction_Parameters.stopfn == " << !!noteSetFnTransaction_Parameters.stopfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteTxn_Mock mockTxn;
+  noteSetFnTransaction_Parameters.reset();
+  noteSetFnTransaction_Parameters.startfn = reinterpret_cast<txnStartFn>(&result);
+
+   // Action
+  ///////////
+
+  notecard.setTransactionPins(nullptr);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnTransaction_Parameters.startfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnTransaction_Parameters.startfn == " << noteSetFnTransaction_Parameters.startfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setTransactionPins_clears_the_transaction_stop_function_pointer_when_nullptr_is_provided()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteTxn_Mock mockTxn;
+  noteSetFnTransaction_Parameters.reset();
+  noteSetFnTransaction_Parameters.stopfn = reinterpret_cast<txnStopFn>(&result);
+
+   // Action
+  ///////////
+
+  notecard.setTransactionPins(nullptr);
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnTransaction_Parameters.stopfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnTransaction_Parameters.stopfn == " << noteSetFnTransaction_Parameters.stopfn << ", EXPECTED: 0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -3623,7 +3762,7 @@ int test_static_callback_note_serial_transmit_invokes_noteserial_transmit()
   {
     result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\noteSerialTransmit_Parameters.invoked == " << noteSerialTransmit_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "\tnoteSerialTransmit_Parameters.invoked == " << noteSerialTransmit_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
     std::cout << "[";
   }
 
@@ -3663,7 +3802,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_text_parameter_bef
   {
     result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\noteSerialTransmit_Parameters.buffer == " << std::string(reinterpret_cast<char *>(noteSerialTransmit_Parameters.buffer)).c_str() << ", EXPECTED: " << expected_text << std::endl;
+    std::cout << "\tnoteSerialTransmit_Parameters.buffer == " << std::string(reinterpret_cast<char *>(noteSerialTransmit_Parameters.buffer)).c_str() << ", EXPECTED: " << expected_text << std::endl;
     std::cout << "[";
   }
 
@@ -3703,7 +3842,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_length_parameter_b
   {
     result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\noteSerialTransmit_Parameters.size == " << noteSerialTransmit_Parameters.size << ", EXPECTED: " << EXPECTED_LEN << std::endl;
+    std::cout << "\tnoteSerialTransmit_Parameters.size == " << noteSerialTransmit_Parameters.size << ", EXPECTED: " << EXPECTED_LEN << std::endl;
     std::cout << "[";
   }
 
@@ -3743,7 +3882,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_be
   {
     result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\noteSerialTransmit_Parameters.flush == " << noteSerialTransmit_Parameters.flush << ", EXPECTED: " << EXPECTED_FLUSH << std::endl;
+    std::cout << "\tnoteSerialTransmit_Parameters.flush == " << noteSerialTransmit_Parameters.flush << ", EXPECTED: " << EXPECTED_FLUSH << std::endl;
     std::cout << "[";
   }
 
@@ -3795,52 +3934,344 @@ int test_static_callback_note_serial_transmit_does_not_call_interface_method_whe
   return result;
 }
 
+int test_static_callback_note_txn_start_invokes_notetxn_start()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.invoked == " << noteTxnStart_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.timeout_ms == TIMEOUT_MS)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.timeout_ms == " << noteTxnStart_Parameters.timeout_ms << ", EXPECTED: " << TIMEOUT_MS << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_modify_interface_method_return_value()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+  noteTxnStart_Parameters.result = true;
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (noteTxnStart_Parameters.result == ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << noteTxnStart_Parameters.result << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (!noteTxnStart_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStart_Parameters.invoked == " << noteTxnStart_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const bool EXPECTED_RESULT = true;
+  const size_t TIMEOUT_MS = 917;
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStart`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStartFn noteTransactionStart = noteSetFnTransaction_Parameters.startfn;  // Capture the internal Notecard serial function, `noteTransactionStart`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStart_Parameters.reset();  // Clear the structure for testing results
+  noteTxnStart_Parameters.result = false;
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = noteTransactionStart(TIMEOUT_MS);
+
+   // Assert
+  ///////////
+
+  if (ACTUAL_RESULT == EXPECTED_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tACTUAL_RESULT == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_stop_invokes_notetxn_stop()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStop`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStopFn noteTransactionStop = noteSetFnTransaction_Parameters.stopfn;  // Capture the internal Notecard serial function, `noteTransactionStop`
+  noteTxnStop_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStop();
+
+   // Assert
+  ///////////
+
+  if (noteTxnStop_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStop_Parameters.invoked == " << noteTxnStop_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+
+  // Capture the internal Notecard transaction function, `noteTransactionStop`
+  NoteTxn_Mock mockTxn;  // Instantiate NoteTxn (mocked)
+  notecard.setTransactionPins(&mockTxn);  // Provides access to the hidden static callback methods through `note-c` mocks
+  txnStopFn noteTransactionStop = noteSetFnTransaction_Parameters.stopfn;  // Capture the internal Notecard serial function, `noteTransactionStop`
+
+  // Reset to ensure the interface is not instantiated
+  notecard.setTransactionPins(static_cast<NoteTxn *>(nullptr));
+  noteTxnStop_Parameters.reset();  // Clear the structure for testing results
+
+   // Action
+  ///////////
+
+  noteTransactionStop();
+
+   // Assert
+  ///////////
+
+  if (!noteTxnStop_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('c' + 'a' + 'l' + 'l' + 'b' + 'a' + 'c' + 'k');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteTxnStop_Parameters.invoked == " << noteTxnStop_Parameters.invoked << ", EXPECTED: zero (0)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int main(void)
 {
   TestFunction tests[] = {
       {test_notecard_begin_i2c_sets_user_agent_to_note_arduino, "test_notecard_begin_i2c_sets_user_agent_to_note_arduino"},
       {test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer, "test_notecard_begin_i2c_shares_a_memory_allocation_functon_pointer"},
-      {test_notecard_begin_i2c_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_a_memory_free_functon_pointer, "test_notecard_begin_i2c_shares_a_memory_free_functon_pointer"},
-      {test_notecard_begin_i2c_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_a_delay_functon_pointer, "test_notecard_begin_i2c_shares_a_delay_functon_pointer"},
-      {test_notecard_begin_i2c_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_a_millis_functon_pointer, "test_notecard_begin_i2c_shares_a_millis_functon_pointer"},
-      {test_notecard_begin_i2c_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_a_memory_allocation_function_pointer, "test_notecard_begin_i2c_shares_a_memory_allocation_function_pointer"},
+      {test_notecard_begin_i2c_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_a_memory_free_function_pointer, "test_notecard_begin_i2c_shares_a_memory_free_function_pointer"},
+      {test_notecard_begin_i2c_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_a_delay_function_pointer, "test_notecard_begin_i2c_shares_a_delay_function_pointer"},
+      {test_notecard_begin_i2c_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_a_millis_function_pointer, "test_notecard_begin_i2c_shares_a_millis_function_pointer"},
+      {test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing_to_note_c, "test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing_to_note_c"},
       {test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_note_c, "test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_note_c"},
       {test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_an_i2c_reset_functon_pointer, "test_notecard_begin_i2c_shares_an_i2c_reset_functon_pointer"},
-      {test_notecard_begin_i2c_sets_i2c_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_an_i2c_transmit_functon_pointer, "test_notecard_begin_i2c_shares_an_i2c_transmit_functon_pointer"},
-      {test_notecard_begin_i2c_sets_i2c_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer, "test_notecard_begin_i2c_shares_an_i2c_receive_functon_pointer"},
-      {test_notecard_begin_i2c_sets_i2c_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer"},
+      {test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer"},
+      {test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer"},
+      {test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_max_is_passed_to_note_c"},
       {test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_address_is_passed_to_note_c"},
       {test_notecard_begin_serial_sets_user_agent_to_note_arduino, "test_notecard_begin_serial_sets_user_agent_to_note_arduino"},
       {test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer, "test_notecard_begin_serial_shares_a_memory_allocation_functon_pointer"},
-      {test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_allocation_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_memory_free_functon_pointer, "test_notecard_begin_serial_shares_a_memory_free_functon_pointer"},
-      {test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_free_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_delay_functon_pointer, "test_notecard_begin_serial_shares_a_delay_functon_pointer"},
-      {test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_delay_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_millis_functon_pointer, "test_notecard_begin_serial_shares_a_millis_functon_pointer"},
-      {test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_millis_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_serial_reset_functon_pointer, "test_notecard_begin_serial_shares_a_serial_reset_functon_pointer"},
-      {test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_reset_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer, "test_notecard_begin_serial_shares_a_serial_transmit_functon_pointer"},
-      {test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_transmit_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_serial_available_functon_pointer, "test_notecard_begin_serial_shares_a_serial_available_functon_pointer"},
-      {test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_available_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_serial_shares_a_serial_receive_functon_pointer, "test_notecard_begin_serial_shares_a_serial_receive_functon_pointer"},
-      {test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_receive_functon_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_functon_pointer"},
-      {test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_functon_pointer_when_nullptr_is_provided"},
-      {test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_functon_pointer"},
+      {test_notecard_begin_serial_shares_a_memory_allocation_function_pointer, "test_notecard_begin_serial_shares_a_memory_allocation_function_pointer"},
+      {test_notecard_begin_serial_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_memory_free_function_pointer, "test_notecard_begin_serial_shares_a_memory_free_function_pointer"},
+      {test_notecard_begin_serial_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_delay_function_pointer, "test_notecard_begin_serial_shares_a_delay_function_pointer"},
+      {test_notecard_begin_serial_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_millis_function_pointer, "test_notecard_begin_serial_shares_a_millis_function_pointer"},
+      {test_notecard_begin_serial_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_serial_reset_function_pointer, "test_notecard_begin_serial_shares_a_serial_reset_function_pointer"},
+      {test_notecard_begin_serial_sets_serial_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_serial_transmit_function_pointer, "test_notecard_begin_serial_shares_a_serial_transmit_function_pointer"},
+      {test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_serial_available_function_pointer, "test_notecard_begin_serial_shares_a_serial_available_function_pointer"},
+      {test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_shares_a_serial_receive_function_pointer, "test_notecard_begin_serial_shares_a_serial_receive_function_pointer"},
+      {test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
+      {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
+      {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},
+      {test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer, "test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer"},
+      {test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer, "test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer"},
+      {test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided, "test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided"},
+      {test_notecard_setTransactionPins_clears_the_transaction_stop_function_pointer_when_nullptr_is_provided, "test_notecard_setTransactionPins_clears_the_transaction_stop_function_pointer_when_nullptr_is_provided"},
       {test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c"},
       {test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
@@ -3899,6 +4330,13 @@ int main(void)
       {test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method"},
       {test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method, "test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method"},
       {test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_start_invokes_notetxn_start, "test_static_callback_note_txn_start_invokes_notetxn_start"},
+      {test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method, "test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method"},
+      {test_static_callback_note_txn_start_does_not_modify_interface_method_return_value, "test_static_callback_note_txn_start_does_not_modify_interface_method_return_value"},
+      {test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated"},
+      {test_static_callback_note_txn_stop_invokes_notetxn_stop, "test_static_callback_note_txn_stop_invokes_notetxn_stop"},
+      {test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated, "test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));

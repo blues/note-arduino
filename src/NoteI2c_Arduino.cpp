@@ -74,6 +74,10 @@ NoteI2c_Arduino::receive (
         }
     }
 
+    // Delay briefly ensuring that the Notecard can
+    // deliver the data in real-time to the I2C ISR
+    ::delay(2);
+
     // Read and cache response from Notecard
     if (!transmission_error) {
         const int request_length = requested_byte_count_ + NoteI2c::REQUEST_HEADER_SIZE;

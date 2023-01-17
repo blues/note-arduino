@@ -139,6 +139,26 @@ void noteSerialTransmit(uint8_t *text_, size_t len_, bool flush_)
         noteSerial->transmit(text_, len_, flush_);
     }
 }
+
+NoteTxn *noteTxn(nullptr);
+
+bool noteTransactionStart (uint32_t timeout_ms_) {
+    bool result;
+    if (noteTxn) {
+        result = noteTxn->start(timeout_ms_);
+    } else {
+        // NoteTransaction not set, assume unnecessary
+        result = true;
+    }
+    return result;
+}
+
+void noteTransactionStop (void) {
+    if (noteTxn) {
+        noteTxn->stop();
+    }
+}
+
 }
 
 /**************************************************************************/
@@ -177,6 +197,7 @@ Notecard::~Notecard (void)
     noteI2c = make_note_i2c(nullptr);
     noteLog = make_note_log(nullptr);
     noteSerial = make_note_serial(nullptr);
+    noteTxn = make_note_txn(nullptr);
 }
 
 /**************************************************************************/
@@ -260,6 +281,31 @@ void Notecard::clearDebugOutputStream(void)
 {
     noteLog = nullptr;
     NoteSetFnDebugOutput(nullptr);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the transaction pins.
+            A NoteTxn object will be constructed via `make_note_txn()`
+            using a platform specific tuple of digital I/O pins. The
+            pins are used to send a request to transact and a listen
+            for the clear to transact signal. Transaction pins are not
+            necessary on any legacy Notecards, and are only necessary
+            for certain Notecard SKUs. The pins allow the Notecard to
+            inform the host it has had time to awaken from deep sleep
+            and is ready to process commands.
+    @param    noteTxn
+              A platform specific tuple of digital I/O pins.
+*/
+/**************************************************************************/
+void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
+    noteTxn = noteTxn_;  // Set global interface
+    if (noteTxn_) {
+        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
+    } else {
+        make_note_txn(nullptr);  // Clear singleton
+        NoteSetFnTransaction(nullptr, nullptr);
+    }
 }
 
 /**************************************************************************/

@@ -1,11 +1,19 @@
 #include "mock-arduino.hpp"
 
+Delay_Parameters delay_Parameters;
+DigitalRead_Parameters digitalRead_Parameters;
+DigitalWrite_Parameters digitalWrite_Parameters;
+Millis_Parameters millis_Parameters;
+PinMode_Parameters pinMode_Parameters;
+
 HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
+
 StreamPrint_Parameters streamPrint_Parameters;
+
 TwoWireBegin_Parameters twoWireBegin_Parameters;
 TwoWireBeginTransmission_Parameters twoWireBeginTransmission_Parameters;
 TwoWireEnd_Parameters twoWireEnd_Parameters;
@@ -21,16 +29,75 @@ TwoWire Wire;
 
 void
 delay (
-    unsigned int millis
+    unsigned long ms
 ) {
-    (void)millis;
+    // Record invocation(s)
+    ++delay_Parameters.invoked;
+
+    // Stash parameter(s)
+    delay_Parameters.ms = ms;
+
+    // Emulate the passing time for timeout loops
+    if (delay_Parameters.mock_time) {
+        millis_Parameters.default_result += ms;
+    }
 }
 
-size_t
+int
+digitalRead (
+    uint8_t pin
+) {
+    // Record invocation(s)
+    ++digitalRead_Parameters.invoked[pin];
+
+    // Stash parameter(s)
+    digitalRead_Parameters.pin = pin;
+
+    // Return user-supplied result
+    if (digitalRead_Parameters.result[pin].size() < digitalRead_Parameters.invoked[pin]) {
+        return digitalRead_Parameters.default_result[pin];
+    } else {
+        return digitalRead_Parameters.result[pin][(digitalRead_Parameters.invoked[pin] - 1)];
+    }
+}
+
+void
+digitalWrite (
+    uint8_t pin,
+    uint8_t val
+) {
+    // Record invocation(s)
+    ++digitalWrite_Parameters.invoked[pin];
+
+    // Stash parameter(s)
+    digitalWrite_Parameters.pin_val[pin].push_back(val);
+}
+
+unsigned long
 millis (
     void
 ) {
-    return 0;
+    // Record invocation(s)
+    ++millis_Parameters.invoked;
+
+    // Return user-supplied result
+    if (millis_Parameters.result.size() < millis_Parameters.invoked) {
+        return millis_Parameters.default_result;
+    } else {
+        return millis_Parameters.result[(millis_Parameters.invoked - 1)];
+    }
+}
+
+void
+pinMode (
+    uint8_t pin,
+    uint8_t mode
+) {
+    // Record invocation(s)
+    ++pinMode_Parameters.invoked[pin];
+
+    // Stash parameter(s)
+    pinMode_Parameters.pin_mode[pin].push_back(mode);
 }
 
 unsigned int
