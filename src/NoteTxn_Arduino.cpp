@@ -32,7 +32,11 @@ NoteTxn_Arduino::NoteTxn_Arduino
 ) :
     _ctx_pin(ctx_pin_),
     _rtx_pin(rtx_pin_)
-{ }
+{
+    // Float CTX/RTX to conserve energy
+    ::pinMode(_ctx_pin, INPUT);
+    ::pinMode(_rtx_pin, INPUT);
+}
 
 bool
 NoteTxn_Arduino::start (
@@ -48,7 +52,7 @@ NoteTxn_Arduino::start (
     // Await Clear To Transact Signal
     ::pinMode(_ctx_pin, INPUT_PULLUP);
     for (uint32_t timeout = (::millis() + timeout_ms_)
-       ; ::millis() < timeout 
+       ; ::millis() < timeout
        ; ::delay(1)
     ) {
         if (HIGH == ::digitalRead(_ctx_pin)) {
@@ -73,9 +77,6 @@ NoteTxn_Arduino::stop (
     void
 )
 {
-    // Drain RTS pin
-    ::digitalWrite(_rtx_pin, LOW);
-
-    // Float RTS pins
+    // Float RTX pin
     ::pinMode(_rtx_pin, INPUT);
 }

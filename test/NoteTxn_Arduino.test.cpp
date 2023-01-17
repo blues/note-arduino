@@ -97,6 +97,62 @@ int test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter()
   return result;
 }
 
+int test_notetxn_arduino_constructor_floats_ctx_pin()
+{
+  int result;
+
+  // Arrange
+  const uint8_t CTX_PIN = 19;
+  const uint8_t RTX_PIN = 79;
+  pinMode_Parameters.reset();
+
+  // Action
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
+
+  // Assert
+  if (pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == INPUT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('t' + 'x' + 'n');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tpinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == 0x" << std::hex << static_cast<size_t>(pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << INPUT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notetxn_arduino_constructor_floats_rtx_pin()
+{
+  int result;
+
+  // Arrange
+  const uint8_t CTX_PIN = 19;
+  const uint8_t RTX_PIN = 79;
+  pinMode_Parameters.reset();
+
+  // Action
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
+
+  // Assert
+  if (pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == INPUT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('t' + 'x' + 'n');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<size_t>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << INPUT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup()
 {
   int result;
@@ -106,10 +162,10 @@ int test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
-  pinMode_Parameters.reset();
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
+  pinMode_Parameters.reset();
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -145,10 +201,10 @@ int test_notetxn_arduino_start_configures_rtx_pin_as_output()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
-  pinMode_Parameters.reset();
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
+  pinMode_Parameters.reset();
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -184,10 +240,10 @@ int test_notetxn_arduino_start_sets_rtx_pin_high()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalWrite_Parameters.reset();
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -223,6 +279,7 @@ int test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.result[CTX_PIN].push_back(LOW);
   digitalRead_Parameters.result[CTX_PIN].push_back(LOW);
@@ -230,7 +287,6 @@ int test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high()
   digitalRead_Parameters.result[CTX_PIN].push_back(HIGH);
   millis_Parameters.reset();
   millis_Parameters.default_result = (TIMEOUT_MS - 1);
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -268,6 +324,7 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
   millis_Parameters.reset();
@@ -276,7 +333,6 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   millis_Parameters.result.push_back(515);
   millis_Parameters.result.push_back(801);
   millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -301,7 +357,7 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   return result;
 }
 
-int test_notetxn_arduino_start_leaves_rtx_as_output_when_ctx_responds_high()
+int test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds_high()
 {
   int result;
 
@@ -310,11 +366,11 @@ int test_notetxn_arduino_start_leaves_rtx_as_output_when_ctx_responds_high()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
   millis_Parameters.reset();
   pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -340,7 +396,7 @@ int test_notetxn_arduino_start_leaves_rtx_as_output_when_ctx_responds_high()
   return result;
 }
 
-int test_notetxn_arduino_start_leaves_rtx_high_when_ctx_responds_high()
+int test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high()
 {
   int result;
 
@@ -349,11 +405,11 @@ int test_notetxn_arduino_start_leaves_rtx_high_when_ctx_responds_high()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
   digitalWrite_Parameters.reset();
   millis_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -379,7 +435,7 @@ int test_notetxn_arduino_start_leaves_rtx_high_when_ctx_responds_high()
   return result;
 }
 
-int test_notetxn_arduino_start_leaves_ctx_floating_when_ctx_responds_high()
+int test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_high()
 {
   int result;
 
@@ -388,10 +444,10 @@ int test_notetxn_arduino_start_leaves_ctx_floating_when_ctx_responds_high()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
   pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -415,7 +471,7 @@ int test_notetxn_arduino_start_leaves_ctx_floating_when_ctx_responds_high()
   return result;
 }
 
-int test_notetxn_arduino_start_leaves_rtx_low_on_timeout()
+int test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout()
 {
   int result;
 
@@ -424,50 +480,7 @@ int test_notetxn_arduino_start_leaves_rtx_low_on_timeout()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
-  digitalRead_Parameters.reset();
-  digitalRead_Parameters.default_result[CTX_PIN] = LOW;
-  millis_Parameters.reset();
-  millis_Parameters.result.push_back(36);
-  millis_Parameters.result.push_back(274);
-  millis_Parameters.result.push_back(515);
-  millis_Parameters.result.push_back(801);
-  millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
   NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
-
-  // Action
-  notetxn.start(TIMEOUT_MS);
-
-  // Assert
-  if (
-      digitalRead_Parameters.invoked[CTX_PIN] // Called at least once
-   && digitalRead_Parameters.result[CTX_PIN].empty() // Only returns `LOW`
-   && millis_Parameters.invoked == millis_Parameters.result.size()
-   && digitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == LOW
-  ) {
-    result = 0;
-  }
-  else
-  {
-    result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
-    std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
-    std::cout << "\tdigitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(digitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(LOW) << std::endl;
-    std::cout << "[";
-  }
-
-  return result;
-}
-
-int test_notetxn_arduino_start_leaves_ctx_floating_on_timeout()
-{
-  int result;
-
-  // Arrange
-  const uint8_t CTX_PIN = 19;
-  const uint8_t RTX_PIN = 79;
-  const size_t TIMEOUT_MS = 917;
-
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
   millis_Parameters.reset();
@@ -477,7 +490,6 @@ int test_notetxn_arduino_start_leaves_ctx_floating_on_timeout()
   millis_Parameters.result.push_back(801);
   millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
   pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -505,7 +517,7 @@ int test_notetxn_arduino_start_leaves_ctx_floating_on_timeout()
   return result;
 }
 
-int test_notetxn_arduino_start_floats_rtx_on_timeout()
+int test_notetxn_arduino_start_floats_rtx_pin_on_timeout()
 {
   int result;
 
@@ -514,6 +526,7 @@ int test_notetxn_arduino_start_floats_rtx_on_timeout()
   const uint8_t RTX_PIN = 79;
   const size_t TIMEOUT_MS = 917;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
   millis_Parameters.reset();
@@ -523,7 +536,6 @@ int test_notetxn_arduino_start_floats_rtx_on_timeout()
   millis_Parameters.result.push_back(801);
   millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
   pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -550,7 +562,7 @@ int test_notetxn_arduino_start_floats_rtx_on_timeout()
   return result;
 }
 
-int test_notetxn_arduino_stop_sets_rtx_low()
+int test_notetxn_arduino_stop_floats_rtx_pin()
 {
   int result;
 
@@ -558,47 +570,9 @@ int test_notetxn_arduino_stop_sets_rtx_low()
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
 
+  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalWrite_Parameters.reset();
   pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
-
-  // Action
-  notetxn.stop();
-
-  // Assert
-  if (
-      digitalWrite_Parameters.invoked[RTX_PIN]
-   && digitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == LOW
-  ) {
-    result = 0;
-  }
-  else
-  {
-    result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    if (digitalWrite_Parameters.pin_val.find(RTX_PIN) != digitalWrite_Parameters.pin_val.end()) {
-      std::cout << "\tdigitalWrite_Parameters.invoked[RTX_PIN] == " << std::dec << static_cast<unsigned>(digitalWrite_Parameters.invoked[RTX_PIN]) << ", EXPECTED: > 0" << std::endl;
-      std::cout << "\tdigitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(digitalWrite_Parameters.pin_val[RTX_PIN][digitalWrite_Parameters.invoked[RTX_PIN]]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(LOW) << std::endl;
-    } else {
-      std::cout << "\tdigitalWrite_Parameters.pin_val[RTX_PIN] does not exist!" << std::endl;
-    }
-    std::cout << "[";
-  }
-
-  return result;
-}
-
-int test_notetxn_arduino_stop_floats_rtx()
-{
-  int result;
-
-  // Arrange
-  const uint8_t CTX_PIN = 19;
-  const uint8_t RTX_PIN = 79;
-
-  digitalWrite_Parameters.reset();
-  pinMode_Parameters.reset();
-  NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
 
   // Action
   notetxn.stop();
@@ -632,19 +606,19 @@ int main(void)
       {test_make_note_txn_instantiates_notetxn_object, "test_make_note_txn_instantiates_notetxn_object"},
       {test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_all_calls, "test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_all_calls"},
       {test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter"},
+      {test_notetxn_arduino_constructor_floats_ctx_pin, "test_notetxn_arduino_constructor_floats_ctx_pin"},
+      {test_notetxn_arduino_constructor_floats_rtx_pin, "test_notetxn_arduino_constructor_floats_rtx_pin"},
       {test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup, "test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup"},
       {test_notetxn_arduino_start_configures_rtx_pin_as_output, "test_notetxn_arduino_start_configures_rtx_pin_as_output"},
       {test_notetxn_arduino_start_sets_rtx_pin_high, "test_notetxn_arduino_start_sets_rtx_pin_high"},
       {test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high, "test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high"},
       {test_notetxn_arduino_start_blocks_until_timeout_ms, "test_notetxn_arduino_start_blocks_until_timeout_ms"},
-      {test_notetxn_arduino_start_leaves_ctx_floating_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_ctx_floating_when_ctx_responds_high"},
-      {test_notetxn_arduino_start_leaves_rtx_as_output_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_rtx_as_output_when_ctx_responds_high"},
-      {test_notetxn_arduino_start_leaves_rtx_high_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_rtx_high_when_ctx_responds_high"},
-      {test_notetxn_arduino_start_leaves_ctx_floating_on_timeout, "test_notetxn_arduino_start_leaves_ctx_floating_on_timeout"},
-      {test_notetxn_arduino_start_leaves_rtx_low_on_timeout, "test_notetxn_arduino_start_leaves_rtx_low_on_timeout"},
-      {test_notetxn_arduino_start_floats_rtx_on_timeout, "test_notetxn_arduino_start_floats_rtx_on_timeout"},
-      {test_notetxn_arduino_stop_sets_rtx_low, "test_notetxn_arduino_stop_sets_rtx_low"},
-      {test_notetxn_arduino_stop_floats_rtx, "test_notetxn_arduino_stop_floats_rtx"},
+      {test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_high"},
+      {test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds_high"},
+      {test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high, "test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high"},
+      {test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout, "test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout"},
+      {test_notetxn_arduino_start_floats_rtx_pin_on_timeout, "test_notetxn_arduino_start_floats_rtx_pin_on_timeout"},
+      {test_notetxn_arduino_stop_floats_rtx_pin, "test_notetxn_arduino_stop_floats_rtx_pin"},
   };
 
   return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
