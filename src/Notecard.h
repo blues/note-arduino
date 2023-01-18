@@ -81,7 +81,8 @@ public:
     void clearDebugOutputStream(void);
     void setTransactionPins(NoteTxn * noteTxn);
     inline void clearTransactionPins(void) {
-        setTransactionPins(nullptr);
+        uint8_t txn_pins[2] = {0};
+        setTransactionPins(make_note_txn(txn_pins));
     }
     J *newRequest(const char *request);
     J *newCommand(const char *request);
