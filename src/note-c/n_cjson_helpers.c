@@ -83,7 +83,7 @@ J *JGetObject(J *rsp, const char *field)
 
 //**************************************************************************/
 /*!
-    @brief  Return the boolean repsentation of an item.
+    @brief  Return the boolean representation of an item.
     @param   item The JSON item.
     @returns The boolean value.
 */
@@ -98,7 +98,7 @@ bool JBoolValue(J *item)
 
 //**************************************************************************/
 /*!
-    @brief  Return the string repsentation of an item.
+    @brief  Return the string representation of an item.
     @param   item The JSON item.
     @returns The string value, or empty string, if NULL.
 */
@@ -113,7 +113,7 @@ char *JStringValue(J *item)
 
 //**************************************************************************/
 /*!
-    @brief  Return the number repsentation of an item.
+    @brief  Return the number representation of an item.
     @param   item The JSON item.
     @returns The number, or 0.0, if NULL.
 */
@@ -151,7 +151,7 @@ JNUMBER JGetNumber(J *rsp, const char *field)
 
 //**************************************************************************/
 /*!
-    @brief  Return the integer repsentation of an item.
+    @brief  Return the integer representation of an item.
     @param   item The JSON item.
     @returns The number, or 0, if NULL.
 */
@@ -546,7 +546,7 @@ int JGetType(J *rsp, const char *field)
         }
         return JTYPE_NUMBER;
     case JRaw:
-    case JString:
+    case JString: {
         v = item->valuestring;
         if (v == NULL || v[0] == 0) {
             return JTYPE_STRING_BLANK;
@@ -576,6 +576,7 @@ int JGetType(J *rsp, const char *field)
             return JTYPE_STRING_BOOL_FALSE;
         }
         return JTYPE_STRING;
+    }
     case JObject:
         return JTYPE_OBJECT;
     case JArray:

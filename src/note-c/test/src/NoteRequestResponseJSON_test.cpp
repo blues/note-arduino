@@ -68,21 +68,20 @@ TEST_CASE("NoteRequestResponseJSON")
     RESET_FAKE(JPrintUnformatted);
 
     SECTION("Passing a NULL request returns NULL") {
-        REQUIRE(NoteRequestResponseJSON(NULL) == NULL);
+        CHECK(NoteRequestResponseJSON(NULL) == NULL);
     }
-
 
     SECTION("Invalid request JSON") {
         char req[] = "note.add";
-        REQUIRE(NoteRequestResponseJSON(req) == NULL);
+        CHECK(NoteRequestResponseJSON(req) == NULL);
     }
 
     SECTION("NULL response") {
         char req[] = "{\"req\": \"note.add\"}";
         NoteRequestResponse_fake.custom_fake = NoteRequestResponseNULL;
 
-        REQUIRE(NoteRequestResponseJSON(req) == NULL);
-        REQUIRE(NoteRequestResponse_fake.call_count == 1);
+        CHECK(NoteRequestResponseJSON(req) == NULL);
+        CHECK(NoteRequestResponse_fake.call_count == 1);
     }
 
     SECTION("JPrintUnformatted returns NULL") {
@@ -90,9 +89,9 @@ TEST_CASE("NoteRequestResponseJSON")
         NoteRequestResponse_fake.custom_fake = NoteRequestResponseValid;
         JPrintUnformatted_fake.return_val = NULL;
 
-        REQUIRE(NoteRequestResponseJSON(req) == NULL);
-        REQUIRE(NoteRequestResponse_fake.call_count == 1);
-        REQUIRE(JPrintUnformatted_fake.call_count == 1);
+        CHECK(NoteRequestResponseJSON(req) == NULL);
+        CHECK(NoteRequestResponse_fake.call_count == 1);
+        CHECK(JPrintUnformatted_fake.call_count == 1);
     }
 
     SECTION("Valid response") {
@@ -102,8 +101,8 @@ TEST_CASE("NoteRequestResponseJSON")
 
         char *resp = NoteRequestResponseJSON(req);
 
-        REQUIRE(resp != NULL);
-        REQUIRE(NoteRequestResponse_fake.call_count == 1);
+        CHECK(resp != NULL);
+        CHECK(NoteRequestResponse_fake.call_count == 1);
 
         NoteFree(resp);
     }

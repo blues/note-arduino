@@ -63,7 +63,7 @@ TEST_CASE("NoteTransaction")
     NoteReset_fake.return_val = true;
 
     SECTION("Passing a NULL request returns NULL") {
-        REQUIRE(NoteTransaction(NULL) == NULL);
+        CHECK(NoteTransaction(NULL) == NULL);
     }
 
     SECTION("A response is expected and the response is valid") {
@@ -73,10 +73,10 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        REQUIRE(NoteJSONTransaction_fake.call_count == 1);
-        REQUIRE(resp != NULL);
+        CHECK(NoteJSONTransaction_fake.call_count == 1);
+        CHECK(resp != NULL);
         // Ensure there's no error in the response.
-        REQUIRE(!NoteResponseError(resp));
+        CHECK(!NoteResponseError(resp));
 
         JDelete(req);
         JDelete(resp);
@@ -89,10 +89,10 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        REQUIRE(NoteJSONTransaction_fake.call_count == 1);
+        CHECK(NoteJSONTransaction_fake.call_count == 1);
         // Ensure there's an error in the response.
-        REQUIRE(resp != NULL);
-        REQUIRE(NoteResponseError(resp));
+        CHECK(resp != NULL);
+        CHECK(NoteResponseError(resp));
 
         JDelete(req);
         JDelete(resp);
@@ -107,11 +107,11 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        REQUIRE(NoteReset_fake.call_count == 1);
+        CHECK(NoteReset_fake.call_count == 1);
         // The transaction shouldn't be attempted if reset failed.
-        REQUIRE(NoteJSONTransaction_fake.call_count == 0);
+        CHECK(NoteJSONTransaction_fake.call_count == 0);
         // The response should be null if reset failed.
-        REQUIRE(resp == NULL);
+        CHECK(resp == NULL);
 
         JDelete(req);
     }
@@ -126,10 +126,10 @@ TEST_CASE("NoteTransaction")
 
         // The transaction shouldn't be attempted if the request couldn't be
         // serialized.
-        REQUIRE(NoteJSONTransaction_fake.call_count == 0);
+        CHECK(NoteJSONTransaction_fake.call_count == 0);
         // Ensure there's an error in the response.
-        REQUIRE(resp != NULL);
-        REQUIRE(NoteResponseError(resp));
+        CHECK(resp != NULL);
+        CHECK(NoteResponseError(resp));
 
         JDelete(req);
         JDelete(resp);
@@ -142,13 +142,13 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        REQUIRE(NoteJSONTransaction_fake.call_count == 1);
-        REQUIRE(resp != NULL);
+        CHECK(NoteJSONTransaction_fake.call_count == 1);
+        CHECK(resp != NULL);
         // Ensure there's no error in the response.
-        REQUIRE(!NoteResponseError(resp));
+        CHECK(!NoteResponseError(resp));
         // Ensure a blank object was returned.
         J *expectedResp = JCreateObject();
-        REQUIRE(JCompare(resp, expectedResp, true));
+        CHECK(JCompare(resp, expectedResp, true));
 
         JDelete(req);
         JDelete(resp);
@@ -162,10 +162,10 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        REQUIRE(NoteJSONTransaction_fake.call_count == 1);
-        REQUIRE(resp != NULL);
+        CHECK(NoteJSONTransaction_fake.call_count == 1);
+        CHECK(resp != NULL);
         // Ensure there's an error in the response.
-        REQUIRE(NoteResponseError(resp));
+        CHECK(NoteResponseError(resp));
 
         JDelete(req);
         JDelete(resp);

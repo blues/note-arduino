@@ -62,6 +62,28 @@ add_test(NoteGetEnv_test)
 add_test(NotePayload_test)
 add_test(i2cNoteTransaction_test)
 add_test(i2cNoteReset_test)
+add_test(serialNoteTransaction_test)
+add_test(serialNoteReset_test)
+add_test(NoteSetFn_test)
+add_test(NoteDebug_test)
+add_test(NoteTransactionHooks_test)
+add_test(NoteSerialHooks_test)
+add_test(NotePrint_test)
+add_test(NotePrintln_test)
+add_test(NoteTime_test)
+add_test(NoteRegion_test)
+add_test(NoteLocationValid_test)
+add_test(NoteIsConnected_test)
+add_test(NoteGetNetStatus_test)
+add_test(NoteGetVersion_test)
+add_test(NoteGetLocation_test)
+add_test(NoteSetLocation_test)
+add_test(NoteClearLocation_test)
+add_test(NoteGetLocationMode_test)
+add_test(NoteSetLocationMode_test)
+add_test(NoteGetServiceConfig_test)
+add_test(NoteGetStatus_test)
+add_test(NoteSleep_test)
 
 if(COVERAGE)
     find_program(LCOV lcov REQUIRED)
@@ -77,11 +99,21 @@ if(COVERAGE)
         COMMAND ${CMAKE_CTEST_COMMAND}
         WORKING_DIRECTORY ${CMAKE_CURENT_BINARY_DIR}
     )
+    # These files are third party code that we aren't interested in testing
+    # ourselves, so we don't care about coverage for them.
+    set(
+        EXCLUDE_FROM_COVERAGE
+        "n_atof.c;n_b64.c;n_cjson.c;n_ftoa.c;n_md5.c;n_str.c"
+    )
+    foreach(EXCLUDE_FILE ${EXCLUDE_FROM_COVERAGE})
+        string(APPEND LCOV_EXCLUDE "--exclude '*/${EXCLUDE_FILE}' ")
+    endforeach()
+    separate_arguments(LCOV_EXCLUDE_LIST NATIVE_COMMAND "${LCOV_EXCLUDE}")
     # Run lcov to produce a coverage report in the coverage directory.
     add_custom_command(
         TARGET coverage POST_BUILD
-        COMMAND lcov --capture --no-external --directory ${NOTE_C_SRC_DIR} --output-file lcov.info --rc lcov_branch_coverage=1
-        COMMAND lcov --summary lcov.info
+        COMMAND lcov --capture --no-external --directory ${NOTE_C_SRC_DIR} --rc lcov_branch_coverage=1 ${LCOV_EXCLUDE_LIST} --output-file lcov.info
+        COMMAND lcov --summary --rc lcov_branch_coverage=1 lcov.info
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
     )
     # The tests have to be built before we can generate the coverage report.

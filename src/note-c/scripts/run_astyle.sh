@@ -6,12 +6,6 @@
 # If a file shouldn't be formatted, it needs to be listed in the EXCLUDE_FILES
 # array below with a path relative to the source code root.
 #
-# Options:
-#   --check: After formatting, check if any necessary formatting changes weren't
-#            committed. If there are uncommitted changes, fail. This allows us
-#            to ensure all committed code has been formatted prior to being
-#            merged.
-#
 
 if [[ ! $(which astyle) ]]; then
     echo "astyle binary not found. Please install it and try again."
@@ -23,21 +17,9 @@ EXCLUDE_FILES=(
     test/include/fff.h
 )
 
-CHECK=0
-
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --check) CHECK=1 ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
-    esac
-    shift
-done
-
-if [ $CHECK -eq 1 ]; then
-    if [[ `git status --porcelain --untracked=no` ]]; then
-        echo "Uncommitted changes detected. Please commit or discard any working tree changes prior to running this script with --check."
-        exit 1
-    fi
+if [[ `git status --porcelain --untracked=no` ]]; then
+    echo "Local changes detected. Please commit, stash, or discard any working tree changes prior to running this script."
+    exit 1
 fi
 
 # Run astyle on all version-controlled C and C++ files.
@@ -49,13 +31,11 @@ do
     fi
 done
 
-# If --check was given, fail the script if running astyle produced any new,
-# uncommitted changes.
-if [ $CHECK -eq 1 ]; then
-    if [[ `git status --porcelain --untracked=no` ]]; then
-        echo "Unformatted files detected. Run scripts/run_astyle.sh and amend your commit with the resulting formatting changes."
-        exit 1
-    else
-        echo "Formatting clean."
-    fi
+# If there are new formatting changes after running astyle, exit with a non-zero
+# value.
+if [[ `git status --porcelain --untracked=no` ]]; then
+    echo "New formatting changes left in working tree."
+    exit 1
+else
+    echo "No new formatting changes."
 fi

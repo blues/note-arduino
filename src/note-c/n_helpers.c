@@ -182,19 +182,16 @@ void NotePrintln(const char *line)
 bool NotePrint(const char *text)
 {
     bool success = false;
+
     if (NoteIsDebugOutputActive()) {
         NoteDebug(text);
         return true;
     }
-    int inLog = 0;
-    if (inLog++ != 0) {
-        inLog--;
-        return false;
-    }
+
     J *req = NoteNewRequest("card.log");
     JAddStringToObject(req, "text", text);
     success = NoteRequest(req);
-    inLog--;
+
     return success;
 }
 
@@ -328,7 +325,7 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
     if (retZoneOffset != NULL) {
         *retZoneOffset = curZoneOffsetMins;
     }
-    return true;;
+    return true;
 }
 
 //**************************************************************************/
@@ -757,7 +754,7 @@ bool NoteGetLocation(JNUMBER *retLat, JNUMBER *retLon, JTIME *time, char *status
     J *rsp = NoteRequestResponse(NoteNewRequest("card.location"));
     if (rsp != NULL) {
         if (statusBuf != NULL) {
-            strlcpy(statusBuf, JGetString(rsp, "err"), statusBufLen);
+            strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
         }
         if (JIsPresent(rsp, "lat") && JIsPresent(rsp, "lon")) {
             if (retLat != NULL) {
@@ -992,7 +989,7 @@ bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *ret
 
 //**************************************************************************/
 /*!
-  @brief  Get Status of the Notecard, with a supression timer.
+  @brief  Get Status of the Notecard, with a suppression timer.
   @param  statusBuf (out) a buffer to populate with the Notecard status
   from the response.
   @param  statusBufLen The length of the status buffer.
@@ -1117,7 +1114,7 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
     if (req != NULL) {
         // Add the base64 item in a wonderful way that doesn't strdup the huge string
         if (stateb64 != NULL) {
-            J *stringReferenceItem = JCreateStringValue(stateb64);
+            J *stringReferenceItem = JCreateStringReference(stateb64);
             if (stringReferenceItem != NULL) {
                 JAddItemToObject(req, "payload", stringReferenceItem);
             }

@@ -51,42 +51,41 @@ TEST_CASE("NotePayload")
 
     SECTION("Add and find") {
 
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[0], segDataShort,
-                                      sizeof(segDataShort)));
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[1], segDataLong,
-                                      sizeof(segDataLong)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[0], segDataShort,
+                                    sizeof(segDataShort)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[1], segDataLong,
+                                    sizeof(segDataLong)));
 
         SECTION("Add and find segments") {
-            REQUIRE(NotePayloadFindSegment(&desc, segIds[0], &findData,
-                                           &findLen));
-            REQUIRE(sizeof(segDataShort) == findLen);
-            REQUIRE(!memcmp(segDataShort, findData, findLen));
+            CHECK(NotePayloadFindSegment(&desc, segIds[0], &findData,
+                                         &findLen));
+            CHECK(sizeof(segDataShort) == findLen);
+            CHECK(!memcmp(segDataShort, findData, findLen));
 
-            REQUIRE(NotePayloadFindSegment(&desc, segIds[1], &findData,
-                                           &findLen));
-            REQUIRE(sizeof(segDataLong) == findLen);
-            REQUIRE(!memcmp(segDataLong, findData, findLen));
+            CHECK(NotePayloadFindSegment(&desc, segIds[1], &findData,
+                                         &findLen));
+            CHECK(sizeof(segDataLong) == findLen);
+            CHECK(!memcmp(segDataLong, findData, findLen));
         }
 
         SECTION("Add and try to find non-existent segment") {
-            // const char invalidSegId[] = "BLUE";
-            REQUIRE(!NotePayloadFindSegment(&desc, "BLUE", &findData,
-                                            &findLen));
-            REQUIRE(findData == NULL);
-            REQUIRE(findLen == 0);
+            CHECK(!NotePayloadFindSegment(&desc, "BLUE", &findData,
+                                          &findLen));
+            CHECK(findData == NULL);
+            CHECK(findLen == 0);
         }
     }
 
     SECTION("Add two segments with the same ID") {
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[0], segDataLong,
-                                      sizeof(segDataLong)));
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[0], segDataShort,
-                                      sizeof(segDataShort)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[0], segDataLong,
+                                    sizeof(segDataLong)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[0], segDataShort,
+                                    sizeof(segDataShort)));
 
-        REQUIRE(NotePayloadFindSegment(&desc, segIds[0], &findData, &findLen));
+        CHECK(NotePayloadFindSegment(&desc, segIds[0], &findData, &findLen));
         // Ensure that we found the first segment added.
         REQUIRE(sizeof(segDataLong) == findLen);
-        REQUIRE(!memcmp(segDataLong, findData, findLen));
+        CHECK(!memcmp(segDataLong, findData, findLen));
     }
 
     SECTION("NotePayloadGetSegment") {
@@ -95,19 +94,19 @@ TEST_CASE("NotePayload")
         unsigned char segCopy[] = {0, 0, 0, 0};
         unsigned char* segCopyOrig = segCopy;
 
-        REQUIRE(NotePayloadAddSegment(&desc, segId, segData, sizeof(segData)));
+        CHECK(NotePayloadAddSegment(&desc, segId, segData, sizeof(segData)));
 
         SECTION("Copied") {
-            REQUIRE(NotePayloadGetSegment(&desc, segId, segCopy,
-                                          sizeof(segData)));
+            CHECK(NotePayloadGetSegment(&desc, segId, segCopy,
+                                        sizeof(segData)));
             // Ensure NotePayloadGetSegment actually returned a copy and didn't
             // just return a pointer to the segment.
-            REQUIRE(segCopyOrig == segCopy);
+            CHECK(segCopyOrig == segCopy);
         }
 
         SECTION("Incorrect length") {
-            REQUIRE(!NotePayloadGetSegment(&desc, segId, segCopy,
-                                           sizeof(segData)) + 1);
+            CHECK(!NotePayloadGetSegment(&desc, segId, segCopy,
+                                         sizeof(segData)) + 1);
         }
     }
 
@@ -119,23 +118,23 @@ TEST_CASE("NotePayload")
             segDataOneK[i] = i;
         }
 
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[0], segDataLong,
-                                      sizeof(segDataLong)));
-        REQUIRE(NotePayloadAddSegment(&desc, segIds[1], segDataOneK,
-                                      sizeof(segDataOneK)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[0], segDataLong,
+                                    sizeof(segDataLong)));
+        CHECK(NotePayloadAddSegment(&desc, segIds[1], segDataOneK,
+                                    sizeof(segDataOneK)));
 
         // Ensure there was a second allocation.
-        REQUIRE(NoteMalloc_fake.call_count == 2);
+        CHECK(NoteMalloc_fake.call_count == 2);
 
-        REQUIRE(NotePayloadFindSegment(&desc, segIds[0], &findData,
-                                       &findLen));
+        CHECK(NotePayloadFindSegment(&desc, segIds[0], &findData,
+                                     &findLen));
         REQUIRE(sizeof(segDataLong) == findLen);
-        REQUIRE(!memcmp(segDataLong, findData, findLen));
+        CHECK(!memcmp(segDataLong, findData, findLen));
 
-        REQUIRE(NotePayloadFindSegment(&desc, segIds[1], &findData,
-                                       &findLen));
+        CHECK(NotePayloadFindSegment(&desc, segIds[1], &findData,
+                                     &findLen));
         REQUIRE(sizeof(segDataOneK) == findLen);
-        REQUIRE(!memcmp(segDataOneK, findData, findLen));
+        CHECK(!memcmp(segDataOneK, findData, findLen));
     }
 
     NotePayloadFree(&desc);

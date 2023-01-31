@@ -48,7 +48,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
         if (segLen > CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN) {
             segLen = CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN;
         }
-        _SerialTransmit((uint8_t *)&transmitBuf[segOff], segLen, false);
+        _SerialTransmit(&transmitBuf[segOff], segLen, false);
         segOff += segLen;
         segLeft -= segLen;
         if (segLeft == 0) {
@@ -212,8 +212,9 @@ bool serialNoteReset()
         _Debug("no notecard\n");
 #endif
         _DelayMs(500);
-        _SerialReset();
-
+        if (!_SerialReset()) {
+            return false;
+        }
     }
 
     // Done

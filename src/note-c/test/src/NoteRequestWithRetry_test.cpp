@@ -51,7 +51,7 @@ TEST_CASE("NoteRequestWithRetry")
     RESET_FAKE(NoteGetMs);
 
     SECTION("NULL request") {
-        REQUIRE(!NoteRequestWithRetry(NULL, 0));
+        CHECK(!NoteRequestWithRetry(NULL, 0));
     }
 
     SECTION("Non-NULL request") {
@@ -74,30 +74,30 @@ TEST_CASE("NoteRequestWithRetry")
                 NoteTransaction_fake.custom_fake = NoteTransactionIOError;
             }
 
-            REQUIRE(!NoteRequestWithRetry(req, timeoutSec));
-            REQUIRE(NoteTransaction_fake.call_count == 2);
+            CHECK(!NoteRequestWithRetry(req, timeoutSec));
+            CHECK(NoteTransaction_fake.call_count == 2);
         }
 
         SECTION("Non-I/O error") {
             NoteTransaction_fake.custom_fake = NoteTransactionNonIOError;
 
-            REQUIRE(!NoteRequestWithRetry(req, timeoutSec));
-            REQUIRE(NoteTransaction_fake.call_count == 1);
+            CHECK(!NoteRequestWithRetry(req, timeoutSec));
+            CHECK(NoteTransaction_fake.call_count == 1);
         }
 
         SECTION("Response on first try") {
             NoteTransaction_fake.return_val = JCreateObject();
 
-            REQUIRE(NoteRequestWithRetry(req, timeoutSec));
-            REQUIRE(NoteTransaction_fake.call_count == 1);
+            CHECK(NoteRequestWithRetry(req, timeoutSec));
+            CHECK(NoteTransaction_fake.call_count == 1);
         }
 
         SECTION("Response after retry") {
             J *noteTransactionReturnVals[2] = {NULL, JCreateObject()};
             SET_RETURN_SEQ(NoteTransaction, noteTransactionReturnVals, 2);
 
-            REQUIRE(NoteRequestWithRetry(req, timeoutSec));
-            REQUIRE(NoteTransaction_fake.call_count == 2);
+            CHECK(NoteRequestWithRetry(req, timeoutSec));
+            CHECK(NoteTransaction_fake.call_count == 2);
         }
     }
 }

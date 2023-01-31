@@ -36,27 +36,27 @@ TEST_CASE("NoteRequestResponse")
     RESET_FAKE(NoteTransaction);
 
     SECTION("Passing a NULL request returns NULL") {
-        REQUIRE(NoteRequestResponse(NULL) == NULL);
+        CHECK(NoteRequestResponse(NULL) == NULL);
     }
 
 
     SECTION("NoteTransaction returns NULL") {
         J *req = NoteNewRequest("note.add");
-        REQUIRE(req != nullptr);
+        REQUIRE(req != NULL);
         NoteTransaction_fake.return_val = NULL;
 
-        REQUIRE(NoteRequestResponse(req) == NULL);
-        REQUIRE(NoteTransaction_fake.call_count == 1);
+        CHECK(NoteRequestResponse(req) == NULL);
+        CHECK(NoteTransaction_fake.call_count == 1);
     }
 
     SECTION("NoteTransaction returns a valid response") {
         J *req = NoteNewRequest("note.add");
-        REQUIRE(req != nullptr);
+        REQUIRE(req != NULL);
         NoteTransaction_fake.custom_fake = NoteTransactionValid;
 
         J *resp = NoteRequestResponse(req);
         REQUIRE(resp != NULL);
-        REQUIRE(NoteTransaction_fake.call_count == 1);
+        CHECK(NoteTransaction_fake.call_count == 1);
 
         JDelete(resp);
     }

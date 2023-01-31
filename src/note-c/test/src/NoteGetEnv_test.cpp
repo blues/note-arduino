@@ -40,10 +40,10 @@ TEST_CASE("NoteGetEnv")
     SECTION("NoteNewRequest returns NULL") {
         NoteNewRequest_fake.return_val = NULL;
 
-        REQUIRE(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
-        REQUIRE(NoteNewRequest_fake.call_count == 1);
+        CHECK(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
+        CHECK(NoteNewRequest_fake.call_count == 1);
         // No request should be made if we couldn't allocate the request object.
-        REQUIRE(NoteRequestResponse_fake.call_count == 0);
+        CHECK(NoteRequestResponse_fake.call_count == 0);
     }
 
     SECTION("Response is invalid") {
@@ -52,14 +52,14 @@ TEST_CASE("NoteGetEnv")
         SECTION("Response is NULL") {
             NoteRequestResponse_fake.return_val = NULL;
 
-            REQUIRE(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
+            CHECK(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
         }
 
         SECTION("Response has no text field") {
             NoteRequestResponse_fake.return_val = JCreateObject();
 
             // The response doesn't have an error, so we expect success.
-            REQUIRE(NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
+            CHECK(NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
         }
 
         SECTION("Response has an error") {
@@ -67,13 +67,13 @@ TEST_CASE("NoteGetEnv")
             JAddStringToObject(resp, "err", "an error");
             NoteRequestResponse_fake.return_val = resp;
 
-            REQUIRE(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
+            CHECK(!NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
         }
 
-        REQUIRE(NoteNewRequest_fake.call_count == 1);
-        REQUIRE(NoteRequestResponse_fake.call_count == 1);
+        CHECK(NoteNewRequest_fake.call_count == 1);
+        CHECK(NoteRequestResponse_fake.call_count == 1);
         // Ensure the default value was copied into outBuf.
-        REQUIRE(!strcmp(outBuf, defaultVal));
+        CHECK(!strcmp(outBuf, defaultVal));
     }
 
     SECTION("Response is valid") {
@@ -82,10 +82,10 @@ TEST_CASE("NoteGetEnv")
         JAddStringToObject(resp, "text", "a non-default value");
         NoteRequestResponse_fake.return_val = resp;
 
-        REQUIRE(NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
-        REQUIRE(NoteNewRequest_fake.call_count == 1);
-        REQUIRE(NoteRequestResponse_fake.call_count == 1);
-        REQUIRE(!strcmp(outBuf, nonDefaultVal));
+        CHECK(NoteGetEnv(envKey, defaultVal, outBuf, sizeof(outBuf)));
+        CHECK(NoteNewRequest_fake.call_count == 1);
+        CHECK(NoteRequestResponse_fake.call_count == 1);
+        CHECK(!strcmp(outBuf, nonDefaultVal));
     }
 }
 

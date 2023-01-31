@@ -31,17 +31,16 @@ TEST_CASE("NoteRequest")
     RESET_FAKE(NoteTransaction);
 
     SECTION("Passing a NULL request returns false") {
-        REQUIRE(!NoteRequest(NULL));
+        CHECK(!NoteRequest(NULL));
     }
-
 
     SECTION("NoteTransaction returns NULL") {
         J *req = NoteNewRequest("note.add");
         REQUIRE(req != NULL);
         NoteTransaction_fake.return_val = NULL;
 
-        REQUIRE(!NoteRequest(req));
-        REQUIRE(NoteTransaction_fake.call_count == 1);
+        CHECK(!NoteRequest(req));
+        CHECK(NoteTransaction_fake.call_count == 1);
     }
 
     SECTION("NoteTransaction returns a response with an error") {
@@ -49,11 +48,11 @@ TEST_CASE("NoteRequest")
         REQUIRE(req != NULL);
         J *resp = JCreateObject();
         REQUIRE(resp != NULL);
-        REQUIRE(JAddStringToObject(resp, c_err, "An error.") != NULL);
+        CHECK(JAddStringToObject(resp, c_err, "An error.") != NULL);
         NoteTransaction_fake.return_val = resp;
 
-        REQUIRE(!NoteRequest(req));
-        REQUIRE(NoteTransaction_fake.call_count == 1);
+        CHECK(!NoteRequest(req));
+        CHECK(NoteTransaction_fake.call_count == 1);
     }
 
     SECTION("NoteTransaction returns a valid response") {
@@ -61,8 +60,8 @@ TEST_CASE("NoteRequest")
         REQUIRE(req != NULL);
         NoteTransaction_fake.return_val = JCreateObject();
 
-        REQUIRE(NoteRequest(req));
-        REQUIRE(NoteTransaction_fake.call_count == 1);
+        CHECK(NoteRequest(req));
+        CHECK(NoteTransaction_fake.call_count == 1);
     }
 }
 

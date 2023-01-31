@@ -59,3 +59,22 @@ genhtml lcov.info -o tmp
 
 This will generate HTML under test/coverage/tmp. Open index.html in your
 browser to view the report.
+
+### Style
+
+#### `CHECK` vs. `REQUIRE`
+
+[Catch2 offers 2 primary assertion macros]
+(https://github.com/catchorg/Catch2/blob/devel/docs/assertions.md): `REQUIRE`
+and `CHECK`. We prefer `CHECK` anywhere you need to assert something in a test
+case. However, if it doesn't make sense or it would cause a fault to continue a
+test case, `REQUIRE` should be used to exit the case immediately on failure.
+Example:
+
+```c
+REQUIRE(sizeof(expectedBuf) == actualLength);
+CHECK(!memcmp(expectedBuf, actualBuf, actualLength));
+```
+
+Here we don't want to continue if the lengths of the two buffers differ, as the
+`memcmp` may segfault.
