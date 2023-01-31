@@ -34,7 +34,7 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
     int jsonLen = strlen(json);
     uint8_t *transmitBuf = (uint8_t *) _Malloc(jsonLen+c_newline_len);
     if (transmitBuf == NULL) {
-        return ERRSTR("insufficient memory",c_mem);
+        return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
     }
     memcpy(transmitBuf, json, jsonLen);
     memcpy(&transmitBuf[jsonLen], c_newline, c_newline_len);
@@ -75,9 +75,9 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
     for (startMs = _GetMs(); !_SerialAvailable(); ) {
         if (_GetMs() >= startMs + (NOTECARD_TRANSACTION_TIMEOUT_SEC*1000)) {
 #ifdef ERRDBG
-            _Debug("reply to request didn't arrive from module in time\n");
+            _Debug(c_dbg_msg_reply_to_request_did_not_arrive_from_module_in_time);
 #endif
-            return ERRSTR("transaction timeout {io}",c_iotimeout);
+            return ERRSTR(c_dbg_msg_io_transaction_timeout,c_dbg_msg_io_timeout);
         }
         if (!cardTurboIO) {
             _DelayMs(10);
@@ -91,9 +91,9 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
     char *jsonbuf = (char *) _Malloc(jsonbufAllocLen+1);
     if (jsonbuf == NULL) {
 #ifdef ERRDBG
-        _Debug("transaction: jsonbuf malloc failed\n");
+        _Debug(c_dbg_msg_transaction_jsonbuf_malloc_failed);
 #endif
-        return ERRSTR("insufficient memory",c_mem);
+        return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
     }
     int jsonbufLen = 0;
     char ch = 0;
@@ -104,12 +104,12 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
             if (_GetMs() >= startMs + (NOTECARD_TRANSACTION_TIMEOUT_SEC*1000)) {
 #ifdef ERRDBG
                 jsonbuf[jsonbufLen] = '\0';
-                _Debug("received only partial reply after timeout:\n");
+                _Debug(c_dbg_msg_received_only_partial_reply_after_timeout);
                 _Debug(jsonbuf);
-                _Debug("\n");
+                _Debug(c_newline);
 #endif
                 _Free(jsonbuf);
-                return ERRSTR("transaction incomplete {io}",c_iotimeout);
+                return ERRSTR(c_dbg_msg_io_transaction_incomplete,c_dbg_msg_io_timeout);
             }
             if (!cardTurboIO) {
                 _DelayMs(1);
@@ -128,10 +128,10 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
         //
         if (ch == 0) {
 #ifdef ERRDBG
-            _Debug("invalid data received on serial port from notecard\n");
+            _Debug(c_dbg_msg_invalid_data_received_on_serial_port_from_notecard);
 #endif
             _Free(jsonbuf);
-            return ERRSTR("serial communications error {io}",c_iotimeout);
+            return ERRSTR(c_dbg_msg_io_serial_communications_error,c_dbg_msg_io_timeout);
         }
 
         // Append into the json buffer
@@ -141,10 +141,10 @@ const char *serialNoteTransaction(char *json, char **jsonResponse)
             char *jsonbufNew = (char *) _Malloc(jsonbufAllocLen+1);
             if (jsonbufNew == NULL) {
 #ifdef ERRDBG
-                _Debug("transaction: jsonbuf malloc grow failed\n");
+                _Debug(c_dbg_msg_transaction_jsonbuf_malloc_failed);
 #endif
                 _Free(jsonbuf);
-                return ERRSTR("insufficient memory",c_mem);
+                return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
             }
             memcpy(jsonbufNew, jsonbuf, jsonbufLen);
             _Free(jsonbuf);
@@ -207,9 +207,9 @@ bool serialNoteReset()
         }
 
 #ifdef ERRDBG
-        _Debug(somethingFound ? "unrecognized data from notecard\n" : "notecard not responding\n");
+        _Debug(somethingFound ? c_dbg_msg_unrecognized_data_from_notecard : c_dbg_msg_notecard_not_responding);
 #else
-        _Debug("no notecard\n");
+        _Debug(c_dbg_msg_no_notecard);
 #endif
         _DelayMs(500);
         if (!_SerialReset()) {

@@ -17,7 +17,6 @@
 // Include the Arduino library for the Notecard
 
 #include <Notecard.h>
-#include <Wire.h>
 
 // If the Notecard is connected to a serial port, define it here.  For example, if you are using
 // the Adafruit Feather NRF52840 Express, the RX/TX pins (and thus the Notecard) are on Serial1.
@@ -44,7 +43,7 @@
 
 // This is the unique Product Identifier for your device
 #ifndef PRODUCT_UID
-#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#define PRODUCT_UID "com.zakoverflow.test"		// "com.my-company.my-name:my-project"
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
 #endif
 
@@ -55,6 +54,7 @@ Notecard notecard;
 void setup()
 {
 
+#ifdef usbSerial
     // Set up for debug output.  If you open Arduino's serial terminal window, you'll be able to
     // watch JSON objects being transferred to and from the Notecard for each request.  On most
     // Arduino devices, Arduino's serial debug output is on the "Serial" device at 115200.
@@ -63,55 +63,63 @@ void setup()
     // Note that the initial 2.5s delay is required by some Arduino cards before debug
     // UART output can be successfully displayed in the Arduino IDE, including the
     // Adafruit Feather nRF52840 Express.
-#ifdef usbSerial
-    delay(2500);
-    usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
+    usbSerial.begin(9600);
+    const size_t start_wait_ms = millis();
+    while (!usbSerial && ((millis() - start_wait_ms) < 5000));
+    Serial.println("Serial READY");
 #endif
 
     // Initialize the physical I/O channel to the Notecard
 #ifdef txRxPinsSerial
     notecard.begin(txRxPinsSerial, 9600);
 #else
-    Wire.begin();
-
     notecard.begin();
+    Serial.println("1");
 #endif
 
     // "newRequest()" uses the bundled "J" json package to allocate a "req", which is a JSON object
     // for the request to which we will then add Request arguments.  The function allocates a "req"
     // request structure using malloc() and initializes its "req" field with the type of request.
     J *req = notecard.newRequest("hub.set");
+    Serial.println("2");
+    if (req) {
+        // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
+        // this Product ID.  (see above)
+        if (myProductID[0]) {
+            JAddStringToObject(req, "product", myProductID);
+            Serial.println("3");
+        }
+        // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
+        // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
+        // Because of the power requirements of a continuous connection, a battery powered device would instead
+        // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
+        JAddStringToObject(req, "mode", "continuous");
+        Serial.println("4");
 
-    // This command (required) causes the data to be delivered to the Project on notehub.io that has claimed
-    // this Product ID.  (see above)
-    if (myProductID[0]) {
-        JAddStringToObject(req, "product", myProductID);
+        // Issue the request, telling the Notecard how and how often to access the service.
+        // This results in a JSON message to Notecard formatted like:
+        //     { "req"     : "service.set",
+        //     "product" : myProductID,
+        //     "mode"    : "continuous"
+        //     }
+        // Note that sendRequest() always uses free() to release the request data structure, and it
+        // returns "true" if success and "false" if there is any failure.
+        notecard.sendRequest(req);
+        Serial.println("5");
     }
-    // This command determines how often the Notecard connects to the service.  If "continuous" the Notecard
-    // immediately establishes a session with the service at notehub.io, and keeps it active continuously.
-    // Because of the power requirements of a continuous connection, a battery powered device would instead
-    // only sample its sensors occasionally, and would only upload to the service on a periodic basis.
-    JAddStringToObject(req, "mode", "continuous");
 
-    // Issue the request, telling the Notecard how and how often to access the service.
-    // This results in a JSON message to Notecard formatted like:
-    //     { "req"     : "service.set",
-    //     "product" : myProductID,
-    //     "mode"    : "continuous"
-    //     }
-    // Note that sendRequest() always uses free() to release the request data structure, and it
-    // returns "true" if success and "false" if there is any failure.
-    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
 void loop()
 {
+    Serial.println("Begin `loop`");
 
     // Count the simulated measurements that we send to the cloud, and stop the demo before long.
     static unsigned eventCounter = 0;
-    if (eventCounter++ > 25) {
+    if (eventCounter > 25) {
+        ++eventCounter;
         return;
     }
 

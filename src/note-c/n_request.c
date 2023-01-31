@@ -34,9 +34,16 @@ static J *errDoc(const char *errmsg)
         JAddStringToObject(rspdoc, c_err, errmsg);
     }
     if (suppressShowTransactions == 0) {
-        _Debug("{\"err\":\"");
+        _Debug(c_curly_brace_open);
+        _Debug(c_quotation_mark);
+        _Debug(c_err);
+        _Debug(c_quotation_mark);
+        _Debug(c_colon);
+        _Debug(c_quotation_mark);
         _Debug(errmsg);
-        _Debug("\"}\n");
+        _Debug(c_quotation_mark);
+        _Debug(c_curly_brace_close);
+        _Debug(c_newline);
     }
     return rspdoc;
 }
@@ -137,6 +144,7 @@ bool NoteRequest(J *req)
 bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds)
 {
     J *rsp = NoteRequestResponseWithRetry(req, timeoutSeconds);
+
     // If there is no response return false
     if (rsp == NULL) {
         return false;
@@ -210,7 +218,7 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
         rsp = NoteTransaction(req);
 
         // Loop if there is no response, or if there is an io error
-        if ( (rsp == NULL) || JContainsString(rsp, c_err, c_ioerr)) {
+        if ( (rsp == NULL) || JContainsString(rsp, c_err, c_dbg_msg_io_err)) {
 
             // Free error response
             if (rsp != NULL) {
@@ -302,18 +310,18 @@ J *NoteTransaction(J *req)
     }
 
     // Determine the request or command type
-    const char *reqType = JGetString(req, "req");
-    const char *cmdType = JGetString(req, "cmd");
+    const char *reqType = JGetString(req, c_req);
+    const char *cmdType = JGetString(req, c_cmd);
 
     // Add the user agent object only when we're doing a hub.set and only when we're
     // specifying the product UID.  The intent is that we only piggyback user agent
     // data when the host is initializing the Notecard, as opposed to every time
     // the host does a hub.set to change mode.
 #ifndef NOTE_DISABLE_USER_AGENT
-    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0) && JIsPresent(req, "product")) {
+    if (!JIsPresent(req, c_body) && (strcmp(reqType, c_hub_set) == 0) && JIsPresent(req, c_product)) {
         J *body = NoteUserAgent();
         if (body != NULL) {
-            JAddItemToObject(req, "body", body);
+            JAddItemToObject(req, c_body, body);
         }
     }
 #endif
@@ -336,7 +344,7 @@ J *NoteTransaction(J *req)
     // Serialize the JSON request
     char *json = JPrintUnformatted(req);
     if (json == NULL) {
-        J *rsp = errDoc(ERRSTR("can't convert to JSON",c_bad));
+        J *rsp = errDoc(ERRSTR(c_dbg_msg_cannot_convert_to_json,c_bad));
         _UnlockNote();
         _TransactionStop();
         return rsp;
@@ -378,11 +386,11 @@ J *NoteTransaction(J *req)
     J *rspdoc = JParse(responseJSON);
     if (rspdoc == NULL) {
         if (responseJSON != NULL) {
-            _Debug("invalid JSON: ");
+            _Debug(c_dbg_msg_invalid_json);
             _Debug(responseJSON);
             _Free(responseJSON);
         }
-        J *rsp = errDoc(ERRSTR("unrecognized response from card {io}",c_iobad));
+        J *rsp = errDoc(ERRSTR(c_dbg_msg_io_unrecognized_response_from_card,c_dbg_msg_io_bad));
         _UnlockNote();
         _TransactionStop();
         return rsp;

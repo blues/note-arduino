@@ -52,7 +52,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
     size_t jsonLen = strlen(json);
     uint8_t *transmitBuf = (uint8_t *) _Malloc(jsonLen+1);
     if (transmitBuf == NULL) {
-        return ERRSTR("insufficient memory",c_mem);
+        return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
     }
     memcpy(transmitBuf, json, jsonLen);
     transmitBuf[jsonLen++] = '\n';
@@ -77,9 +77,11 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
             _Free(transmitBuf);
             _I2CReset(_I2CAddress());
 #ifdef ERRDBG
-            _Debug("i2c transmit: ");
+            _Debug(c_dbg_msg_i2c_transmit);
+            _Debug(c_colon);
+            _Debug(c_space);
             _Debug(estr);
-            _Debug("\n");
+            _Debug(c_newline);
 #endif
             _UnlockI2C();
             return estr;
@@ -115,10 +117,10 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
     uint8_t *jsonbuf = (uint8_t *) _Malloc(jsonbufAllocLen+1);
     if (jsonbuf == NULL) {
 #ifdef ERRDBG
-        _Debug("transaction: jsonbuf malloc failed\n");
+        _Debug(c_dbg_msg_transaction_jsonbuf_malloc_failed);
 #endif
         _UnlockI2C();
-        return ERRSTR("insufficient memory",c_mem);
+        return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
     }
 
     // Loop, building a reply buffer out of received chunks.  We'll build the reply in the same
@@ -139,11 +141,11 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
             uint8_t *jsonbufNew = (uint8_t *) _Malloc(jsonbufAllocLen+1);
             if (jsonbufNew == NULL) {
 #ifdef ERRDBG
-                _Debug("transaction: jsonbuf grow malloc failed\n");
+                _Debug(c_dbg_msg_transaction_jsonbuf_malloc_failed);
 #endif
                 _Free(jsonbuf);
                 _UnlockI2C();
-                return ERRSTR("insufficient memory",c_mem);
+                return ERRSTR(c_dbg_msg_insufficient_memory,c_mem);
             }
             memcpy(jsonbufNew, jsonbuf, jsonbufLen);
             _Free(jsonbuf);
@@ -158,7 +160,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
         if (err != NULL) {
             _Free(jsonbuf);
 #ifdef ERRDBG
-            _Debug("i2c receive error\n");
+            _Debug(c_dbg_msg_i2c_receive_error);
 #endif
             _UnlockI2C();
             return err;
@@ -194,10 +196,10 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
         if (_GetMs() >= startMs + (NOTECARD_TRANSACTION_TIMEOUT_SEC*1000)) {
             _Free(jsonbuf);
 #ifdef ERRDBG
-            _Debug("reply to request didn't arrive from module in time\n");
+            _Debug(c_dbg_msg_reply_to_request_did_not_arrive_from_module_in_time);
 #endif
             _UnlockI2C();
-            return ERRSTR("request or response was lost {io}",c_iotimeout);
+            return ERRSTR(c_dbg_msg_request_or_response_was_lost,c_dbg_msg_io_timeout);
         }
 
         // Delay, simply waiting for the Note to process the request
@@ -240,7 +242,7 @@ bool i2cNoteReset()
     // the remainder of any pending partial reply from a previously-aborted session.
     // If we get a failure on transmitting the \n, it means that the notecard isn't even present.
     _DelayIO();
-    const char *transmitErr = _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
+    const char *transmitErr = _I2CTransmit(_I2CAddress(), (uint8_t *)c_newline, c_newline_len);
     if (!cardTurboIO) {
         _DelayMs(CARD_REQUEST_I2C_SEGMENT_DELAY_MS);
     }
@@ -288,7 +290,7 @@ bool i2cNoteReset()
     // Reinitialize i2c if there's no response
     if (!notecardReady) {
         _I2CReset(_I2CAddress());
-        _Debug(ERRSTR("notecard not responding\n", "no notecard\n"));
+        _Debug(ERRSTR(c_dbg_msg_notecard_not_responding, c_dbg_msg_no_notecard));
     }
 
     // Done with the bus

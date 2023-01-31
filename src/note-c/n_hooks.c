@@ -445,11 +445,11 @@ void *malloc_show(size_t len)
 {
     char str[16];
     JItoA(len, str);
-    hookDebugOutput("malloc ");
+    hookDebugOutput(c_malloc);
     hookDebugOutput(str);
     void *p = hookMalloc(len);
     if (p == NULL) {
-        hookDebugOutput("FAIL");
+        hookDebugOutput(c_FAIL);
     } else {
         htoa32((uint32_t)p, str);
         hookDebugOutput(str);
@@ -488,7 +488,7 @@ void NoteFree(void *p)
 #if NOTE_SHOW_MALLOC
         char str[16];
         htoa32((uint32_t)p, str);
-        hookDebugOutput("free");
+        hookDebugOutput(c_free);
         hookDebugOutput(str);
 #endif
         hookFree(p);
@@ -578,11 +578,11 @@ const char *NoteActiveInterface()
 {
     switch (hookActiveInterface) {
     case interfaceSerial:
-        return "serial";
+        return c_serial;
     case interfaceI2C:
-        return "i2c";
+        return c_i2c;
     }
-    return "unknown";
+    return c_unknown;
 }
 
 //**************************************************************************/
@@ -673,7 +673,7 @@ const char *NoteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size
     if (hookActiveInterface == interfaceI2C && hookI2CTransmit != NULL) {
         return hookI2CTransmit(DevAddress, pBuffer, Size);
     }
-    return "i2c not active";
+    return c_dbg_msg_i2c_not_active;
 }
 
 //**************************************************************************/
@@ -692,7 +692,7 @@ const char *NoteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size,
     if (hookActiveInterface == interfaceI2C && hookI2CReceive != NULL) {
         return hookI2CReceive(DevAddress, pBuffer, Size, available);
     }
-    return "i2c not active";
+    return c_dbg_msg_i2c_not_active;
 }
 
 //**************************************************************************/
@@ -771,7 +771,7 @@ bool NoteHardReset()
 const char *NoteJSONTransaction(char *json, char **jsonResponse)
 {
     if (notecardTransaction == NULL || hookActiveInterface == interfaceNone) {
-        return "i2c or serial interface must be selected";
+        return c_dbg_msg_i2c_or_serial_interface_must_be_selected;
     }
     return notecardTransaction(json, jsonResponse);
 }

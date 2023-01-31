@@ -106,7 +106,7 @@ bool JBoolValue(J *item)
 char *JStringValue(J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return (char *)c_nullstring;
     }
     return item->valuestring;
 }
@@ -392,7 +392,7 @@ bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData
 const char *JGetItemName(const J * item)
 {
     if (item == NULL || item->string == NULL) {
-        return "";
+        return c_nullstring;
     }
     return item->string;
 }
@@ -494,25 +494,25 @@ char *JAllocString(uint8_t *buffer, uint32_t len)
 const char *JType(J *item)
 {
     if (item == NULL) {
-        return "";
+        return c_nullstring;
     }
     switch (item->type & 0xff) {
     case JTrue:
     case JFalse:
-        return "bool";
+        return c_bool;
     case JNULL:
-        return "null";
+        return c_null;
     case JNumber:
-        return "number";
+        return c_number;
     case JRaw:
     case JString:
-        return "string";
+        return c_string;
     case JObject:
-        return "object";
+        return c_object;
     case JArray:
-        return "array";
+        return c_array;
     }
-    return "invalid";
+    return c_invalid;
 }
 
 //**************************************************************************/
