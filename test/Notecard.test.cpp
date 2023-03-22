@@ -1773,6 +1773,121 @@ int test_notecard_sendRequest_does_not_modify_note_c_result_value_before_returni
   return result;
 }
 
+int test_notecard_sendRequestWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  J * EXPECTED_JSON = reinterpret_cast<J *>(malloc(sizeof(J)));
+  J * json_cpy;
+  assert(nullptr != EXPECTED_JSON);
+
+  noteRequestWithRetry_Parameters.reset();
+  memset(EXPECTED_JSON, 0x55, sizeof(J));
+  {
+    json_cpy = reinterpret_cast<J *>(malloc(sizeof(J)));
+    assert(nullptr != json_cpy);
+    memcpy(json_cpy, EXPECTED_JSON, sizeof(J));
+  }
+
+   // Action
+  ///////////
+
+  notecard.sendRequestWithRetry(json_cpy, 0);
+
+   // Assert
+  ///////////
+
+  if (!memcmp(EXPECTED_JSON, noteRequestWithRetry_Parameters.req, sizeof(J)))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestWithRetry_Parameters.req != EXPECTED_JSON" << std::endl;
+    std::cout << "[";
+  }
+
+  free(json_cpy);
+  free(EXPECTED_JSON);
+  return result;
+}
+
+int test_notecard_sendRequestWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  uint32_t EXPECTED_TIMEOUT = 10;
+  noteRequestWithRetry_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.sendRequestWithRetry(nullptr, EXPECTED_TIMEOUT);
+
+   // Assert
+  ///////////
+
+  if (EXPECTED_TIMEOUT == noteRequestWithRetry_Parameters.timeoutSeconds)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestWithRetry_Parameters.timeoutSeconds != EXPECTED_TIMEOUT" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_sendRequestWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  const bool EXPECTED_RESULT = true;
+
+  noteRequestWithRetry_Parameters.reset();
+  noteRequestWithRetry_Parameters.result = EXPECTED_RESULT;
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = notecard.sendRequestWithRetry(nullptr, 0);
+
+   // Assert
+  ///////////
+
+  if (EXPECTED_RESULT == ACTUAL_RESULT)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotecard.sendRequestWithRetry(nullptr, 0) == \"" << ACTUAL_RESULT << "\", EXPECTED: \"" << EXPECTED_RESULT << "\"" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c()
 {
   int result;
@@ -1858,6 +1973,129 @@ int test_notecard_requestAndResponse_does_not_modify_note_c_result_value_before_
   }
 
   free(noteRequestResponse_Parameters.result);
+  free(EXPECTED_JSON);
+  return result;
+}
+
+int test_notecard_requestAndResponseWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  J *EXPECTED_JSON = reinterpret_cast<J *>(malloc(sizeof(J)));
+  J *json_cpy;
+  assert(nullptr != EXPECTED_JSON);
+
+  noteRequestResponseWithRetry_Parameters.reset();
+  memset(EXPECTED_JSON, 0x55, sizeof(J));
+  {
+    json_cpy = reinterpret_cast<J *>(malloc(sizeof(J)));
+    assert(nullptr != json_cpy);
+    memcpy(json_cpy, EXPECTED_JSON, sizeof(J));
+  }
+
+   // Action
+  ///////////
+
+  notecard.requestAndResponseWithRetry(json_cpy, 0);
+
+   // Assert
+  ///////////
+
+  if (!memcmp(EXPECTED_JSON, noteRequestResponseWithRetry_Parameters.req, sizeof(J)))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestResponseWithRetry_Parameters.req != EXPECTED_JSON" << std::endl;
+    std::cout << "[";
+  }
+
+  free(json_cpy);
+  free(EXPECTED_JSON);
+  return result;
+}
+
+int test_notecard_requestAndResponseWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  uint32_t EXPECTED_TIMEOUT = 10;
+  noteRequestResponseWithRetry_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.requestAndResponseWithRetry(nullptr, EXPECTED_TIMEOUT);
+
+   // Assert
+  ///////////
+
+  if (EXPECTED_TIMEOUT == noteRequestResponseWithRetry_Parameters.timeoutSeconds)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestResponseWithRetry_Parameters.timeoutSeconds != EXPECTED_TIMEOUT" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_requestAndResponseWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  J * EXPECTED_JSON = reinterpret_cast<J *>(malloc(sizeof(J)));
+  assert(nullptr != EXPECTED_JSON);
+
+  noteRequestResponseWithRetry_Parameters.reset();
+  memset(EXPECTED_JSON, 0x55, sizeof(J));
+  {
+    noteRequestResponseWithRetry_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+    assert(nullptr != noteRequestResponseWithRetry_Parameters.result);
+    memcpy(noteRequestResponseWithRetry_Parameters.result, EXPECTED_JSON, sizeof(J));
+  }
+
+   // Action
+  ///////////
+
+  const J * const ACTUAL_RESULT = notecard.requestAndResponseWithRetry(nullptr, 0);
+
+   // Assert
+  ///////////
+
+  if (!memcmp(EXPECTED_JSON, ACTUAL_RESULT, sizeof(J)))
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotecard.requestAndResponseWithRetry(nullptr, 0) != EXPECTED_JSON" << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteRequestResponseWithRetry_Parameters.result);
   free(EXPECTED_JSON);
   return result;
 }
@@ -4276,8 +4514,14 @@ int main(void)
       {test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
       {test_notecard_sendRequest_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_sendRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_notecard_sendRequestWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_sendRequestWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
+      {test_notecard_sendRequestWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c, "test_notecard_sendRequestWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c"},
+      {test_notecard_sendRequestWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_sendRequestWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
       {test_notecard_requestAndResponse_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_requestAndResponse_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_notecard_requestAndResponseWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_requestAndResponseWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
+      {test_notecard_requestAndResponseWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c, "test_notecard_requestAndResponseWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c"},
+      {test_notecard_requestAndResponseWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_requestAndResponseWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_deleteResponse_does_not_modify_j_object_parameter_pointer_before_passing_to_note_c, "test_notecard_deleteResponse_does_not_modify_j_object_parameter_pointer_before_passing_to_note_c"},
       {test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing_to_note_c"},
       {test_notecard_logDebugf_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_logDebugf_does_not_modify_string_parameter_value_before_passing_to_note_c"},
