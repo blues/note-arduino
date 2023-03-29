@@ -356,6 +356,23 @@ bool Notecard::sendRequest(J *req)
 
 /**************************************************************************/
 /*!
+    @brief  Sends a request to the Notecard, retrying it on failure until the
+            provided timeout interval lapses.
+    @param    req
+              A `J` JSON request object.
+    @param    timeoutSeconds
+              The timeout interval, in seconds.
+    @return `True` if the message was successfully sent to the Notecard,
+            `False` if the message couldn't be sent.
+*/
+/**************************************************************************/
+bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    return NoteRequestWithRetry(req, timeoutSeconds);
+}
+
+/**************************************************************************/
+/*!
     @brief  Sends a request to the Notecard and returns the JSON Response.
             This function takes a populated `J` JSON request object
             and sends it to the Notecard.
@@ -367,6 +384,22 @@ bool Notecard::sendRequest(J *req)
 J *Notecard::requestAndResponse(J *req)
 {
     return NoteRequestResponse(req);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard, retrying it on failure until the
+            provided timeout interval lapses, and returns the JSON response.
+    @param    req
+              A `J` JSON request object.
+    @param    timeoutSeconds
+              The timeout interval, in seconds.
+    @return `J` JSON Object with the response from the Notecard.
+*/
+/**************************************************************************/
+J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    return NoteRequestResponseWithRetry(req, timeoutSeconds);
 }
 
 /**************************************************************************/

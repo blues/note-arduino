@@ -6,7 +6,9 @@ NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
 NoteNewCommand_Parameters noteNewCommand_Parameters;
 NoteNewRequest_Parameters noteNewRequest_Parameters;
 NoteRequest_Parameters noteRequest_Parameters;
+NoteRequestWithRetry_Parameters noteRequestWithRetry_Parameters;
 NoteRequestResponse_Parameters noteRequestResponse_Parameters;
+NoteRequestResponseWithRetry_Parameters noteRequestResponseWithRetry_Parameters;
 NoteResponseError_Parameters noteResponseError_Parameters;
 NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
@@ -118,6 +120,22 @@ NoteRequest(
     return noteRequest_Parameters.result;
 }
 
+bool
+NoteRequestWithRetry(
+    J * req_,
+    uint32_t timeoutSeconds_
+) {
+    // Record invocation(s)
+    ++noteRequestWithRetry_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteRequestWithRetry_Parameters.req = req_;
+    noteRequestWithRetry_Parameters.timeoutSeconds = timeoutSeconds_;
+
+    // Return user-supplied result
+    return noteRequestWithRetry_Parameters.result;
+}
+
 J *
 NoteRequestResponse(
     J * req_
@@ -130,6 +148,22 @@ NoteRequestResponse(
 
     // Return user-supplied result
     return noteRequestResponse_Parameters.result;
+}
+
+J *
+NoteRequestResponseWithRetry(
+    J * req_,
+    uint32_t timeoutSeconds_
+) {
+    // Record invocation(s)
+    ++noteRequestResponseWithRetry_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteRequestResponseWithRetry_Parameters.req = req_;
+    noteRequestResponseWithRetry_Parameters.timeoutSeconds = timeoutSeconds_;
+
+    // Return user-supplied result
+    return noteRequestResponseWithRetry_Parameters.result;
 }
 
 void

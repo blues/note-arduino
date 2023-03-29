@@ -148,6 +148,30 @@ struct NoteRequest_Parameters {
     bool result;
 };
 
+struct NoteRequestWithRetry_Parameters {
+    NoteRequestWithRetry_Parameters(
+        void
+    ) :
+        invoked(0),
+        req(nullptr),
+        timeoutSeconds(0),
+        result(false)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        req = nullptr;
+        timeoutSeconds = 0;
+        result = false;
+    }
+    size_t invoked;
+    J *req;
+    uint32_t timeoutSeconds;
+    bool result;
+};
+
 struct NoteRequestResponse_Parameters {
     NoteRequestResponse_Parameters(
         void
@@ -166,6 +190,30 @@ struct NoteRequestResponse_Parameters {
     }
     size_t invoked;
     J *req;
+    J *result;
+};
+
+struct NoteRequestResponseWithRetry_Parameters {
+    NoteRequestResponseWithRetry_Parameters(
+        void
+    ) :
+        invoked(0),
+        req(nullptr),
+        timeoutSeconds(0),
+        result(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        req = nullptr;
+        timeoutSeconds = 0;
+        result = nullptr;
+    }
+    size_t invoked;
+    J *req;
+    uint32_t timeoutSeconds;
     J *result;
 };
 
@@ -339,7 +387,9 @@ extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
 extern NoteNewCommand_Parameters noteNewCommand_Parameters;
 extern NoteNewRequest_Parameters noteNewRequest_Parameters;
 extern NoteRequest_Parameters noteRequest_Parameters;
+extern NoteRequestWithRetry_Parameters noteRequestWithRetry_Parameters;
 extern NoteRequestResponse_Parameters noteRequestResponse_Parameters;
+extern NoteRequestResponseWithRetry_Parameters noteRequestResponseWithRetry_Parameters;
 extern NoteResponseError_Parameters noteResponseError_Parameters;
 extern NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 extern NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;

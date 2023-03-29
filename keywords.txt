@@ -9,10 +9,13 @@ FUNCTIONS
 begin	KEYWORD2
 setDebugOutputStream	KEYWORD2
 clearDebugOutputStream	KEYWORD2
+setTransactionPins KEYWORD2
 newRequest	KEYWORD2
 newCommand	KEYWORD2
 sendRequest	KEYWORD2
+sendRequestWithRetry KEYWORD2
 requestAndResponse	KEYWORD2
+requestAndResponseWithRetry KEYWORD2
 deleteResponse	KEYWORD2
 logDebug	KEYWORD2
 logDebugf	KEYWORD2

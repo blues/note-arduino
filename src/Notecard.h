@@ -86,7 +86,9 @@ public:
     J *newRequest(const char *request);
     J *newCommand(const char *request);
     bool sendRequest(J *req);
+    bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds);
     J *requestAndResponse(J *req);
+    J *requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds);
     void deleteResponse(J *rsp);
     void logDebug(const char *message);
     void logDebugf(const char *format, ...);
