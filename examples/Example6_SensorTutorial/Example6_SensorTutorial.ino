@@ -1,21 +1,15 @@
-//
 // Copyright 2019 Blues Inc.  All rights reserved.
+//
 // Use of this source code is governed by licenses granted by the
 // copyright holder including that found in the LICENSE file.
 //
-// This example contains the complete source for the Sensor Tutorial at dev.blues.io
-// https://dev.blues.io/build/tutorials/sensor-tutorial/notecarrier-af/esp32/arduino-wiring/
-//
-// This tutorial requires an external Adafruit BME680 Sensor.
-//
+// This example contains the complete source for the Sensor Tutorial at
+// https//blues.dev
+// https://blues.dev/guides-and-tutorials/collecting-sensor-data/notecarrier-f/blues-wireless-swan/c-cpp-arduino-wiring/
 
 // Include the Arduino library for the Notecard
 #include <Notecard.h>
-
-#include <Wire.h>
-#include <Adafruit_BME680.h>
-
-Adafruit_BME680 bmeSensor;
+#include <NotecardPseudoSensor.h>
 
 //#define txRxPinsSerial Serial1
 #define usbSerial Serial
@@ -27,13 +21,21 @@ Adafruit_BME680 bmeSensor;
 #endif
 
 #define myProductID PRODUCT_UID
+
+using namespace blues;
+
 Notecard notecard;
+NotecardPseudoSensor sensor(notecard);
 
 // One-time Arduino initialization
 void setup()
 {
+    // Set up for debug output (if available).
 #ifdef usbSerial
-    delay(2500);
+    // If you open Arduino's serial terminal window, you'll be able to watch
+    // JSON objects being transferred to and from the Notecard for each request.
+    const size_t usb_timeout_ms = 3000;
+    for (const size_t start_ms = millis() ; !usbSerial && (millis() - start_ms) < usb_timeout_ms ;);
     usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
@@ -42,8 +44,6 @@ void setup()
 #ifdef txRxPinsSerial
     notecard.begin(txRxPinsSerial, 9600);
 #else
-    Wire.begin();
-
     notecard.begin();
 #endif
 
@@ -52,46 +52,30 @@ void setup()
         JAddStringToObject(req, "product", myProductID);
     }
     JAddStringToObject(req, "mode", "continuous");
-    notecard.sendRequest(req);
-
-    if (!bmeSensor.begin()) {
-        usbSerial.println("Could not find a valid BME680 sensor...");
-    } else {
-        usbSerial.println("BME680 Connected...");
-    }
-
-    bmeSensor.setTemperatureOversampling(BME680_OS_8X);
-    bmeSensor.setHumidityOversampling(BME680_OS_2X);
+    notecard.sendRequestWithRetry(req, 5);  // 5 seconds
 }
 
 void loop()
 {
-    if (! bmeSensor.performReading()) {
-        usbSerial.println("Failed to obtain a reading...");
-        delay(15000);
-        return;
-    }
+    float temperature = sensor.temp();
+    float humidity = sensor.humidity();
 
     usbSerial.print("Temperature = ");
-    usbSerial.print(bmeSensor.temperature);
+    usbSerial.print(temperature);
     usbSerial.println(" *C");
-
     usbSerial.print("Humidity = ");
-    usbSerial.print(bmeSensor.humidity);
+    usbSerial.print(humidity);
     usbSerial.println(" %");
 
     J *req = notecard.newRequest("note.add");
     if (req != NULL) {
         JAddStringToObject(req, "file", "sensors.qo");
         JAddBoolToObject(req, "sync", true);
-
-        J *body = JCreateObject();
-        if (body != NULL) {
-            JAddNumberToObject(body, "temp", bmeSensor.temperature);
-            JAddNumberToObject(body, "humidity", bmeSensor.humidity);
-            JAddItemToObject(req, "body", body);
+        J *body = JAddObjectToObject(req, "body");
+        if (body) {
+            JAddNumberToObject(body, "temp", temperature);
+            JAddNumberToObject(body, "humidity", humidity);
         }
-
         notecard.sendRequest(req);
     }
 

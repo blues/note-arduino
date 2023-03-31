@@ -102,7 +102,7 @@ RUN ["dash", "-c", "\
  && arduino-cli core install rp2040:rp2040 \
  && arduino-cli core install SparkFun:apollo3 \
  && arduino-cli core install STMicroelectronics:stm32 \
- && arduino-cli lib install \"Adafruit BME680 Library\" \
+ && arduino-cli lib install \"Blues Wireless Notecard Pseudo Sensor\" \
 "]
 
 # Set Execution Environment
