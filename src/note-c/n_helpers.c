@@ -48,6 +48,9 @@ static bool locationValid = false;
 static uint32_t connectivityTimer = 0;
 static bool cardConnected = false;
 
+// Status suppression timer
+static uint32_t statusTimer = 0;
+
 // Turbo communications mode, for special use cases and well-tested hardware
 bool cardTurboIO = false;
 
@@ -65,8 +68,8 @@ static short normalYearDaysByMonth[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 
 static const char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 // Forwards
-static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
-static int ytodays(int year);
+STATIC bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
+STATIC int ytodays(int year);
 
 //**************************************************************************/
 /*!
@@ -124,7 +127,7 @@ void NoteTimeRefreshMins(uint32_t mins)
   @param   seconds The UNIX Epoch time.
 */
 /**************************************************************************/
-static void setTime(JTIME seconds)
+STATIC void setTime(JTIME seconds)
 {
     timeBaseSec = seconds;
     timeBaseSetAtMs = _GetMs();
@@ -135,7 +138,10 @@ static void setTime(JTIME seconds)
   @brief  Set the time from a source that is NOT the Notecard
   @param   seconds The UNIX Epoch time, or 0 to set back to automatic Notecard time
   @param   offset The local time zone offset, in minutes, to adjust UTC
-  @param   zone The optional local time zone name (3 character c-string)
+  @param   zone The optional local time zone name (3 character c-string). Note
+                that this isn't used in any time calculations. To compute
+                accurate local time, only the offset is used. See
+                https://www.iana.org/time-zones for a time zone database.
   @param   zone The optional country
   @param   area The optional region
 */
@@ -330,7 +336,7 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
 
 //**************************************************************************/
 /*!
-  @brief  Return local region info, if known. Returns true if valid.
+  @brief  Return local time info, if known. Returns true if valid.
   @param   year, month, day, hour, minute, second - pointers to where to return time/date
   @param   retZone (in-out) if NULL, local time will be returned in UTC, else returns pointer to zone string
   @returns boolean indicating if either the zone or DST have changed since last call
@@ -438,7 +444,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
 }
 
 // Figure out how many days at start of the year
-static int ytodays(int year)
+STATIC int ytodays(int year)
 {
     int days = 0;
     if (0 < year) {
@@ -586,7 +592,7 @@ bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal)
 /**************************************************************************/
 JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal)
 {
-    char buf[JNTOA_MAX], buf2[JNTOA_MAX];;
+    char buf[JNTOA_MAX], buf2[JNTOA_MAX];
     JNtoA(defaultVal, buf2, -1);
     NoteGetEnv(variable, buf2, buf, sizeof(buf));
     return JAtoN((const char*)buf, NULL);
@@ -602,7 +608,7 @@ JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal)
 /**************************************************************************/
 long int NoteGetEnvInt(const char *variable, long int defaultVal)
 {
-    char buf[32], buf2[32];;
+    char buf[32], buf2[32];
     JItoA(defaultVal, buf2);
     NoteGetEnv(variable, buf2, buf, sizeof(buf));
     return atoi(buf);
@@ -952,39 +958,8 @@ bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBu
 /**************************************************************************/
 bool NoteGetStatus(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *retUSB, bool *retSignals)
 {
-    bool success = false;
-    if (statusBuf != NULL) {
-        statusBuf[0] = '\0';
-    }
-    if (bootTime != NULL) {
-        *bootTime = 0;
-    }
-    if (retUSB != NULL) {
-        *retUSB = false;
-    }
-    if (retSignals != NULL) {
-        *retSignals = false;
-    }
-    J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
-    if (rsp != NULL) {
-        success = !NoteResponseError(rsp);
-        if (success) {
-            if (statusBuf != NULL) {
-                strlcpy(statusBuf, JGetString(rsp, "status"), statusBufLen);
-            }
-            if (bootTime != NULL) {
-                *bootTime = JGetInt(rsp, "time");
-            }
-            if (retUSB != NULL) {
-                *retUSB = JGetBool(rsp, "usb");
-            }
-            if (retSignals != NULL && JGetBool(rsp, "connected")) {
-                *retSignals = (JGetInt(rsp, "signals") > 0);
-            }
-        }
-        NoteDeleteResponse(rsp);
-    }
-    return success;
+    statusTimer = 0;
+    return NoteGetStatusST(statusBuf, statusBufLen, bootTime, retUSB, retSignals);
 }
 
 //**************************************************************************/
@@ -1006,7 +981,6 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
     static JTIME lastBootTime = 0;
     static bool lastUSB = false;
     static bool lastSignals = false;
-    static uint32_t statusTimer = 0;
 
     // Refresh if it's time to do so
     if (timerExpiredSecs(&statusTimer, suppressionTimerSecs)) {
@@ -1053,7 +1027,9 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
   @param  payload An optional binary payload to keep in memory while the host sleeps.
   @param  seconds The duration to sleep.
   @param  modes Optional list of additional `card.attn` modes.
-  @returns boolean. `true` if request was successful.
+  @returns boolean. `true` if the cmd is sent without error. The Notecard
+           does not reply to `cmd` so a `true` return value does not guarantee
+           that the sleep request was received and processed by the Notecard.
 */
 /**************************************************************************/
 bool NotePayloadSaveAndSleep(NotePayloadDesc *desc, uint32_t seconds, const char *modes)
@@ -1097,7 +1073,9 @@ bool NotePayloadSaveAndSleep(NotePayloadDesc *desc, uint32_t seconds, const char
   @param  stateb64 A base64 payload to keep in memory while the host sleeps.
   @param  seconds The duration to sleep.
   @param  modes Optional list of additional `card.attn` modes.
-  @returns boolean. `true` if request was successful.
+  @returns boolean. `true` if the cmd is sent without error. The Notecard
+           does not reply to `cmd` so a `true` return value does not guarantee
+           that the sleep request was received and processed by the Notecard.
 */
 /**************************************************************************/
 bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
@@ -1127,6 +1105,9 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
         }
         JAddStringToObject(req, "mode", modestr);
         JAddNumberToObject(req, "seconds", seconds);
+
+        // Note that since we use cmd and not req a true return value from
+        // NoteRequest means only that the cmd was sent without error.
         success = NoteRequest(req);
     }
 
@@ -1140,8 +1121,7 @@ bool NoteSleep(char *stateb64, uint32_t seconds, const char *modes)
 //**************************************************************************/
 /*!
   @brief  Wake the module by restoring state into a state buffer of a
-  specified length, and fail if it isn't available or isn't that
-  length.
+  specified length, and fail if it isn't available or isn't that length.
   @param  stateLen A length of the state payload buffer to return to the host.
   @param  state (out) The in-memory payload to return to the host.
   @returns boolean. `true` if request was successful.
@@ -1167,8 +1147,8 @@ bool NoteWake(int stateLen, void *state)
 /*!
   @brief  Wake the module by restoring state into a state buffer, returning
   its length, and fail if it isn't available.
-  @param  payloadLen (out) Optional place to receive the length of the returned buffer
-  @param  payload (out) The place to store address of returned in-memory payload
+  @param  NotePayloadDesc (out) Payload descriptor to hold the retrieved
+  payload.
   @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
@@ -1415,7 +1395,8 @@ bool NoteTemplate(const char *target, J *body)
 
 //**************************************************************************/
 /*!
-  @brief  Add a Note to a Notefile with `note.add`.
+  @brief  Add a Note to a Notefile with `note.add`. Body is freed, regardless
+          of success.
   @param   target The Notefile on which to set a template.
   @param   body The template body.
   @param   urgent Whether to perform an immediate sync after the Note
@@ -1489,11 +1470,15 @@ bool NoteSendToRoute(const char *method, const char *routeAlias, char *notefile,
     body = JDetachItemFromObject(rsp, "body");
     NoteDeleteResponse(rsp);
 
-    // Create the post transaction
+    // Create the web transaction
     char request[32];
     strlcpy(request, "web.", sizeof(request));
     strlcat(request, method, sizeof(request));
     req = NoteNewRequest(request);
+    if (req == NULL) {
+        JDelete(body);
+        return false;
+    }
 
     // Add the body, and the alias of the route on the notehub, hard-wired here
     JAddItemToObject(req, "body", body);
@@ -1605,10 +1590,10 @@ bool NoteGetContact(char *nameBuf, int nameBufLen, char *orgBuf, int orgBufLen, 
 //**************************************************************************/
 /*!
   @brief  Set the Notecard contact info.
-  @param   nameBuf (out) The contact name buffer.
-  @param   orgBuf (out) The contact organization buffer.
-  @param   roleBuf (out) The contact role buffer.
-  @param   emailBuf (out) The contact email buffer.
+  @param   nameBuf (in) The contact name buffer.
+  @param   orgBuf (in) The contact organization buffer.
+  @param   roleBuf (in) The contact role buffer.
+  @param   emailBuf (in) The contact email buffer.
   @returns boolean. `true` if request was successful.
 */
 /**************************************************************************/
@@ -1636,7 +1621,7 @@ bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf)
 // A simple suppression timer based on a millisecond system clock.  This clock is reset to 0
 // after boot and every wake.  This returns true if the specified interval has elapsed, in seconds,
 // and it updates the timer if it expires so that we will go another period.
-static bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs)
+STATIC bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs)
 {
     bool expired = false;
 
@@ -1672,7 +1657,7 @@ bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
 
     // Suppress polls so as to not overwhelm the notecard
     static uint32_t lastCommStatusPollMs = 0;
-    if (lastCommStatusPollMs != 0 && _GetMs() < (lastCommStatusPollMs + pollFrequencyMs)) {
+    if (lastCommStatusPollMs != 0 && (_GetMs() - lastCommStatusPollMs) < (uint32_t) pollFrequencyMs) {
         return false;
     }
 

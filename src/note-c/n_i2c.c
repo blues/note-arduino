@@ -191,7 +191,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
         }
 
         // If we've timed out and nothing's available, exit
-        if (_GetMs() >= startMs + (NOTECARD_TRANSACTION_TIMEOUT_SEC*1000)) {
+        if (_GetMs() - startMs >= NOTECARD_TRANSACTION_TIMEOUT_SEC*1000) {
             _Free(jsonbuf);
 #ifdef ERRDBG
             _Debug("reply to request didn't arrive from module in time\n");

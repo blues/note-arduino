@@ -65,6 +65,11 @@ char NoteSerialReceiveMultiChunk()
     }
 }
 
+void *MallocNull(size_t)
+{
+    return NULL;
+}
+
 TEST_CASE("serialNoteTransaction")
 {
     NoteSetFnDefault(NULL, free, NULL, NULL);
@@ -80,8 +85,8 @@ TEST_CASE("serialNoteTransaction")
     SECTION("Transmit buffer allocation fails") {
         NoteMalloc_fake.return_val = NULL;
 
-        REQUIRE(serialNoteTransaction(noteAddReq, NULL) != NULL);
-        REQUIRE(NoteMalloc_fake.call_count == 1);
+        CHECK(serialNoteTransaction(noteAddReq, NULL) != NULL);
+        CHECK(NoteMalloc_fake.call_count == 1);
     }
 
     SECTION("No response expected") {
@@ -98,13 +103,13 @@ TEST_CASE("serialNoteTransaction")
             memset(request, 1, reqLen);
             request[reqLen] = '\0';
 
-            REQUIRE(serialNoteTransaction(request, NULL) == NULL);
+            CHECK(serialNoteTransaction(request, NULL) == NULL);
             // The request length is less than
             // CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN, so it should all be sent in
             // one call to NoteSerialTransmit.
-            REQUIRE(NoteSerialTransmit_fake.call_count == 1);
-            REQUIRE(!memcmp(transmitBuf, request, reqLen - 2));
-            REQUIRE(!memcmp(transmitBuf + reqLen, c_newline, c_newline_len));
+            CHECK(NoteSerialTransmit_fake.call_count == 1);
+            CHECK(!memcmp(transmitBuf, request, reqLen - 2));
+            CHECK(!memcmp(transmitBuf + reqLen, c_newline, c_newline_len));
         }
 
         SECTION("Multiple transmissions") {
@@ -114,13 +119,13 @@ TEST_CASE("serialNoteTransaction")
             memset(request, 1, reqLen);
             request[reqLen] = '\0';
 
-            REQUIRE(serialNoteTransaction(request, NULL) == NULL);
+            CHECK(serialNoteTransaction(request, NULL) == NULL);
             // The request is 1 byte greater than
             // CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN, so it should require two
             // calls to NoteSerialTransmit.
-            REQUIRE(NoteSerialTransmit_fake.call_count == 2);
-            REQUIRE(!memcmp(transmitBuf, request, reqLen - 2));
-            REQUIRE(!memcmp(transmitBuf + reqLen, c_newline, c_newline_len));
+            CHECK(NoteSerialTransmit_fake.call_count == 2);
+            CHECK(!memcmp(transmitBuf, request, reqLen - 2));
+            CHECK(!memcmp(transmitBuf + reqLen, c_newline, c_newline_len));
         }
 
         free(request);
@@ -138,10 +143,10 @@ TEST_CASE("serialNoteTransaction")
             SET_RETURN_SEQ(NoteMalloc, mallocReturnVals, 2);
             const char* err;
 
-            REQUIRE((err = serialNoteTransaction(noteAddReq, &resp)) != NULL);
-            REQUIRE(NoteSerialTransmit_fake.call_count == 1);
-            REQUIRE(NoteSerialReceive_fake.call_count == 0);
-            REQUIRE(NoteMalloc_fake.call_count == 2);
+            CHECK((err = serialNoteTransaction(noteAddReq, &resp)) != NULL);
+            CHECK(NoteSerialTransmit_fake.call_count == 1);
+            CHECK(NoteSerialReceive_fake.call_count == 0);
+            CHECK(NoteMalloc_fake.call_count == 2);
         }
 
         SECTION("NoteSerialReceive fails") {
@@ -149,26 +154,41 @@ TEST_CASE("serialNoteTransaction")
             NoteMalloc_fake.custom_fake = malloc;
             NoteSerialReceive_fake.return_val = 0;
 
-            REQUIRE(serialNoteTransaction(noteAddReq, &resp) != NULL);
-            REQUIRE(NoteSerialTransmit_fake.call_count == 1);
-            REQUIRE(NoteSerialReceive_fake.call_count == 1);
+            CHECK(serialNoteTransaction(noteAddReq, &resp) != NULL);
+            CHECK(NoteSerialTransmit_fake.call_count == 1);
+            CHECK(NoteSerialReceive_fake.call_count == 1);
         }
 
         SECTION("Force timeout before receive") {
             NoteSerialAvailable_fake.return_val = false;
             NoteMalloc_fake.custom_fake = malloc;
             NoteSerialReceive_fake.return_val = '{';
-            long unsigned int getMsReturnVals[] = {
-                0, 100, NOTECARD_TRANSACTION_TIMEOUT_SEC * 1000 + 1
-            };
+            long unsigned int getMsReturnVals[3];
+
+            SECTION("No millisecond overflow") {
+                getMsReturnVals[0] = 0;
+                getMsReturnVals[1] = 100;
+                getMsReturnVals[2] = NOTECARD_TRANSACTION_TIMEOUT_SEC * 1000
+                                     + 1;
+            }
+
+            SECTION("Millisecond overflow") {
+                getMsReturnVals[0] = UINT32_MAX -
+                                     NOTECARD_TRANSACTION_TIMEOUT_SEC * 1000;
+                getMsReturnVals[1] = UINT32_MAX -
+                                     (NOTECARD_TRANSACTION_TIMEOUT_SEC - 1) *
+                                     1000;
+                getMsReturnVals[2] = 0;
+            }
+
             SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
             const char* err;
 
-            REQUIRE((err = serialNoteTransaction(noteAddReq, &resp)) != NULL);
+            CHECK((err = serialNoteTransaction(noteAddReq, &resp)) != NULL);
             // Make sure we actually timed out by checking the error message.
-            REQUIRE(strstr(err, "timeout") != NULL);
-            REQUIRE(NoteSerialTransmit_fake.call_count == 1);
-            REQUIRE(NoteSerialReceive_fake.call_count == 0);
+            CHECK(strstr(err, "timeout") != NULL);
+            CHECK(NoteSerialTransmit_fake.call_count == 1);
+            CHECK(NoteSerialReceive_fake.call_count == 0);
         }
 
         SECTION("Check response") {
@@ -177,8 +197,8 @@ TEST_CASE("serialNoteTransaction")
                 NoteMalloc_fake.custom_fake = malloc;
                 NoteSerialReceive_fake.return_val = '\n';
 
-                REQUIRE(serialNoteTransaction(noteAddReq, &resp) == NULL);
-                REQUIRE(NoteSerialReceive_fake.call_count == 1);
+                CHECK(serialNoteTransaction(noteAddReq, &resp) == NULL);
+                CHECK(NoteSerialReceive_fake.call_count == 1);
             }
 
             SECTION("Multiple chunks") {
@@ -186,19 +206,44 @@ TEST_CASE("serialNoteTransaction")
                 NoteMalloc_fake.custom_fake = malloc;
                 NoteSerialReceive_fake.custom_fake = NoteSerialReceiveMultiChunk;
 
-                REQUIRE(serialNoteTransaction(noteAddReq, &resp) == NULL);
-                REQUIRE(NoteSerialReceive_fake.call_count == SERIAL_MULTI_CHUNK_RECV_BYTES);
+                CHECK(serialNoteTransaction(noteAddReq, &resp) == NULL);
+                CHECK(NoteSerialReceive_fake.call_count == SERIAL_MULTI_CHUNK_RECV_BYTES);
             }
 
             // The response should be all 1s followed by a newline.
             size_t respSz = strlen(resp);
             for (size_t i = 0; i < respSz; ++i) {
                 if (i != respSz - 1) {
-                    REQUIRE(resp[i] == 1);
+                    CHECK(resp[i] == 1);
                 } else {
-                    REQUIRE(resp[i] == '\n');
+                    CHECK(resp[i] == '\n');
                 }
             }
+        }
+
+        SECTION("Growing response buffer fails") {
+            NoteSerialAvailable_fake.return_val = true;
+            NoteSerialReceive_fake.custom_fake = NoteSerialReceiveMultiChunk;
+            void *(*mallocFns[])(size_t) = {malloc, malloc, MallocNull};
+            SET_CUSTOM_FAKE_SEQ(NoteMalloc, mallocFns, 3);
+
+            CHECK(serialNoteTransaction(noteAddReq, &resp) != NULL);
+        }
+
+        SECTION("Partial response timeout") {
+            bool availReturnVals[] = {true, true, false};
+            SET_RETURN_SEQ(NoteSerialAvailable, availReturnVals, 3);
+            NoteMalloc_fake.custom_fake = malloc;
+            NoteSerialReceive_fake.return_val = 'a';
+            long unsigned int getMsReturnVals[] = {
+                0, 0, NOTECARD_TRANSACTION_TIMEOUT_SEC * 1000 + 1
+            };
+            SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
+            const char *err;
+
+            CHECK((err = serialNoteTransaction(noteAddReq, &resp)) != NULL);
+            // Make sure we hit the partial response error.
+            CHECK(strstr(err, "incomplete") != NULL);
         }
 
         free(resp);

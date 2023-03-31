@@ -36,7 +36,6 @@ bool NotePrintSave(const char* text)
     return true;
 }
 
-
 TEST_CASE("NotePrintln")
 {
     NotePrint_fake.custom_fake = NotePrintSave;

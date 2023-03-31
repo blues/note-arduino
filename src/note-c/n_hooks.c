@@ -282,6 +282,33 @@ void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn, 
 
 //**************************************************************************/
 /*!
+  @brief  Set the platform-specific mutex functions for I2C.
+  @param   lockI2Cfn  The platform-specific I2C lock function to use.
+  @param   unlockI2Cfn  The platform-specific I2C unlock function to use.
+*/
+/**************************************************************************/
+void NoteSetFnI2CMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn)
+{
+    hookLockI2C = lockI2Cfn;
+    hookUnlockI2C = unlockI2Cfn;
+}
+
+//**************************************************************************/
+/*!
+  @brief  Set the platform-specific mutex functions for the Notecard.
+  @param   lockNotefn  The platform-specific Notecard lock function to use.
+  @param   unlockNotefn  The platform-specific Notecard unlock function
+  to use.
+*/
+/**************************************************************************/
+void NoteSetFnNoteMutex(mutexFn lockNotefn, mutexFn unlockNotefn)
+{
+    hookLockNote = lockNotefn;
+    hookUnlockNote = unlockNotefn;
+}
+
+//**************************************************************************/
+/*!
   @brief  Set the platform-specific Serial communication functions for the
   Notecard.
   @param   resetfn  The platform-specific Serial reset function to use.

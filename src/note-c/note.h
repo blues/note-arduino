@@ -73,6 +73,15 @@
 // originates from the Notecard, which synchronizes the time from both the cell network and GPS.
 typedef unsigned long int JTIME;
 
+// If we're building the tests, STATIC is defined to nothing. This allows the
+// tests to access the static functions in note-c. Among other things, this
+// let's us mock these normally static functions.
+#ifdef TEST
+#define STATIC
+#else
+#define STATIC static
+#endif
+
 // C-callable functions
 #ifdef __cplusplus
 extern "C" {
@@ -121,7 +130,7 @@ void NoteResumeTransactionDebug(void);
 #define SYNCSTATUS_LEVEL_ALL          -1
 bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
 bool NoteRequest(J *req);
-bool NoteRequestWithRetry(J *req, uint32_t timeoutms);
+bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds);
 #define NoteResponseError(rsp) (!JIsNullString(rsp, "err"))
 #define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, "err", errstr))
 #define NoteDeleteResponse(rsp) JDelete(rsp)
@@ -131,6 +140,8 @@ void NoteErrorClean(char *errbuf);
 void NoteSetFnDebugOutput(debugOutputFn fn);
 void NoteSetFnTransaction(txnStartFn startFn, txnStopFn stopFn);
 void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn, mutexFn unlockNotefn);
+void NoteSetFnI2CMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn);
+void NoteSetFnNoteMutex(mutexFn lockNotefn, mutexFn unlockNotefn);
 void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
 void NoteSetFn(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
 void NoteSetFnSerial(serialResetFn resetfn, serialTransmitFn writefn, serialAvailableFn availfn, serialReceiveFn readfn);
@@ -325,6 +336,12 @@ bool NotePayloadGetSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_
 #define TSTRING(N)      _tstring(N)         // UTF-8 text of N bytes maximum (fixed-length reserved buffer)
 #define TSTRINGV        _tstring(0)         // variable-length string
 bool NoteTemplate(const char *notefileID, J *templateBody);
+
+// Make these normally static functions externally visible if building tests.
+#ifdef TEST
+bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
+void setTime(JTIME seconds);
+#endif
 
 // End of C-callable functions
 #ifdef __cplusplus

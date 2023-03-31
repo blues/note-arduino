@@ -27,7 +27,6 @@ FAKE_VOID_FUNC(NoteDebug, const char *)
 namespace
 {
 
-
 TEST_CASE("NotePrint")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);

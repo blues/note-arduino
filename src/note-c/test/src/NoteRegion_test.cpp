@@ -40,18 +40,24 @@ TEST_CASE("NoteRegion")
     SECTION("Invalid") {
         NoteRequestResponse_fake.return_val = NULL;
 
-        CHECK(!NoteRegion(&country, &area, &tz, &tzOffset));
+        SECTION("NULL buffers") {
+            CHECK(!NoteRegion(NULL, NULL, NULL, NULL));
+        }
 
-        REQUIRE(country != NULL);
-        CHECK(!strcmp(country, ""));
+        SECTION("Valid buffers") {
+            CHECK(!NoteRegion(&country, &area, &tz, &tzOffset));
 
-        REQUIRE(area != NULL);
-        CHECK(!strcmp(area, ""));
+            REQUIRE(country != NULL);
+            CHECK(!strcmp(country, ""));
 
-        REQUIRE(tz != NULL);
-        CHECK(!strcmp(tz, "UTC"));
+            REQUIRE(area != NULL);
+            CHECK(!strcmp(area, ""));
 
-        CHECK(tzOffset == 0);
+            REQUIRE(tz != NULL);
+            CHECK(!strcmp(tz, "UTC"));
+
+            CHECK(tzOffset == 0);
+        }
     }
 
     SECTION("Valid") {
@@ -69,18 +75,24 @@ TEST_CASE("NoteRegion")
         REQUIRE(resp != NULL);
         NoteRequestResponse_fake.return_val = resp;
 
-        CHECK(NoteRegion(&country, &area, &tz, &tzOffset));
+        SECTION("NULL buffers") {
+            CHECK(NoteRegion(NULL, NULL, NULL, NULL));
+        }
 
-        REQUIRE(country != NULL);
-        CHECK(!strcmp(country, "US"));
+        SECTION("Valid buffers") {
+            CHECK(NoteRegion(&country, &area, &tz, &tzOffset));
 
-        REQUIRE(area != NULL);
-        CHECK(!strcmp(area, "Beverly, MA"));
+            REQUIRE(country != NULL);
+            CHECK(!strcmp(country, "US"));
 
-        REQUIRE(tz != NULL);
-        CHECK(!strcmp(tz, "CDT"));
+            REQUIRE(area != NULL);
+            CHECK(!strcmp(area, "Beverly, MA"));
 
-        CHECK(tzOffset == -300);
+            REQUIRE(tz != NULL);
+            CHECK(!strcmp(tz, "CDT"));
+
+            CHECK(tzOffset == -300);
+        }
     }
 }
 

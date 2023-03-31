@@ -58,21 +58,38 @@ TEST_CASE("NoteRequestWithRetry")
         // With this timeout configuration, NoteTransaction will be retried at
         // most one time.
         const uint32_t timeoutSec = 5;
-        long unsigned int getMsReturnVals[3] = {0, 3000, 6000};
-        SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
+        long unsigned int getMsReturnVals[3];
 
         J *req = NoteNewRequest("note.add");
         REQUIRE(req != nullptr);
 
         SECTION("Timeout expires") {
-            SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
+            SECTION("No millisecond overflow") {
+                getMsReturnVals[0] = 0;
+                getMsReturnVals[1] = 3000;
+                getMsReturnVals[2] = 6000;
 
-            SECTION("NULL responses") {
-                NoteTransaction_fake.return_val = NULL;
+                SECTION("NULL responses") {
+                    NoteTransaction_fake.return_val = NULL;
+                }
+
+                SECTION("I/O error responses") {
+                    NoteTransaction_fake.custom_fake = NoteTransactionIOError;
+                }
             }
-            SECTION("I/O error responses") {
-                NoteTransaction_fake.custom_fake = NoteTransactionIOError;
+
+            SECTION("Millisecond overflow") {
+                const uint32_t timeoutMillis = 5 * 1000;
+                // Setup overflow condition:
+                //     1. First value is 5 seconds before overflow.
+                //     2. Second value is 4 seconds before overflow.
+                //     3. Third value is 3 seconds after overflow.
+                getMsReturnVals[0] = UINT32_MAX - timeoutMillis;
+                getMsReturnVals[1] = UINT32_MAX - (timeoutMillis  - 1000);
+                getMsReturnVals[2] = 3000;
             }
+
+            SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
 
             CHECK(!NoteRequestWithRetry(req, timeoutSec));
             CHECK(NoteTransaction_fake.call_count == 2);

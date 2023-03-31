@@ -386,7 +386,7 @@ bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData
 /*!
     @brief  Get the object name.
     @param   item The JSON object.
-    @returns The number, or and empty string, if NULL.
+    @returns The name, or the empty string, if NULL.
 */
 /**************************************************************************/
 const char *JGetItemName(const J * item)
@@ -399,10 +399,10 @@ const char *JGetItemName(const J * item)
 
 //**************************************************************************/
 /*!
-    @brief  Convert an integer to text
-    @param   an integer
-    @returns The number converted to text, null-terminated.
-    @note The buffer midt be large enough because no bounds checking is done.
+    @brief  Convert an integer to text.
+    @param   n The integer to convert.
+    @param   s The buffer to hold the text.
+    @note The buffer must be large enough because no bounds checking is done.
 */
 /**************************************************************************/
 void JItoA(long int n, char *s)
@@ -430,7 +430,7 @@ void JItoA(long int n, char *s)
 //**************************************************************************/
 /*!
     @brief  Convert text to an integer
-    @param   a null-terminated text buffer
+    @param   string A null-terminated text buffer
     @returns An integer, or 0 if invalid
 */
 /**************************************************************************/
@@ -467,15 +467,18 @@ long int JAtoI(const char *string)
 //**************************************************************************/
 /*!
     @brief  Convert a buffer/len to a null-terminated c-string
-    @param   a buffer containing text with a counted length
-    @returns A c-string (NULL if invalid) that must be freed with JFree()
+    @param   buffer A buffer containing the bytes to convert.
+    @param   len The length of buffer in bytes.
+    @returns If buffer is NULL or length 0, the empty string. If allocation
+             fails, NULL. On success, the converted c-string. The returned
+             string must be freed with NoteFree.
 */
 /**************************************************************************/
 char *JAllocString(uint8_t *buffer, uint32_t len)
 {
     char *buf = _Malloc(len+1);
     if (buf == NULL) {
-        return false;
+        return NULL;
     }
     if (len > 0) {
         memcpy(buf, buffer, len);
@@ -517,10 +520,11 @@ const char *JType(J *item)
 
 //**************************************************************************/
 /*!
-    @brief  Return the type of an item, as an int usable in a switch statement
-    @param   json object
-    @param   field within the json object
-    @returns The type
+    @brief  Get the type of a field, as an int usable in a switch statement.
+    @param   rsp The JSON object containing the field.
+    @param   field The field's name.
+    @returns The type of the field on success. JTYPE_NOT_PRESENT on error or if
+             the field doesn't exist.
 */
 /**************************************************************************/
 int JGetType(J *rsp, const char *field)

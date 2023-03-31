@@ -6,17 +6,53 @@
 # Launch development environment (mount source root as /note-c/)
 # $ docker run --rm --volume $(pwd)/../../../:/note-c/ --workdir /note-c/ note_c_run_unit_tests
 
+# Global Argument(s)
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG UID=1000
+ARG USER="blues"
+
 # POSIX compatible (Linux/Unix) base image.
 FROM debian:stable-slim
+
+# Import Global Argument(s)
+ARG DEBIAN_FRONTEND
+ARG UID
+ARG USER
+
+# Local Argument(s)
+
+# Create Non-Root User
+RUN ["dash", "-c", "\
+    addgroup \
+     --gid ${UID} \
+     \"${USER}\" \
+ && adduser \
+     --disabled-password \
+     --gecos \"\" \
+     --ingroup \"${USER}\" \
+     --uid ${UID} \
+     \"${USER}\" \
+ && usermod \
+     --append \
+     --groups \"dialout,plugdev\" \
+     \"${USER}\" \
+"]
 
 # Install whatever dependencies we can via apt-get.
 RUN ["dash", "-c", "\
     apt-get update --quiet \
  && apt-get install --assume-yes --no-install-recommends --quiet \
-     build-essential \
+     astyle \
      ca-certificates \
      curl \
+     g++ \
+     gcc \
+     gdb \
+     git \
      lcov \
+     make \
+     nano \
+     valgrind \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
@@ -40,4 +76,4 @@ RUN ["dash", "-c", "\
  && rm -rf Catch2-3.2.1  v3.2.1.tar.gz \
 "]
 
-ENTRYPOINT ["./scripts/run_unit_tests.sh", "--coverage"]
+ENTRYPOINT ["./scripts/run_unit_tests.sh", "--coverage", "--mem-check"]

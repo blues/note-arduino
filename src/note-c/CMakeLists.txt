@@ -14,16 +14,10 @@ if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
     file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
 endif()
 
-option(BUILD_TESTS "Build tests." ON)
-option(BUILD_SHARED_LIBS "Build note-c as a shared library." ON)
+option(BUILD_TESTS "Build tests." OFF)
+option(BUILD_SHARED_LIBS "Build note-c as a shared library." OFF)
 option(COVERAGE "Compile for test coverage reporting." OFF)
-
-add_compile_options(
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror
-)
+option(MEM_CHECK "Run tests with Valgrind." OFF)
 
 set(NOTE_C_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(
@@ -44,15 +38,36 @@ add_library(
     ${NOTE_C_SRC_DIR}/n_request.c
     ${NOTE_C_SRC_DIR}/n_str.c
 )
+target_compile_options(
+    note_c
+    PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+)
+target_include_directories(
+    note_c
+    PUBLIC ${NOTE_C_SRC_DIR}
+)
 
 if(BUILD_TESTS)
-    add_compile_definitions(
-        TEST
-    )
-
-    # Including this here rather than in test/CMakeLists.txt allows us to run
+    # Including CTest here rather than in test/CMakeLists.txt allows us to run
     # ctest from the root build directory (e.g. build/ instead of build/test/).
+    # We also need to set MEMORYCHECK_COMMAND_OPTIONS before including this.
+    # See: https://stackoverflow.com/a/60741757
+    if(MEM_CHECK)
+        # Go ahead and make sure we can find valgrind while we're here.
+        find_program(VALGRIND valgrind REQUIRED)
+        message(STATUS "Found valgrind: ${VALGRIND}")
+        set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
+    endif(MEM_CHECK)
     include(CTest)
+
+    target_compile_definitions(
+        note_c
+        PUBLIC TEST
+    )
 
     # If we don't weaken the functions we're mocking in the tests, the linker
     # will complain about multiple function definitions: the mocked one and the
@@ -82,7 +97,21 @@ if(BUILD_TESTS)
          NoteDebug;
          NotePrint;
          NoteNewCommand;
-         NoteRequest"
+         NoteRequest;
+         JCreateObject;
+         NoteTransactionStart;
+         NoteUserAgent;
+         serialNoteReset;
+         serialNoteTransaction;
+         i2cNoteReset;
+         i2cNoteTransaction;
+         JCreateStringValue;
+         NoteSetEnvDefault;
+         NoteSleep;
+         NotePayloadRetrieveAfterSleep;
+         NoteTimeValidST;
+         NoteTimeST;
+         NoteRegion"
     )
     foreach(MOCKED_FN ${MOCKED_FNS})
         string(APPEND OBJCOPY_WEAKEN "-W ${MOCKED_FN} ")

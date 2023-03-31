@@ -101,7 +101,10 @@ J *NoteNewCommand(const char *request)
                The `J` cJSON request object.
   @returns a boolean. Returns `true` if successful or `false` if an error
             occurs, such as an out-of-memory or if an error was returned from
-            the transaction in the c_err field.
+            the transaction in the c_err field. If sending a `cmd` a 'true'
+            response indicates that the 'cmd` was sent without error, but
+            since the Notecard sends no response it does not guarantee that
+            the 'cmd' was received and processed by the Notecard.
 */
 /**************************************************************************/
 bool NoteRequest(J *req)
@@ -203,7 +206,8 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
     J *rsp;
 
     // Calculate expiry time in milliseconds
-    uint32_t expiresMs = _GetMs() + (timeoutSeconds * 1000);
+    uint32_t startMs = _GetMs();
+    uint32_t timeoutMs = timeoutSeconds * 1000;
 
     while(true) {
         // Execute the transaction
@@ -224,7 +228,7 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
         }
 
         // Exit loop on timeout
-        if (_GetMs() >= expiresMs) {
+        if (_GetMs() - startMs >= timeoutMs) {
             break;
         }
     }

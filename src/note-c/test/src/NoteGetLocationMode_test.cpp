@@ -25,7 +25,7 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetLocationMode_test")
+TEST_CASE("NoteGetLocationMode")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 

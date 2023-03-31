@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/blues/note-c/badge.svg?branch=master)](https://coveralls.io/github/blues/note-c?branch=master)
+
 # note-c
 
 The note-c C library for communicating with the
