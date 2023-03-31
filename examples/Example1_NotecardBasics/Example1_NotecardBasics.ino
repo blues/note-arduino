@@ -101,11 +101,12 @@ void setup()
     // Issue the request, telling the Notecard how and how often to access the
     // service.
     // This results in a JSON message to Notecard formatted like:
-    //     { "req"     : "service.set",
-    //     "product" : myProductID,
-    //     "mode"    : "continuous"
+    //     {
+    //       "req"     : "service.set",
+    //       "product" : myProductID,
+    //       "mode"    : "continuous"
     //     }
-    // Note that `sendRequestWithRetry()` always frees the request data
+    // Note that `notecard.sendRequestWithRetry()` always frees the request data
     // structure, and it returns "true" if success or "false" if there is any
     // failure. It is important to use `sendRequestWithRetry()` on the first
     // message from the MCU to the Notecard, because there will always be a
