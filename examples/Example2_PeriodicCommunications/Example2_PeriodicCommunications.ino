@@ -76,7 +76,6 @@ int buttonPress(void);
 // One-time Arduino initialization
 void setup()
 {
-
     // Initialize Arduino GPIO pins
     pinMode(ledPin, OUTPUT);
     pinMode(buttonPin, buttonPressedState == LOW ? INPUT_PULLUP : INPUT);

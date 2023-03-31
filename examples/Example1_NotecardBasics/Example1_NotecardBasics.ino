@@ -61,7 +61,6 @@ Notecard notecard;
 // One-time Arduino initialization
 void setup()
 {
-
     // Set up for debug output (if available).
 #ifdef usbSerial
     // If you open Arduino's serial terminal window, you'll be able to watch
