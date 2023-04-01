@@ -11,14 +11,14 @@
 
 // This is the unique Product Identifier for your device
 #ifndef PRODUCT_UID
-#define PRODUCT_UID ""  // "com.my-company.my-name:my-project"
+#define PRODUCT_UID "" // "com.my-company.my-name:my-project"
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
 #endif
 
 // Parameters for this example
-#define myProductID             PRODUCT_UID
+#define myProductID PRODUCT_UID
 #define notehubUploadPeriodMins 10
-#define	hostSleepSeconds        60
+#define hostSleepSeconds 60
 
 // Arduino serial debug monitor port definitions
 #define usbSerial Serial
@@ -30,18 +30,21 @@ Notecard notecard;
 // 'state' inside the Notecard while it's asleep, and to retrieve this state
 // when it awakens.  These are several 'segments' of state that may individually
 // be saved.
-struct {
-	int cycles;
+struct
+{
+    int cycles;
 } globalState;
 const char globalSegmentID[] = "GLOB";
 
-struct {
-	int measurements;
+struct
+{
+    int measurements;
 } tempSensorState;
 const char tempSensorSegmentID[] = "TEMP";
 
-struct {
-	int measurements;
+struct
+{
+    int measurements;
 } voltSensorState;
 const char voltSensorSegmentID[] = "VOLT";
 
@@ -53,7 +56,8 @@ void setup()
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
     const size_t usb_timeout_ms = 3000;
-    for (const size_t start_ms = millis() ; !usbSerial && (millis() - start_ms) < usb_timeout_ms ;);
+    for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
+        ;
     usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
@@ -61,41 +65,44 @@ void setup()
     // Initialize the physical I2C I/O channel to the Notecard
     notecard.begin();
 
-	// Determine whether or not this is a 'clean boot', or if we're
-	// restarting after having been put to sleep by the Notecard.
-	NotePayloadDesc payload;
-	bool retrieved = NotePayloadRetrieveAfterSleep(&payload);
+    // Determine whether or not this is a 'clean boot', or if we're
+    // restarting after having been put to sleep by the Notecard.
+    NotePayloadDesc payload;
+    bool retrieved = NotePayloadRetrieveAfterSleep(&payload);
 
-	// If the payload was successfully retrieved, attempt to restore state from
+    // If the payload was successfully retrieved, attempt to restore state from
     // the payload
-	if (retrieved) {
-		// Restore the various state data structures
-		retrieved &= NotePayloadGetSegment(&payload, globalSegmentID, &globalState, sizeof(globalState));
-		retrieved &= NotePayloadGetSegment(&payload, tempSensorSegmentID, &tempSensorState, sizeof(tempSensorState));
-		retrieved &= NotePayloadGetSegment(&payload, voltSensorSegmentID, &voltSensorState, sizeof(voltSensorState));
+    if (retrieved)
+    {
+        // Restore the various state data structures
+        retrieved &= NotePayloadGetSegment(&payload, globalSegmentID, &globalState, sizeof(globalState));
+        retrieved &= NotePayloadGetSegment(&payload, tempSensorSegmentID, &tempSensorState, sizeof(tempSensorState));
+        retrieved &= NotePayloadGetSegment(&payload, voltSensorSegmentID, &voltSensorState, sizeof(voltSensorState));
 
-		// We're done with the payload, so we can free it
-		NotePayloadFree(&payload);
-	}
+        // We're done with the payload, so we can free it
+        NotePayloadFree(&payload);
+    }
 
-	// If this is our first time through, initialize the Notecard and state
-	if (!retrieved) {
+    // If this is our first time through, initialize the Notecard and state
+    if (!retrieved)
+    {
 
-		// Initialize operating state
-		memset(&globalState, 0, sizeof(globalState));
-		memset(&tempSensorState, 0, sizeof(tempSensorState));
-		memset(&voltSensorState, 0, sizeof(voltSensorState));
+        // Initialize operating state
+        memset(&globalState, 0, sizeof(globalState));
+        memset(&tempSensorState, 0, sizeof(tempSensorState));
+        memset(&voltSensorState, 0, sizeof(voltSensorState));
 
-		// Initialize the Notecard
-	    J *req = notecard.newRequest("hub.set");
-		if (myProductID[0]) {
-		    JAddStringToObject(req, "product", myProductID);
-		}
-	    JAddStringToObject(req, "mode", "periodic");
-	    JAddNumberToObject(req, "outbound", notehubUploadPeriodMins);
-	    notecard.sendRequestWithRetry(req, 5);  // 5 seconds
+        // Initialize the Notecard
+        J *req = notecard.newRequest("hub.set");
+        if (myProductID[0])
+        {
+            JAddStringToObject(req, "product", myProductID);
+        }
+        JAddStringToObject(req, "mode", "periodic");
+        JAddNumberToObject(req, "outbound", notehubUploadPeriodMins);
+        notecard.sendRequestWithRetry(req, 5); // 5 seconds
 
-		// Because many devs will be using oscilloscopes or joulescopes to
+        // Because many devs will be using oscilloscopes or joulescopes to
         // closely examine power consumption, it can be helpful during
         // development to provide a stable and repeatable power consumption
         // environment. In the Notecard's default configuration, the
@@ -104,45 +111,49 @@ void setup()
         // caused by accelerometer interrupt processing, when developers
         // accidentally tap the notecard or carrier.  As such, to help during
         // development and measurement, this request disables the accelerometer.
-		req = notecard.newRequest("card.motion.mode");
-		JAddBoolToObject(req, "stop", true);
-	    notecard.sendRequest(req);
-	}
+        req = notecard.newRequest("card.motion.mode");
+        JAddBoolToObject(req, "stop", true);
+        notecard.sendRequest(req);
+    }
 }
 
 void loop()
 {
-	// Bump the number of cycles
-	globalState.cycles++;
+    // Bump the number of cycles
+    globalState.cycles++;
 
-	// Simulation of a device taking a measurement of a temperature sensor.
+    // Simulation of a device taking a measurement of a temperature sensor.
     // Because we don't have an actual external hardware sensor in this example,
     // we're just retrieving the internal surface temperature of the Notecard.
-	double currentTemperature = 0.0;
-	J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
-	if (rsp != NULL) {
-		currentTemperature = JGetNumber(rsp, "value");
-		notecard.deleteResponse(rsp);
-		tempSensorState.measurements++;
-	}
+    double currentTemperature = 0.0;
+    J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
+    if (rsp != NULL)
+    {
+        currentTemperature = JGetNumber(rsp, "value");
+        notecard.deleteResponse(rsp);
+        tempSensorState.measurements++;
+    }
 
-	// Simulation of a device taking a measurement of a voltage sensor. Because
+    // Simulation of a device taking a measurement of a voltage sensor. Because
     // we don't have an actual external hardware sensor in this example, we're
     // just retrieving the battery voltage being supplied to the Notecard.
-	double currentVoltage = 0.0;
-	rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
-	if (rsp != NULL) {
-		currentVoltage = JGetNumber(rsp, "value");
-		notecard.deleteResponse(rsp);
-		voltSensorState.measurements++;
-	}
+    double currentVoltage = 0.0;
+    rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
+    if (rsp != NULL)
+    {
+        currentVoltage = JGetNumber(rsp, "value");
+        notecard.deleteResponse(rsp);
+        voltSensorState.measurements++;
+    }
 
-	// Add a note to the Notecard containing the sensor readings
+    // Add a note to the Notecard containing the sensor readings
     J *req = notecard.newRequest("note.add");
-    if (req != NULL) {
+    if (req != NULL)
+    {
         JAddStringToObject(req, "file", "example.qo");
         J *body = JCreateObject();
-        if (body != NULL) {
+        if (body != NULL)
+        {
             JAddNumberToObject(body, "cycles", globalState.cycles);
             JAddNumberToObject(body, "temperature", currentTemperature);
             JAddNumberToObject(body, "temperature_measurements", tempSensorState.measurements);
@@ -153,15 +164,15 @@ void loop()
         notecard.sendRequest(req);
     }
 
-	// Put ourselves back to sleep for a fixed period of time
-	NotePayloadDesc payload = {0, 0, 0};
-	NotePayloadAddSegment(&payload, globalSegmentID, &globalState, sizeof(globalState));
-	NotePayloadAddSegment(&payload, voltSensorSegmentID, &voltSensorState, sizeof(voltSensorState));
-	NotePayloadAddSegment(&payload, tempSensorSegmentID, &tempSensorState, sizeof(tempSensorState));
-	NotePayloadSaveAndSleep(&payload, hostSleepSeconds, NULL);
+    // Put ourselves back to sleep for a fixed period of time
+    NotePayloadDesc payload = {0, 0, 0};
+    NotePayloadAddSegment(&payload, globalSegmentID, &globalState, sizeof(globalState));
+    NotePayloadAddSegment(&payload, voltSensorSegmentID, &voltSensorState, sizeof(voltSensorState));
+    NotePayloadAddSegment(&payload, tempSensorSegmentID, &tempSensorState, sizeof(tempSensorState));
+    NotePayloadSaveAndSleep(&payload, hostSleepSeconds, NULL);
 
-	// We should never return here, because the Notecard put us to sleep. If we
+    // We should never return here, because the Notecard put us to sleep. If we
     // do get here, it's because the Notecarrier was configured to supply power
     // to this host MCU without being switched by the ATTN pin.
-	delay(15000);
+    delay(15000);
 }

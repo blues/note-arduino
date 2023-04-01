@@ -38,7 +38,7 @@
 // - Remove `usbSerial` if you don't want the Notecard library to output debug
 //   information.
 
-//#define txRxPinsSerial Serial1
+// #define txRxPinsSerial Serial1
 #define usbSerial Serial
 
 // This is the unique Product Identifier for your device.  This Product ID tells
@@ -51,7 +51,7 @@
 
 // This is the unique Product Identifier for your device
 #ifndef PRODUCT_UID
-#define PRODUCT_UID ""  // "com.my-company.my-name:my-project"
+#define PRODUCT_UID "" // "com.my-company.my-name:my-project"
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
 #endif
 
@@ -66,7 +66,8 @@ void setup()
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
     const size_t usb_timeout_ms = 3000;
-    for (const size_t start_ms = millis() ; !usbSerial && (millis() - start_ms) < usb_timeout_ms ;);
+    for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
+        ;
     usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
@@ -86,7 +87,8 @@ void setup()
 
     // This command (required) causes the data to be delivered to the Project
     // on notehub.io that has claimed this Product ID (see above).
-    if (myProductID[0]) {
+    if (myProductID[0])
+    {
         JAddStringToObject(req, "product", myProductID);
     }
 
@@ -112,17 +114,19 @@ void setup()
     // message from the MCU to the Notecard, because there will always be a
     // hardware race condition on cold boot and the Notecard must be ready to
     // receive and process the message.
-    notecard.sendRequestWithRetry(req, 5);  // 5 seconds
+    notecard.sendRequestWithRetry(req, 5); // 5 seconds
 }
 
-// In the Arduino main loop which is called repeatedly, add outbound data every 15 seconds
+// In the Arduino main loop which is called repeatedly, add outbound data every
+// 15 seconds
 void loop()
 {
 
     // Count the simulated measurements that we send to the cloud, and stop the
     // demo before long.
     static unsigned eventCounter = 0;
-    if (eventCounter++ > 25) {
+    if (eventCounter++ > 25)
+    {
         return;
     }
 
@@ -137,7 +141,8 @@ void loop()
     // allocation request.
     double temperature = 0;
     J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
-    if (rsp != NULL) {
+    if (rsp != NULL)
+    {
         temperature = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
@@ -146,7 +151,8 @@ void loop()
     // its `V+` pin.
     double voltage = 0;
     rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
-    if (rsp != NULL) {
+    if (rsp != NULL)
+    {
         voltage = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
@@ -156,10 +162,12 @@ void loop()
     // instantaneously. If you are looking at this on notehub.io you will see
     // the data appearing 'live'.
     J *req = notecard.newRequest("note.add");
-    if (req != NULL) {
+    if (req != NULL)
+    {
         JAddBoolToObject(req, "sync", true);
         J *body = JCreateObject();
-        if (body != NULL) {
+        if (body != NULL)
+        {
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "voltage", voltage);
             JAddNumberToObject(body, "count", eventCounter);
@@ -169,5 +177,5 @@ void loop()
     }
 
     // Delay between samples
-    delay(15*1000);  // 15 seconds
+    delay(15 * 1000); // 15 seconds
 }

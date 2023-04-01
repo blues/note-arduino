@@ -11,12 +11,12 @@
 #include <Notecard.h>
 #include <NotecardPseudoSensor.h>
 
-//#define txRxPinsSerial Serial1
+// #define txRxPinsSerial Serial1
 #define usbSerial Serial
 
 // This is the unique Product Identifier for your device
 #ifndef PRODUCT_UID
-#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#define PRODUCT_UID "" // "com.my-company.my-name:my-project"
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
 #endif
 
@@ -35,7 +35,8 @@ void setup()
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
     const size_t usb_timeout_ms = 3000;
-    for (const size_t start_ms = millis() ; !usbSerial && (millis() - start_ms) < usb_timeout_ms ;);
+    for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
+        ;
     usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
@@ -48,11 +49,12 @@ void setup()
 #endif
 
     J *req = notecard.newRequest("hub.set");
-    if (myProductID[0]) {
+    if (myProductID[0])
+    {
         JAddStringToObject(req, "product", myProductID);
     }
     JAddStringToObject(req, "mode", "continuous");
-    notecard.sendRequestWithRetry(req, 5);  // 5 seconds
+    notecard.sendRequestWithRetry(req, 5); // 5 seconds
 }
 
 void loop()
@@ -68,11 +70,13 @@ void loop()
     usbSerial.println(" %");
 
     J *req = notecard.newRequest("note.add");
-    if (req != NULL) {
+    if (req != NULL)
+    {
         JAddStringToObject(req, "file", "sensors.qo");
         JAddBoolToObject(req, "sync", true);
         J *body = JAddObjectToObject(req, "body");
-        if (body) {
+        if (body)
+        {
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "humidity", humidity);
         }

@@ -12,40 +12,40 @@
 #include <Notecard.h>
 #include <Notecarrier.h>
 
-#define ledPin              LED_BUILTIN
+#define ledPin LED_BUILTIN
 
 // Define the pin number of the pushbutton pin
-#define buttonPin           B0
-#define buttonPressedState  LOW
+#define buttonPin B0
+#define buttonPressedState LOW
 
 #if defined(ARDUINO_FEATHER_F405)
-  #define NON_AF_COMPAT_FEATHER
+#define NON_AF_COMPAT_FEATHER
 #elif defined(ARDUINO_ARCH_APOLLO3)
 //  #undef buttonPin
 //  #define buttonPin 10
 #elif defined(ARDUINO_NUCLEO_L432KC)
-  #define BREADBOARD_REQUIRED
+#define BREADBOARD_REQUIRED
 #elif defined(ARDUINO_ARCH_STM32)
-  #undef buttonPin
-  #define buttonPin USER_BTN
+#undef buttonPin
+#define buttonPin USER_BTN
 #elif defined(ARDUINO_NRF52840_FEATHER)
-  #undef buttonPin
-  #define buttonPin 7
+#undef buttonPin
+#define buttonPin 7
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
-  #define BREADBOARD_REQUIRED
+#define BREADBOARD_REQUIRED
 #elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MBED)
-  #define BREADBOARD_REQUIRED
+#define BREADBOARD_REQUIRED
 #endif
 
 #ifdef NON_AF_COMPAT_FEATHER
-  #pragma message("This feather does not support the Notecarrier-AF button, additional hardware is required.")
-  #undef buttonPin
-  #define buttonPin A5
+#pragma message("This feather does not support the Notecarrier-AF button, additional hardware is required.")
+#undef buttonPin
+#define buttonPin A5
 #endif
 #ifdef BREADBOARD_REQUIRED
-  #pragma message("The board selected requires additional hardware.")
-  #undef buttonPin
-  #define buttonPin 3
+#pragma message("The board selected requires additional hardware.")
+#undef buttonPin
+#define buttonPin 3
 #endif
 
 // Note that both of these definitions are optional; just prefix either line
@@ -60,7 +60,7 @@
 
 // This is the unique Product Identifier for your device
 #ifndef PRODUCT_UID
-#define PRODUCT_UID ""		// "com.my-company.my-name:my-project"
+#define PRODUCT_UID "" // "com.my-company.my-name:my-project"
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://dev.blues.io/tools-and-sdks/samples/product-uid"
 #endif
 
@@ -68,9 +68,9 @@
 Notecard notecard;
 
 // Button handling
-#define BUTTON_IDLE         0
-#define BUTTON_PRESS        1
-#define BUTTON_DOUBLEPRESS  2
+#define BUTTON_IDLE 0
+#define BUTTON_PRESS 1
+#define BUTTON_DOUBLEPRESS 2
 int buttonPress(void);
 
 // One-time Arduino initialization
@@ -85,7 +85,8 @@ void setup()
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
     const size_t usb_timeout_ms = 3000;
-    for (const size_t start_ms = millis() ; !usbSerial && (millis() - start_ms) < usb_timeout_ms ;);
+    for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
+        ;
     usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
@@ -102,7 +103,8 @@ void setup()
 
     // This command (required) causes the data to be delivered to the Project on
     // notehub.io that has claimed this Product ID (see above).
-    if (myProductID[0]) {
+    if (myProductID[0])
+    {
         JAddStringToObject(req, "product", myProductID);
     }
 
@@ -125,11 +127,10 @@ void setup()
     JAddNumberToObject(req, "inbound", 60);
 
     // Issue the request
-    notecard.sendRequestWithRetry(req, 5);  // 5 seconds
+    notecard.sendRequestWithRetry(req, 5); // 5 seconds
 }
 
-// In the Arduino main loop which is called repeatedly, add outbound data every
-// 15 seconds
+// In the Arduino main loop which is called repeatedly
 void loop()
 {
     static unsigned long lastStatusMs = 0;
@@ -139,13 +140,16 @@ void loop()
 
     // Wait for a button press, or perform idle activities
     int buttonState = buttonPress();
-    switch (buttonState) {
+    switch (buttonState)
+    {
 
     case BUTTON_IDLE:
-        if (notecard.debugSyncStatus(2500, 0)) {
+        if (notecard.debugSyncStatus(2500, 0))
+        {
             lastStatusMs = millis();
         }
-        if (millis() > lastStatusMs + 10000) {
+        if (millis() > lastStatusMs + 10000)
+        {
             lastStatusMs = millis();
             notecard.logDebug("press button to simulate a sensor measurement\n");
         }
@@ -158,7 +162,6 @@ void loop()
         notecard.requestAndResponse(notecard.newRequest("hub.sync"));
         digitalWrite(ledPin, LOW);
         return;
-
     }
 
     // The button was pressed, so we should begin a transaction
@@ -168,7 +171,8 @@ void loop()
     // Count the simulated measurements that we send to the cloud, and stop the
     // demo before long.
     static unsigned eventCounter = 0;
-    if (eventCounter++ > 25) {
+    if (eventCounter++ > 25)
+    {
         return;
     }
 
@@ -176,13 +180,15 @@ void loop()
     // measurements
     double temperature = 0;
     J *rsp = notecard.requestAndResponse(notecard.newRequest("card.temp"));
-    if (rsp != NULL) {
+    if (rsp != NULL)
+    {
         temperature = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
     double voltage = 0;
     rsp = notecard.requestAndResponse(notecard.newRequest("card.voltage"));
-    if (rsp != NULL) {
+    if (rsp != NULL)
+    {
         voltage = JGetNumber(rsp, "value");
         notecard.deleteResponse(rsp);
     }
@@ -191,9 +197,11 @@ void loop()
     // These measurements will be staged in the Notecard's flash memory until
     // it's time to transmit them to the service.
     J *req = notecard.newRequest("note.add");
-    if (req != NULL) {
+    if (req != NULL)
+    {
         J *body = JCreateObject();
-        if (body != NULL) {
+        if (body != NULL)
+        {
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "voltage", voltage);
             JAddNumberToObject(body, "count", eventCounter);
@@ -204,7 +212,6 @@ void loop()
 
     // Done with transaction
     digitalWrite(ledPin, LOW);
-
 }
 
 // Button handling
@@ -213,13 +220,16 @@ int buttonPress()
     // Detect the "press" transition
     static bool buttonBeingDebounced = false;
     int buttonState = digitalRead(buttonPin);
-    if (buttonState != buttonPressedState) {
-        if (buttonBeingDebounced) {
+    if (buttonState != buttonPressedState)
+    {
+        if (buttonBeingDebounced)
+        {
             buttonBeingDebounced = false;
         }
         return BUTTON_IDLE;
     }
-    if (buttonBeingDebounced) {
+    if (buttonBeingDebounced)
+    {
         return BUTTON_IDLE;
     }
 
@@ -229,19 +239,25 @@ int buttonPress()
     unsigned long buttonPressedMs = millis();
     unsigned long ignoreBounceMs = 100;
     unsigned long doublePressMs = 750;
-    while (millis() < buttonPressedMs+doublePressMs || digitalRead(buttonPin) == buttonPressedState) {
-        if (millis() < buttonPressedMs+ignoreBounceMs) {
+    while (millis() < buttonPressedMs + doublePressMs || digitalRead(buttonPin) == buttonPressedState)
+    {
+        if (millis() < buttonPressedMs + ignoreBounceMs)
+        {
             continue;
         }
-        if (digitalRead(buttonPin) != buttonPressedState) {
-            if (!buttonReleased) {
+        if (digitalRead(buttonPin) != buttonPressedState)
+        {
+            if (!buttonReleased)
+            {
                 buttonReleased = true;
             }
             continue;
         }
-        if (buttonReleased) {
+        if (buttonReleased)
+        {
             buttonDoublePress = true;
-            if (digitalRead(buttonPin) != buttonPressedState) {
+            if (digitalRead(buttonPin) != buttonPressedState)
+            {
                 break;
             }
         }
