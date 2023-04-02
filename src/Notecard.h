@@ -77,23 +77,23 @@ public:
                uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
                uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT);
     void begin(NoteSerial * noteSerial);
-    void setDebugOutputStream(NoteLog * noteLog);
     void clearDebugOutputStream(void);
-    void setTransactionPins(NoteTxn * noteTxn);
     inline void clearTransactionPins(void) {
         setTransactionPins(nullptr);
     }
-    J *newRequest(const char *request);
-    J *newCommand(const char *request);
-    bool sendRequest(J *req);
-    bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds);
-    J *requestAndResponse(J *req);
-    J *requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds);
+    bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
     void deleteResponse(J *rsp);
     void logDebug(const char *message);
     void logDebugf(const char *format, ...);
-    bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
+    J *newCommand(const char *request);
+    J *newRequest(const char *request);
+    J *requestAndResponse(J *req);
+    J *requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds);
     bool responseError(J *rsp);
+    bool sendRequest(J *req);
+    bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds);
+    void setDebugOutputStream(NoteLog * noteLog);
+    void setTransactionPins(NoteTxn * noteTxn);
 
 private:
     void platformInit (bool assignCallbacks);
