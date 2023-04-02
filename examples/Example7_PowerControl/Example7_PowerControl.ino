@@ -5,7 +5,6 @@
 //
 // This tutorial requires a Notecarrier-F (or equivalently-wired carrier board)
 // designed enable the Notecard's ATTN pin to control a host MCU's power supply.
-//
 
 #include <Notecard.h>
 
@@ -20,8 +19,21 @@
 #define notehubUploadPeriodMins 10
 #define hostSleepSeconds 60
 
-// Arduino serial debug monitor port definitions
-#define usbSerial Serial
+// Arduino serial debug monitor port definitions.
+// Note this is using the TX/RX pins for logging and not the USB connector. An
+// FTDI cable is required to read the logs produced by this sketch. Power is
+// delivered over USB, which interferes with the way the Notecard puts the
+// Feather MCU to sleep. As a result, USB cannot be used to capture logs.
+#ifdef ARDUINO_AVR_UNO
+  #define txRxSerial Serial
+#elif ARDUINO_FEATHER_F405
+  // https://github.com/stm32duino/Arduino_Core_STM32/issues/1990
+  #define txRxSerial Serial3
+#elif ARDUINO_NUCLEO_L432KC
+  #define txRxSerial Serial2
+#else
+  #define txRxSerial Serial1
+#endif
 
 // Notecard I2C port definitions
 Notecard notecard;
@@ -52,14 +64,14 @@ const char voltSensorSegmentID[] = "VOLT";
 void setup()
 {
     // Set up for debug output (if available).
-#ifdef usbSerial
+#ifdef txRxSerial
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
+    txRxSerial.begin(115200);
     const size_t usb_timeout_ms = 3000;
-    for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
+    for (const size_t start_ms = millis(); !txRxSerial && (millis() - start_ms) < usb_timeout_ms;)
         ;
-    usbSerial.begin(115200);
-    notecard.setDebugOutputStream(usbSerial);
+    notecard.setDebugOutputStream(txRxSerial);
 #endif
 
     // Initialize the physical I2C I/O channel to the Notecard
@@ -120,7 +132,10 @@ void setup()
 void loop()
 {
     // Bump the number of cycles
-    globalState.cycles++;
+    if (++globalState.cycles > 25)
+    {
+        return;
+    }
 
     // Simulation of a device taking a measurement of a temperature sensor.
     // Because we don't have an actual external hardware sensor in this example,

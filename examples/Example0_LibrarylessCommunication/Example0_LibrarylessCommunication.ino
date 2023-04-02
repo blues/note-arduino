@@ -62,7 +62,7 @@ void setup()
     delay(250);
 
     // This command (required) causes the data to be delivered to the Project on
-    // notehub.io that has claimed this Product ID.  (see above)
+    // notehub.io that has claimed this Product ID (see above).
     if (myProductID[0])
     {
         txRxPinsSerial.println("{\"cmd\":\"hub.set\",\"product\":\"" myProductID "\"}");
@@ -88,7 +88,7 @@ void loop()
     // Count the simulated measurements that we send to the cloud, and stop the
     // demo before long.
     static unsigned eventCounter = 0;
-    if (eventCounter++ > 25)
+    if (++eventCounter > 25)
     {
         return;
     }

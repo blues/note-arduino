@@ -34,10 +34,10 @@ void setup()
 #ifdef usbSerial
     // If you open Arduino's serial terminal window, you'll be able to watch
     // JSON objects being transferred to and from the Notecard for each request.
+    usbSerial.begin(115200);
     const size_t usb_timeout_ms = 3000;
     for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
         ;
-    usbSerial.begin(115200);
     notecard.setDebugOutputStream(usbSerial);
 #endif
 
@@ -57,8 +57,18 @@ void setup()
     notecard.sendRequestWithRetry(req, 5); // 5 seconds
 }
 
+// In the Arduino main loop which is called repeatedly, add outbound data every
+// 15 seconds
 void loop()
 {
+    // Count the simulated measurements that we send to the cloud, and stop the
+    // demo before long.
+    static unsigned eventCounter = 0;
+    if (++eventCounter > 25)
+    {
+        return;
+    }
+
     float temperature = sensor.temp();
     float humidity = sensor.humidity();
 
