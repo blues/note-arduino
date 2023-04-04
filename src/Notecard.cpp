@@ -252,28 +252,6 @@ void Notecard::begin(NoteSerial * noteSerial_)
 
 /**************************************************************************/
 /*!
-    @brief  Set the debug output source.
-            A NoteLog object will be constructed via `make_note_log()`
-            using a platform specific logging channel (for example, `Serial`
-            on Arduino). The specified channel will be configured as the
-            source for debug messages provided to `notecard.logDebug()`.
-    @param    noteLog
-              A platform specific log implementation to be used for
-              debug output.
-*/
-/**************************************************************************/
-void Notecard::setDebugOutputStream(NoteLog * noteLog_)
-{
-    noteLog = noteLog_;
-    if (noteLog) {
-        NoteSetFnDebugOutput(noteLogPrint);
-    } else {
-        NoteSetFnDebugOutput(nullptr);
-    }
-}
-
-/**************************************************************************/
-/*!
     @brief  Clear the debug output source.
 */
 /**************************************************************************/
@@ -285,121 +263,19 @@ void Notecard::clearDebugOutputStream(void)
 
 /**************************************************************************/
 /*!
-    @brief  Set the transaction pins.
-            A NoteTxn object will be constructed via `make_note_txn()`
-            using a platform specific tuple of digital I/O pins. The
-            pins are used to send a request to transact and a listen
-            for the clear to transact signal. Transaction pins are not
-            necessary on any legacy Notecards, and are only necessary
-            for certain Notecard SKUs. The pins allow the Notecard to
-            inform the host it has had time to awaken from deep sleep
-            and is ready to process commands.
-    @param    noteTxn
-              A platform specific tuple of digital I/O pins.
+    @brief  Periodically show Notecard sync status, returning `TRUE`
+            if something was displayed to the debug stream.
+    @param    pollFrequencyMs
+              The frequency to poll the Notecard for sync status.
+    @param    maxLevel
+              The maximum log level to output to the debug console. Pass
+              -1 for all.
+    @return `True` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/
-void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
-    noteTxn = noteTxn_;  // Set global interface
-    if (noteTxn_) {
-        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
-    } else {
-        make_note_txn(nullptr);  // Clear singleton
-        NoteSetFnTransaction(nullptr, nullptr);
-    }
-}
-
-/**************************************************************************/
-/*!
-    @brief  Creates a new request object for population by the host.
-            This function accepts a request string (for example, `"note.add"`)
-            and initializes a JSON Object to return to the host.
-    @param    request
-              The request name, for example, `note.add`.
-    @return A `J` JSON Object populated with the request name.
-*/
-/**************************************************************************/
-J *Notecard::newRequest(const char *request)
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
 {
-    return NoteNewRequest(request);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Creates a new command object for population by the host.
-            This function accepts a command string (for example, `"note.add"`)
-            and initializes a JSON Object to return to the host.
-    @param    request
-              The command name, for example, `note.add`.
-    @return A `J` JSON Object populated with the request name.
-*/
-/**************************************************************************/
-J *Notecard::newCommand(const char *request)
-{
-    return NoteNewCommand(request);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard.
-            This function takes a populated `J` JSON request object
-            and sends it to the Notecard.
-    @param    req
-              A `J` JSON request object.
-    @return `True` if the message was successfully sent to the Notecard,
-            `False` if there was an error.
-*/
-/**************************************************************************/
-bool Notecard::sendRequest(J *req)
-{
-    return NoteRequest(req);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard, retrying it on failure until the
-            provided timeout interval lapses.
-    @param    req
-              A `J` JSON request object.
-    @param    timeoutSeconds
-              The timeout interval, in seconds.
-    @return `True` if the message was successfully sent to the Notecard,
-            `False` if the message couldn't be sent.
-*/
-/**************************************************************************/
-bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds)
-{
-    return NoteRequestWithRetry(req, timeoutSeconds);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard and returns the JSON Response.
-            This function takes a populated `J` JSON request object
-            and sends it to the Notecard.
-    @param    req
-              A `J` JSON request object.
-    @return `J` JSON Object with the response from the Notecard.
-*/
-/**************************************************************************/
-J *Notecard::requestAndResponse(J *req)
-{
-    return NoteRequestResponse(req);
-}
-
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard, retrying it on failure until the
-            provided timeout interval lapses, and returns the JSON response.
-    @param    req
-              A `J` JSON request object.
-    @param    timeoutSeconds
-              The timeout interval, in seconds.
-    @return `J` JSON Object with the response from the Notecard.
-*/
-/**************************************************************************/
-J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds)
-{
-    return NoteRequestResponseWithRetry(req, timeoutSeconds);
+    return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
 }
 
 /**************************************************************************/
@@ -446,19 +322,63 @@ void Notecard::logDebugf(const char *format, ...)
 
 /**************************************************************************/
 /*!
-    @brief  Periodically show Notecard sync status, returning `TRUE`
-            if something was displayed to the debug stream.
-    @param    pollFrequencyMs
-              The frequency to poll the Notecard for sync status.
-    @param    maxLevel
-              The maximum log level to output to the debug console. Pass
-              -1 for all.
-    @return `True` if a pending response was displayed to the debug stream.
+    @brief  Creates a new command object for population by the host.
+            This function accepts a command string (for example, `"note.add"`)
+            and initializes a JSON Object to return to the host.
+    @param    request
+              The command name, for example, `note.add`.
+    @return A `J` JSON Object populated with the request name.
 */
 /**************************************************************************/
-bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
+J *Notecard::newCommand(const char *request)
 {
-    return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
+    return NoteNewCommand(request);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Creates a new request object for population by the host.
+            This function accepts a request string (for example, `"note.add"`)
+            and initializes a JSON Object to return to the host.
+    @param    request
+              The request name, for example, `note.add`.
+    @return A `J` JSON Object populated with the request name.
+*/
+/**************************************************************************/
+J *Notecard::newRequest(const char *request)
+{
+    return NoteNewRequest(request);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard and returns the JSON Response.
+            This function takes a populated `J` JSON request object
+            and sends it to the Notecard.
+    @param    req
+              A `J` JSON request object.
+    @return `J` JSON Object with the response from the Notecard.
+*/
+/**************************************************************************/
+J *Notecard::requestAndResponse(J *req)
+{
+    return NoteRequestResponse(req);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard, retrying it on failure until the
+            provided timeout interval lapses, and returns the JSON response.
+    @param    req
+              A `J` JSON request object.
+    @param    timeoutSeconds
+              The timeout interval, in seconds.
+    @return `J` JSON Object with the response from the Notecard.
+*/
+/**************************************************************************/
+J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    return NoteRequestResponseWithRetry(req, timeoutSeconds);
 }
 
 /**************************************************************************/
@@ -466,10 +386,123 @@ bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
     @brief  Determines if there is an error string present in a response object.
     @param    rsp
               A `J` JSON Response object.
-    @return `True` if the response object contains an error.
+    @return `true` if the response object contains an error.
 */
 /**************************************************************************/
 bool Notecard::responseError(J *rsp)
 {
     return NoteResponseError(rsp);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard.
+            This function takes a populated `J` JSON request object
+            and sends it to the Notecard.
+    @param    req
+              A `J` JSON request object.
+    @return `True` if the message was successfully sent to the Notecard,
+            `False` if there was an error.
+*/
+/**************************************************************************/
+bool Notecard::sendRequest(J *req)
+{
+    return NoteRequest(req);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sends a request to the Notecard, retrying it on failure until the
+            provided timeout interval lapses.
+    @param    req
+              A `J` JSON request object.
+    @param    timeoutSeconds
+              The timeout interval, in seconds.
+    @return `True` if the message was successfully sent to the Notecard,
+            `False` if the message couldn't be sent.
+*/
+/**************************************************************************/
+bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds)
+{
+    return NoteRequestWithRetry(req, timeoutSeconds);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the debug output source.
+            A NoteLog object will be constructed via `make_note_log()`
+            using a platform specific logging channel (for example, `Serial`
+            on Arduino). The specified channel will be configured as the
+            source for debug messages provided to `notecard.logDebug()`.
+    @param    noteLog
+              A platform specific log implementation to be used for
+              debug output.
+*/
+/**************************************************************************/
+void Notecard::setDebugOutputStream(NoteLog * noteLog_)
+{
+    noteLog = noteLog_;
+    if (noteLog) {
+        NoteSetFnDebugOutput(noteLogPrint);
+    } else {
+        NoteSetFnDebugOutput(nullptr);
+    }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the lock/unlock functions the Notecard uses for I2C access.
+    @param    lockI2cFn
+              A user-defined callback that blocks until access to the I2C
+              bus has become available, then returns with ownership of the
+              I2C bus.
+    @param    unlockI2cFn
+              A user-defined callback that releases ownership of the
+              I2C bus taken during the call to `lockI2cFn()`.
+*/
+/**************************************************************************/
+void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) {
+    NoteSetFnI2CMutex(lockI2cFn_, unlockI2cFn_);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the lock/unlock functions the host MCU uses to ensure
+            a complete transaction with the Notecard.
+    @param    lockNoteFn
+              A user-defined callback that blocks until the Notecard has
+              completed any previous transactions, then returns with
+              ownership of the next Notecard transaction.
+    @param    unlockNoteFn
+              A user-defined callback that releases ownership of the
+              Notecard transaction taken during the call to `lockNoteFn()`.
+*/
+/**************************************************************************/
+void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
+    NoteSetFnNoteMutex(lockNoteFn_, unlockNoteFn_);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Set the transaction pins.
+            A NoteTxn object will be constructed via `make_note_txn()`
+            using a platform specific tuple of digital I/O pins. The
+            pins are used to send a request to transact and to listen
+            for the clear to transact signal. Transaction pins are not
+            necessary on any legacy Notecards, and are only necessary
+            for certain Notecard SKUs. The pins allow the Notecard to
+            inform the host it has had time to awaken from deep sleep
+            and is ready to process commands.
+    @param    noteTxn
+              A platform specific tuple of digital I/O pins.
+*/
+/**************************************************************************/
+void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
+    noteTxn = noteTxn_;  // Set global interface
+    if (noteTxn_) {
+        NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
+    } else {
+        make_note_txn(nullptr);  // Clear singleton
+        NoteSetFnTransaction(nullptr, nullptr);
+    }
 }
