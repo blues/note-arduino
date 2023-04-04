@@ -487,7 +487,7 @@ void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
     @brief  Set the transaction pins.
             A NoteTxn object will be constructed via `make_note_txn()`
             using a platform specific tuple of digital I/O pins. The
-            pins are used to send a request to transact and a listen
+            pins are used to send a request to transact and to listen
             for the clear to transact signal. Transaction pins are not
             necessary on any legacy Notecards, and are only necessary
             for certain Notecard SKUs. The pins allow the Notecard to
