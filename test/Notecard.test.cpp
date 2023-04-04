@@ -1475,6 +1475,138 @@ int test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer()
   return result;
 }
 
+int test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+  const mutexFn lockFn = reinterpret_cast<mutexFn>(0x19790917);
+  Notecard notecard;
+  noteSetFnI2CMutex_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFnI2cMutex(lockFn,nullptr);
+
+   // Assert
+  ///////////
+
+  if (lockFn == noteSetFnI2CMutex_Parameters.lockI2cFn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\nnoteSetFnI2CMutex_Parameters.lockI2cFn == " << !!noteSetFnI2CMutex_Parameters.lockI2cFn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+  const mutexFn unlockFn = reinterpret_cast<mutexFn>(0x19790917);
+  Notecard notecard;
+  noteSetFnI2CMutex_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFnI2cMutex(nullptr,unlockFn);
+
+   // Assert
+  ///////////
+
+  if (unlockFn == noteSetFnI2CMutex_Parameters.unlockI2cFn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\nnoteSetFnI2CMutex_Parameters.unlockI2cFn == " << !!noteSetFnI2CMutex_Parameters.unlockI2cFn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+  const mutexFn lockFn = reinterpret_cast<mutexFn>(0x19790917);
+  Notecard notecard;
+  noteSetFnNoteMutex_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFnNoteMutex(lockFn,nullptr);
+
+   // Assert
+  ///////////
+
+  if (lockFn == noteSetFnNoteMutex_Parameters.lockNoteFn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\nnoteSetFnNoteMutex_Parameters.lockNoteFn == " << !!noteSetFnNoteMutex_Parameters.lockNoteFn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFnNoteMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c()
+{
+  int result;
+
+   // Arrange
+  ////////////
+  const mutexFn unlockFn = reinterpret_cast<mutexFn>(0x19790917);
+  Notecard notecard;
+  noteSetFnNoteMutex_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFnNoteMutex(nullptr,unlockFn);
+
+   // Assert
+  ///////////
+
+  if (unlockFn == noteSetFnNoteMutex_Parameters.unlockNoteFn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\nnoteSetFnNoteMutex_Parameters.unlockNoteFn == " << !!noteSetFnNoteMutex_Parameters.unlockNoteFn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer()
 {
   int result;
@@ -4506,6 +4638,10 @@ int main(void)
       {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},
+      {test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c"},
+      {test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c"},
+      {test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c"},
+      {test_notecard_setFnNoteMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnNoteMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c"},
       {test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer, "test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer"},
       {test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer, "test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer"},
       {test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided, "test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided"},

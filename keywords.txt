@@ -21,6 +21,8 @@ responseError			KEYWORD2
 sendRequest			KEYWORD2
 sendRequestWithRetry		KEYWORD2
 setDebugOutputStream		KEYWORD2
+setFnI2cMutex			KEYWORD2
+setFnNoteMutex			KEYWORD2
 setTransactionPins		KEYWORD2
 
 ########################################

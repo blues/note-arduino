@@ -93,6 +93,8 @@ public:
     bool sendRequest(J *req);
     bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds);
     void setDebugOutputStream(NoteLog * noteLog);
+    void setFnI2cMutex(mutexFn lockI2cFn, mutexFn unlockI2cFn);
+    void setFnNoteMutex(mutexFn lockNoteFn, mutexFn unlockNoteFn);
     void setTransactionPins(NoteTxn * noteTxn);
 
 private:

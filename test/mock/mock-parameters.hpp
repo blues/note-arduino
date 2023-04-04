@@ -313,6 +313,48 @@ struct NoteSetFnI2C_Parameters {
     i2cReceiveFn receivefn;
 };
 
+struct NoteSetFnI2CMutex_Parameters {
+    NoteSetFnI2CMutex_Parameters(
+        void
+    ) :
+        invoked(0),
+        lockI2cFn(nullptr),
+        unlockI2cFn(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        lockI2cFn = nullptr;
+        unlockI2cFn = nullptr;
+    }
+    size_t invoked;
+    mutexFn lockI2cFn;
+    mutexFn unlockI2cFn;
+};
+
+struct NoteSetFnNoteMutex_Parameters {
+    NoteSetFnNoteMutex_Parameters(
+        void
+    ) :
+        invoked(0),
+        lockNoteFn(nullptr),
+        unlockNoteFn(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        lockNoteFn = nullptr;
+        unlockNoteFn = nullptr;
+    }
+    size_t invoked;
+    mutexFn lockNoteFn;
+    mutexFn unlockNoteFn;
+};
+
 struct NoteSetFnSerial_Parameters {
     NoteSetFnSerial_Parameters(
         void
@@ -394,6 +436,8 @@ extern NoteResponseError_Parameters noteResponseError_Parameters;
 extern NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 extern NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 extern NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
+extern NoteSetFnI2CMutex_Parameters noteSetFnI2CMutex_Parameters;
+extern NoteSetFnNoteMutex_Parameters noteSetFnNoteMutex_Parameters;
 extern NoteSetFnSerial_Parameters noteSetFnSerial_Parameters;
 extern NoteSetFnTransaction_Parameters noteSetFnTransaction_Parameters;
 extern NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;

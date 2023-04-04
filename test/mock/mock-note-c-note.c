@@ -13,6 +13,8 @@ NoteResponseError_Parameters noteResponseError_Parameters;
 NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
 NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
+NoteSetFnI2CMutex_Parameters noteSetFnI2CMutex_Parameters;
+NoteSetFnNoteMutex_Parameters noteSetFnNoteMutex_Parameters;
 NoteSetFnSerial_Parameters noteSetFnSerial_Parameters;
 NoteSetFnTransaction_Parameters noteSetFnTransaction_Parameters;
 NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;
@@ -211,6 +213,32 @@ NoteSetFnI2C(
     noteSetFnI2C_Parameters.resetfn = reset_fn_;
     noteSetFnI2C_Parameters.transmitfn = transmit_fn_;
     noteSetFnI2C_Parameters.receivefn = receive_fn_;
+}
+
+void
+NoteSetFnI2CMutex(
+    mutexFn lockI2cFn_,
+    mutexFn unlockI2cFn_
+) {
+    // Record invocation(s)
+    ++noteSetFnI2CMutex_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteSetFnI2CMutex_Parameters.lockI2cFn = lockI2cFn_;
+    noteSetFnI2CMutex_Parameters.unlockI2cFn = unlockI2cFn_;
+}
+
+void
+NoteSetFnNoteMutex(
+    mutexFn lockNoteFn_,
+    mutexFn unlockNoteFn_
+) {
+    // Record invocation(s)
+    ++noteSetFnNoteMutex_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteSetFnNoteMutex_Parameters.lockNoteFn = lockNoteFn_;
+    noteSetFnNoteMutex_Parameters.unlockNoteFn = unlockNoteFn_;
 }
 
 void
