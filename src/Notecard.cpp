@@ -257,8 +257,7 @@ void Notecard::begin(NoteSerial * noteSerial_)
 /**************************************************************************/
 void Notecard::clearDebugOutputStream(void)
 {
-    noteLog = nullptr;
-    NoteSetFnDebugOutput(nullptr);
+    setDebugOutputStream(nullptr);
 }
 
 /**************************************************************************/
@@ -445,6 +444,7 @@ void Notecard::setDebugOutputStream(NoteLog * noteLog_)
     if (noteLog) {
         NoteSetFnDebugOutput(noteLogPrint);
     } else {
+        make_note_log(nullptr);  // Clear singleton
         NoteSetFnDebugOutput(nullptr);
     }
 }
