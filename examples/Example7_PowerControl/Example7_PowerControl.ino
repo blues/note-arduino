@@ -166,7 +166,7 @@ void loop()
     if (req != NULL)
     {
         JAddStringToObject(req, "file", "example.qo");
-        J *body = JCreateObject();
+        J *body = JAddObjectToObject(req, "body");
         if (body != NULL)
         {
             JAddNumberToObject(body, "cycles", globalState.cycles);
@@ -174,7 +174,6 @@ void loop()
             JAddNumberToObject(body, "temperature_measurements", tempSensorState.measurements);
             JAddNumberToObject(body, "voltage", currentVoltage);
             JAddNumberToObject(body, "voltage_measurements", voltSensorState.measurements);
-            JAddItemToObject(req, "body", body);
         }
         notecard.sendRequest(req);
     }
