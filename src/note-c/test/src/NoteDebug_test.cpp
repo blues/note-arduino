@@ -11,7 +11,7 @@
  *
  */
 
-#ifdef TEST
+#ifdef NOTE_C_TEST
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -21,7 +21,7 @@ namespace
 {
 
 typedef struct {
-    char debugBuf[32];
+    char debugBuf[256];
     size_t debugBufIdx;
     bool debugOutputCalled;
 } TestState;
@@ -94,6 +94,28 @@ TEST_CASE("NoteDebug")
             CHECK(state.debugOutputCalled);
             CHECK(!strcmp(state.debugBuf, expectedString));
 #endif
+        }
+
+        SECTION("NoteDebugWithLevel") {
+            const char msg[] = "my message";
+
+            SECTION("Info level messages NOT logged by default") {
+                NOTE_C_LOG_INFO(msg);
+
+                CHECK(!state.debugOutputCalled);
+            }
+
+            SECTION("Error level messages logged by default") {
+                NOTE_C_LOG_ERROR(msg);
+
+#ifdef NOTE_NODEBUG
+                CHECK(!state.debugOutputCalled);
+#else
+                CHECK(state.debugOutputCalled);
+                CHECK(strstr(state.debugBuf, msg) != NULL);
+                CHECK(strstr(state.debugBuf, __FILE__) != NULL);
+#endif
+            }
         }
     }
 }

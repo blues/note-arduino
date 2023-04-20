@@ -137,7 +137,7 @@ add_test(NoteGetContact_test)
 add_test(NoteSetContact_test)
 add_test(NoteDebugSyncStatus_test)
 
-if(COVERAGE)
+if(NOTE_C_COVERAGE)
     find_program(LCOV lcov REQUIRED)
     message(STATUS "Found lcov: ${LCOV}")
 
@@ -177,4 +177,4 @@ if(COVERAGE)
         DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/coverage
     )
-endif(COVERAGE)
+endif(NOTE_C_COVERAGE)

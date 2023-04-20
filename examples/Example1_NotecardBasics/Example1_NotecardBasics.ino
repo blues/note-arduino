@@ -165,13 +165,12 @@ void loop()
     if (req != NULL)
     {
         JAddBoolToObject(req, "sync", true);
-        J *body = JCreateObject();
+        J *body = JAddObjectToObject(req, "body");
         if (body != NULL)
         {
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "voltage", voltage);
             JAddNumberToObject(body, "count", eventCounter);
-            JAddItemToObject(req, "body", body);
         }
         notecard.sendRequest(req);
     }

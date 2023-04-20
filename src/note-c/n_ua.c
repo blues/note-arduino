@@ -109,13 +109,10 @@ __attribute__((weak)) J *NoteUserAgent()
 #define PLUS ""
 #endif
 
-#define STRINGIFY(x) STRINGIFY_(x)
-#define STRINGIFY_(x) #x
-
 #if defined(__ICCARM__)
-    char *compiler = (char *) ("iar arm" PLUS " " STRINGIFY(__VER__));
+    char *compiler = (char *) ("iar arm" PLUS " " NOTE_C_STRINGIZE(__VER__));
 #elif defined(__IAR_SYSTEMS_ICC__)
-    char *compiler = (char *) ("iar" PLUS " " STRINGIFY(__VER__));
+    char *compiler = (char *) ("iar" PLUS " " NOTE_C_STRINGIZE(__VER__));
 #elif defined(__clang__)
     char *compiler = (char *) ("clang" PLUS " " __VERSION__);
 #elif defined(__ATOLLIC__) && defined(__GNUC__)

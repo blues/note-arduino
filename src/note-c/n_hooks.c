@@ -420,6 +420,29 @@ void NoteDebug(const char *line)
 
 //**************************************************************************/
 /*!
+  @brief       Write the message to the debug stream, if the level is less than
+               or equal to NOTE_C_LOG_LEVEL_MAX. Otherwise, the message is
+               dropped.
+  @param level The log level of the message. See the NOTE_C_LOG_LEVEL_* macros
+               in note.h for possible values.
+  @param msg   The debug message.
+*/
+/**************************************************************************/
+void NoteDebugWithLevel(uint8_t level, const char *msg)
+{
+#ifndef NOTE_NODEBUG
+
+    if (level > NOTE_C_LOG_LEVEL_MAX) {
+        return;
+    }
+
+    NoteDebug(msg);
+
+#endif // !NOTE_NODEBUG
+}
+
+//**************************************************************************/
+/*!
   @brief  Get the current milliseconds value from the platform-specific
   hook.
   @returns  The current milliseconds value.

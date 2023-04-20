@@ -122,21 +122,18 @@ void setup()
     // look "similar" to the Notes that will later be added with note.add, in
     // that the data types are used to intuit what the ultimate field data types
     // will be, and their maximum length.
-    req = notecard.newRequest("note.add");
+    req = notecard.newRequest("note.template");
     if (req != NULL)
     {
         // Create the body for a template that will be used to send notes below
-        J *body = JCreateObject();
+        J *body = JAddObjectToObject(req, "body");
         if (body != NULL)
         {
             // Define the JSON template
-            JAddStringToObject(body, "status", "AAAAAAAAAAAA"); // maximum string length
-            JAddNumberToObject(body, "temp", 1.1);              // floating point (double)
-            JAddNumberToObject(body, "voltage", 1.1);           // floating point (double)
-            JAddNumberToObject(body, "count", 1);               // integer
-
-            // Add the body to the request
-            JAddItemToObject(req, "body", body);
+            JAddStringToObject(body, "status", TSTRING(12)); // maximum string length
+            JAddNumberToObject(body, "temp", TFLOAT64);      // floating point (double)
+            JAddNumberToObject(body, "voltage", TFLOAT64);   // floating point (double)
+            JAddNumberToObject(body, "count", TUINT32);      // 32-bit unsigned integer
         }
 
         // Create a template of the payload that will be used to send
@@ -145,7 +142,6 @@ void setup()
 
         // Register the template in the output queue notefile
         JAddStringToObject(req, "file", "sensors.qo");
-        JAddBoolToObject(req, "template", true);
         notecard.sendRequest(req);
     }
 }
@@ -199,14 +195,13 @@ void loop()
     if (req != NULL)
     {
         JAddStringToObject(req, "file", "sensors.qo");
-        J *body = JCreateObject();
+        J *body = JAddObjectToObject(req, "body");
         if (body != NULL)
         {
             JAddStringToObject(body, "status", temperature > 26.67 ? "hot" : "normal"); // 80F
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "voltage", voltage);
             JAddNumberToObject(body, "count", eventCounter);
-            JAddItemToObject(req, "body", body);
         }
         JAddBinaryToObject(req, "payload", &binaryData, sizeof(binaryData));
         notecard.sendRequest(req);

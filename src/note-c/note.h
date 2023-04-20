@@ -73,15 +73,6 @@
 // originates from the Notecard, which synchronizes the time from both the cell network and GPS.
 typedef unsigned long int JTIME;
 
-// If we're building the tests, STATIC is defined to nothing. This allows the
-// tests to access the static functions in note-c. Among other things, this
-// let's us mock these normally static functions.
-#ifdef TEST
-#define STATIC
-#else
-#define STATIC static
-#endif
-
 // C-callable functions
 #ifdef __cplusplus
 extern "C" {
@@ -169,6 +160,47 @@ void NoteDebug(const char *message);
 void NoteDebugln(const char *message);
 void NoteDebugIntln(const char *message, int n);
 void NoteDebugf(const char *format, ...);
+
+#define NOTE_C_LOG_LEVEL_ERROR  0
+#define NOTE_C_LOG_LEVEL_WARN   1
+#define NOTE_C_LOG_LEVEL_INFO   2
+#define NOTE_C_LOG_LEVEL_DEBUG  3
+
+void NoteDebugWithLevel(uint8_t level, const char *msg);
+
+#define _NOTE_C_STRINGIZE(x) #x
+#define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
+
+#define NOTE_C_LOG_ERROR(msg) do { \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, __FILE__ ":" \
+  NOTE_C_STRINGIZE(__LINE__) " (ERROR) "); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, msg); \
+} while (0);
+
+#define NOTE_C_LOG_WARN(msg) do { \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, __FILE__ ":" \
+  NOTE_C_STRINGIZE(__LINE__) " (WARN) "); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, msg); \
+} while (0);
+
+#define NOTE_C_LOG_INFO(msg) do { \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, __FILE__ ":" \
+  NOTE_C_STRINGIZE(__LINE__) " (INFO) "); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, msg); \
+} while (0);
+
+#define NOTE_C_LOG_DEBUG(msg) do { \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, __FILE__ ":" \
+  NOTE_C_STRINGIZE(__LINE__) " (DEBUG) "); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, msg); \
+} while (0);
+
+// The max log level for NoteDebugWithLevel is only configurable at
+// compile-time, via NOTE_C_LOG_LEVEL_MAX.
+#ifndef NOTE_C_LOG_LEVEL_MAX
+#define NOTE_C_LOG_LEVEL_MAX NOTE_C_LOG_LEVEL_ERROR
+#endif
+
 void *NoteMalloc(size_t size);
 void NoteFree(void *);
 long unsigned int NoteGetMs(void);
@@ -316,32 +348,23 @@ bool NotePayloadAddSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_
 bool NotePayloadFindSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t *plen);
 bool NotePayloadGetSegment(NotePayloadDesc *desc, const char segtype[NP_SEGTYPE_LEN], void *pdata, uint32_t len);
 
-// C macro to convert a number to a string for use below
-#define _tstring(x)     #x
-
 // Hard-wired constants used to specify field types when creating note templates
-#define TBOOL           true                // bool
-#define TINT8           11                  // 1-byte signed integer
-#define TINT16          12                  // 2-byte signed integer
-#define TINT24          13                  // 3-byte signed integer
-#define TINT32          14                  // 4-byte signed integer
-#define TINT64          18                  // 8-byte signed integer (note-c support depends upon platform)
-#define TUINT8          21                  // 1-byte unsigned integer (requires notecard firmware >= build 14444)
-#define TUINT16         22                  // 2-byte unsigned integer (requires notecard firmware >= build 14444)
-#define TUINT24         23                  // 3-byte unsigned integer (requires notecard firmware >= build 14444)
-#define TUINT32         24                  // 4-byte unsigned integer (requires notecard firmware >= build 14444)
-#define TFLOAT16        12.1                // 2-byte IEEE 754 floating point
-#define TFLOAT32        14.1                // 4-byte IEEE 754 floating point (a.k.a. "float")
-#define TFLOAT64        18.1                // 8-byte IEEE 754 floating point (a.k.a. "double")
-#define TSTRING(N)      _tstring(N)         // UTF-8 text of N bytes maximum (fixed-length reserved buffer)
-#define TSTRINGV        _tstring(0)         // variable-length string
+#define TBOOL           true                 // bool
+#define TINT8           11                   // 1-byte signed integer
+#define TINT16          12                   // 2-byte signed integer
+#define TINT24          13                   // 3-byte signed integer
+#define TINT32          14                   // 4-byte signed integer
+#define TINT64          18                   // 8-byte signed integer (note-c support depends upon platform)
+#define TUINT8          21                   // 1-byte unsigned integer (requires notecard firmware >= build 14444)
+#define TUINT16         22                   // 2-byte unsigned integer (requires notecard firmware >= build 14444)
+#define TUINT24         23                   // 3-byte unsigned integer (requires notecard firmware >= build 14444)
+#define TUINT32         24                   // 4-byte unsigned integer (requires notecard firmware >= build 14444)
+#define TFLOAT16        12.1                 // 2-byte IEEE 754 floating point
+#define TFLOAT32        14.1                 // 4-byte IEEE 754 floating point (a.k.a. "float")
+#define TFLOAT64        18.1                 // 8-byte IEEE 754 floating point (a.k.a. "double")
+#define TSTRING(N)      _NOTE_C_STRINGIZE(N) // UTF-8 text of N bytes maximum (fixed-length reserved buffer)
+#define TSTRINGV        _NOTE_C_STRINGIZE(0) // variable-length string
 bool NoteTemplate(const char *notefileID, J *templateBody);
-
-// Make these normally static functions externally visible if building tests.
-#ifdef TEST
-bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
-void setTime(JTIME seconds);
-#endif
 
 // End of C-callable functions
 #ifdef __cplusplus

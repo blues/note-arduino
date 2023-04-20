@@ -14,10 +14,10 @@ if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
     file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
 endif()
 
-option(BUILD_TESTS "Build tests." OFF)
-option(BUILD_SHARED_LIBS "Build note-c as a shared library." OFF)
-option(COVERAGE "Compile for test coverage reporting." OFF)
-option(MEM_CHECK "Run tests with Valgrind." OFF)
+option(NOTE_C_BUILD_TESTS "Build tests." OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
+option(NOTE_C_COVERAGE "Compile for test NOTE_C_COVERAGE reporting." OFF)
+option(NOTE_C_MEM_CHECK "Run tests with Valgrind." OFF)
 
 set(NOTE_C_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(
@@ -51,22 +51,26 @@ target_include_directories(
     PUBLIC ${NOTE_C_SRC_DIR}
 )
 
-if(BUILD_TESTS)
+if(NOTE_C_BUILD_TESTS)
     # Including CTest here rather than in test/CMakeLists.txt allows us to run
     # ctest from the root build directory (e.g. build/ instead of build/test/).
     # We also need to set MEMORYCHECK_COMMAND_OPTIONS before including this.
     # See: https://stackoverflow.com/a/60741757
-    if(MEM_CHECK)
+    if(NOTE_C_MEM_CHECK)
         # Go ahead and make sure we can find valgrind while we're here.
         find_program(VALGRIND valgrind REQUIRED)
         message(STATUS "Found valgrind: ${VALGRIND}")
         set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
-    endif(MEM_CHECK)
+    endif(NOTE_C_MEM_CHECK)
     include(CTest)
 
     target_compile_definitions(
         note_c
-        PUBLIC TEST
+        PUBLIC NOTE_C_TEST
+    )
+    target_include_directories(
+        note_c
+        PRIVATE ${CMAKE_CURRENT_LIST_DIR}/test/include
     )
 
     # If we don't weaken the functions we're mocking in the tests, the linker
@@ -124,4 +128,4 @@ if(BUILD_TESTS)
     )
 
     add_subdirectory(test)
-endif(BUILD_TESTS)
+endif(NOTE_C_BUILD_TESTS)

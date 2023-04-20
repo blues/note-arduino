@@ -67,9 +67,6 @@
 
 #include "n_lib.h"
 
-#define STRINGIFY(x) STRINGIFY_(x)
-#define STRINGIFY_(x) #x
-
 #ifdef ENABLE_LOCALES
 #include <locale.h>
 #endif
@@ -112,7 +109,7 @@ N_CJSON_PUBLIC(char *) JGetStringValue(J *item)
 
 N_CJSON_PUBLIC(const char*) JVersion(void)
 {
-    return STRINGIFY(N_CJSON_VERSION_MAJOR) "." STRINGIFY(N_CJSON_VERSION_MINOR) "." STRINGIFY(N_CJSON_VERSION_PATCH);
+    return NOTE_C_STRINGIZE(N_CJSON_VERSION_MAJOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_MINOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_PATCH);
 }
 
 /* Case insensitive string comparison, doesn't consider two NULL pointers equal though */
