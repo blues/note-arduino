@@ -3,6 +3,8 @@
 #if defined(NOTE_LOWMEM)
 static const char *i2cerr = "i2c {io}";
 #endif
+static unsigned long processing_delay_ms = 2;
+static bool notecardIsESP = true; // SEAN - test variable to be replaced with automated detection.
 
 NoteI2c *
 make_note_i2c (
@@ -74,9 +76,12 @@ NoteI2c_Arduino::receive (
         }
     }
 
-    // Delay briefly ensuring that the Notecard can
-    // deliver the data in real-time to the I2C ISR
-    ::delay(2);
+    // Delay briefly ensuring that the Notecard can deliver the data in real-time to the I2C ISR
+    // The ESP32 Notecard has higher and more variable latency so use longer delay.
+    if (notecardIsESP && (processing_delay_ms < 25)) {
+        processing_delay_ms = 25;
+    } 
+    ::delay(processing_delay_ms);
 
     // Read and cache response from Notecard
     if (!transmission_error) {
@@ -92,7 +97,24 @@ NoteI2c_Arduino::receive (
             // Ensure protocol response length matches size request
             if (requested_byte_count_ != static_cast<uint8_t>(_i2cPort.read())) {
                 result = ERRSTR("serial-over-i2c: unexpected protocol byte count {io}",i2cerr);
+
+                // This situation can be caused by the Notecard not prefilling the response
+                // buffer quickly enough. Increase future delay, wait 200ms and flush the i2c receive
+                // to prevent an out-of-sync condition, where we read the response to the 
+                // prior request.
+                processing_delay_ms *= 2;
+                if (processing_delay_ms > 150) {
+                    processing_delay_ms = 150;
+                }
+                ::delay(200);
+                (void)_i2cPort.requestFrom((int)device_address_, request_length);
+
             } else {
+
+                // After a successful transaction slowly reduce processing delay
+                if (processing_delay_ms > 2) {
+                    processing_delay_ms--;
+                } 
                 for (size_t i = 0 ; i < requested_byte_count_ ; ++i) {
                     //TODO: Perf test against indexed buffer writes
                     *buffer_++ = _i2cPort.read();
@@ -152,7 +174,11 @@ NoteI2c_Arduino::transmit (
         default:
             result = ERRSTR("i2c: unknown error encounter during I2C transmission {io}",i2cerr);
         }
-    }
+    } else if (notecardIsESP) {
+        // The ESP32 i2c slave receive function is slower than the STM32, so we add extra 
+        // delay to prevent frame loss / overflow.
+        ::delay(processing_delay_ms);
+    } 
 
     return result;
 }
