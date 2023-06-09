@@ -1073,7 +1073,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   const uint8_t AVAILABLE_SIZE = ((NoteI2c_Arduino::REQUEST_MAX_SIZE - NoteI2c_Arduino::REQUEST_HEADER_SIZE) + 1);
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "serial-over-i2c: unexpected available byte count {io}";
+  const char * EXPECTED_RESULT = "serial-over-i2c: available byte count greater than maximum {io}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
