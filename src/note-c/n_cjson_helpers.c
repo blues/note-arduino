@@ -60,6 +60,29 @@ char *JGetString(J *rsp, const char *field)
 
 //**************************************************************************/
 /*!
+    @brief  Return an array from the specified JSON object.
+    @param   rsp The JSON response object.
+    @param   field The field to return.
+    @returns The array found, or NULL, if not present.
+*/
+/**************************************************************************/
+J *JGetArray(J *rsp, const char *field)
+{
+    if (rsp == NULL) {
+        return NULL;
+    }
+    J *item = JGetObjectItem(rsp, field);
+    if (item == NULL) {
+        return NULL;
+    }
+    if (!JIsArray(item)) {
+        return NULL;
+    }
+    return item;
+}
+
+//**************************************************************************/
+/*!
     @brief  Return an object from the specified JSON object.
     @param   rsp The JSON response object.
     @param   field The field to return.
@@ -529,11 +552,16 @@ const char *JType(J *item)
 /**************************************************************************/
 int JGetType(J *rsp, const char *field)
 {
-    const char *v;
     if (rsp == NULL || field == NULL) {
         return JTYPE_NOT_PRESENT;
     }
-    J *item = JGetObjectItem(rsp, field);
+    return JGetItemType(JGetObjectItem(rsp, field));
+}
+
+// Get the
+int JGetItemType(J *item)
+{
+    const char *v;
     if (item == NULL) {
         return JTYPE_NOT_PRESENT;
     }
@@ -557,7 +585,11 @@ int JGetType(J *rsp, const char *field)
         }
         int vlen = strlen(v);
         char *endstr;
+#if !CJSON_NO_CLIB
+        JNUMBER value = strtod(v, &endstr);
+#else
         JNUMBER value = JAtoN(v, &endstr);
+#endif
         if (endstr[0] == 0) {
             if (value == 0) {
                 return JTYPE_STRING_ZERO;
@@ -587,4 +619,28 @@ int JGetType(J *rsp, const char *field)
         return JTYPE_ARRAY;
     }
     return JTYPE_NOT_PRESENT;
+}
+
+// Coalesce to the base types
+int JBaseItemType(int type)
+{
+    switch (type) {
+    case JTYPE_BOOL_TRUE:
+        return JTYPE_BOOL;
+    case JTYPE_BOOL_FALSE:
+        return JTYPE_BOOL;
+    case JTYPE_NUMBER_ZERO:
+        return JTYPE_NUMBER;
+    case JTYPE_STRING_BLANK:
+        return JTYPE_STRING;
+    case JTYPE_STRING_ZERO:
+        return JTYPE_STRING;
+    case JTYPE_STRING_NUMBER:
+        return JTYPE_STRING;
+    case JTYPE_STRING_BOOL_TRUE:
+        return JTYPE_STRING;
+    case JTYPE_STRING_BOOL_FALSE:
+        return JTYPE_STRING;
+    }
+    return type;
 }

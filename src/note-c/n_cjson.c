@@ -63,7 +63,9 @@
 
 // For Note, disable dependencies
 #undef ENABLE_LOCALES
-#define MINIMIZE_CLIB_DEPENDENCIES      1       // Use tiny but non-robust versions of conversions
+#ifndef CJSON_NO_CLIB
+#define CJSON_NO_CLIB      1       // Use tiny but non-robust versions of conversions
+#endif
 
 #include "n_lib.h"
 
@@ -77,6 +79,8 @@
 #ifdef __GNUC__
 #pragma GCC visibility pop
 #endif
+
+#define PRINT_TAB_CHARS     4
 
 typedef struct {
     const unsigned char *json;
@@ -264,7 +268,7 @@ loop_end:
     number_c_string[i] = '\0';
 
     /* some platforms may not have locale support */
-#if !MINIMIZE_CLIB_DEPENDENCIES
+#if !CJSON_NO_CLIB
     number = strtod((const char*)number_c_string, (char**)&after_end);
 #else
     number = JAtoN((const char*)number_c_string, (char**)&after_end);
@@ -314,6 +318,7 @@ typedef struct {
     size_t depth; /* current nesting depth (for formatted printing) */
     Jbool noalloc;
     Jbool format; /* is this print a formatted print */
+    Jbool omitempty;
 } printbuffer;
 
 /* realloc printbuffer if necessary to have at least "needed" bytes more */
@@ -412,7 +417,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
         strcpy(nbuf, "null");
         length = strlen(nbuf);
     } else {
-#if !MINIMIZE_CLIB_DEPENDENCIES
+#if !CJSON_NO_CLIB
         JNUMBER test;
         /* Try 15 decimal places of precision to avoid nonsignificant nonzero digits */
         length = sprintf((char*)number_buffer, "%1.15g", d);
@@ -421,6 +426,12 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
         if ((sscanf((char*)number_buffer, "%lg", &test) != 1) || ((JNUMBER)test != d)) {
             /* If not, print with 17 decimal places of precision */
             length = sprintf((char*)number_buffer, "%1.17g", d);
+        }
+        while (length > 1 && number_buffer[length-1] == '0') {
+            number_buffer[--length] = '\0';
+        }
+        if (length > 1 && number_buffer[length-1] == '.') {
+            number_buffer[--length] = '\0';
         }
 #else
         char *nbuf = (char *) number_buffer;
@@ -949,7 +960,7 @@ N_CJSON_PUBLIC(J *) JParse(const char *value)
 
 #define cjson_min(a, b) ((a < b) ? a : b)
 
-static unsigned char *print(const J * const item, Jbool format)
+static unsigned char *print(const J * const item, Jbool format, Jbool omitempty)
 {
     static const size_t default_buffer_size = 128;
     printbuffer buffer[1];
@@ -961,6 +972,7 @@ static unsigned char *print(const J * const item, Jbool format)
     buffer->buffer = (unsigned char*) _Malloc(default_buffer_size);
     buffer->length = default_buffer_size;
     buffer->format = format;
+    buffer->omitempty = omitempty;
     if (buffer->buffer == NULL) {
         goto fail;
     }
@@ -1002,7 +1014,7 @@ N_CJSON_PUBLIC(char *) JPrint(const J *item)
     if (item == NULL) {
         return (char *)"";
     }
-    return (char*)print(item, true);
+    return (char*)print(item, true, false);
 }
 
 N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
@@ -1010,12 +1022,20 @@ N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
     if (item == NULL) {
         return (char *)"";
     }
-    return (char*)print(item, false);
+    return (char*)print(item, false, false);
+}
+
+N_CJSON_PUBLIC(char *) JPrintUnformattedOmitEmpty(const J *item)
+{
+    if (item == NULL) {
+        return (char *)"";
+    }
+    return (char*)print(item, false, true);
 }
 
 N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
 {
-    printbuffer p = { 0, 0, 0, 0, 0, 0 };
+    printbuffer p = { 0, 0, 0, 0, 0, 0, 0 };
 
     if (item == NULL) {
         return (char *)"";
@@ -1045,7 +1065,7 @@ N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
 
 N_CJSON_PUBLIC(Jbool) JPrintPreallocated(J *item, char *buf, const int len, const Jbool fmt)
 {
-    printbuffer p = { 0, 0, 0, 0, 0, 0 };
+    printbuffer p = { 0, 0, 0, 0, 0, 0, 0 };
 
     if (item == NULL) {
         return false;
@@ -1408,6 +1428,22 @@ fail:
     return false;
 }
 
+/* See if there is another non-omitted item looking forward */
+static bool last_non_omitted_object(J * item, printbuffer * const output_buffer)
+{
+    if (!output_buffer->omitempty) {
+        return (item->next == 0);
+    }
+    while (item->next != 0) {
+        item = item->next;
+        int type = JGetItemType(item);
+        if (type != JTYPE_BOOL_FALSE && type != JTYPE_NUMBER_ZERO && type != JTYPE_STRING_BLANK) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /* Render an object to text. */
 static Jbool print_object(const J * const item, printbuffer * const output_buffer)
 {
@@ -1436,66 +1472,106 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
     while (current_item) {
         if (output_buffer->format) {
             size_t i;
-            output_pointer = ensure(output_buffer, output_buffer->depth);
+#if (PRINT_TAB_CHARS == 0)
+            int needed = output_buffer->depth;
+#else
+            int needed = output_buffer->depth * PRINT_TAB_CHARS;
+#endif
+            output_pointer = ensure(output_buffer, needed);
             if (output_pointer == NULL) {
                 return false;
             }
             for (i = 0; i < output_buffer->depth; i++) {
+#if (PRINT_TAB_CHARS == 0)
                 *output_pointer++ = '\t';
+                output_buffer_offset++;
+#else
+                for (int tc=0; tc<PRINT_TAB_CHARS; tc++) {
+                    *output_pointer++ = ' ';
+                    output_buffer->offset++;
+                }
+#endif
             }
-            output_buffer->offset += output_buffer->depth;
         }
 
-        /* print key */
-        if (!print_string_ptr((unsigned char*)current_item->string, output_buffer)) {
-            return false;
-        }
-        update_offset(output_buffer);
-
-        length = (size_t) (output_buffer->format ? 2 : 1);
-        output_pointer = ensure(output_buffer, length);
-        if (output_pointer == NULL) {
-            return false;
-        }
-        *output_pointer++ = ':';
-        if (output_buffer->format) {
-            *output_pointer++ = '\t';
-        }
-        output_buffer->offset += length;
-
-        /* print value */
-        if (!print_value(current_item, output_buffer)) {
-            return false;
-        }
-        update_offset(output_buffer);
-
-        /* print comma if not last */
-        length = (size_t) ((output_buffer->format ? 1 : 0) + (current_item->next ? 1 : 0));
-        output_pointer = ensure(output_buffer, length + 1);
-        if (output_pointer == NULL) {
-            return false;
-        }
-        if (current_item->next) {
-            *output_pointer++ = ',';
+        /* See if it should be eliminated becase of omitempty */
+        bool omit = false;
+        if (output_buffer->omitempty) {
+            int type = JGetItemType(current_item);
+            omit =(type == JTYPE_BOOL_FALSE || type == JTYPE_NUMBER_ZERO || type == JTYPE_STRING_BLANK);
         }
 
-        if (output_buffer->format) {
-            *output_pointer++ = '\n';
+        /* print item only if not omitted */
+        if (!omit) {
+
+            /* print key */
+            if (!print_string_ptr((unsigned char*)current_item->string, output_buffer)) {
+                return false;
+            }
+            update_offset(output_buffer);
+
+            length = (size_t) (output_buffer->format ? 2 : 1);
+            output_pointer = ensure(output_buffer, length);
+            if (output_pointer == NULL) {
+                return false;
+            }
+            *output_pointer++ = ':';
+            if (output_buffer->format) {
+#if (PRINT_TAB_CHARS == 0)
+                *output_pointer++ = '\t';
+#else
+                *output_pointer++ = ' ';
+#endif
+            }
+            output_buffer->offset += length;
+
+            /* print value */
+            if (!print_value(current_item, output_buffer)) {
+                return false;
+            }
+            update_offset(output_buffer);
+
+            /* print comma if not last */
+            bool more_fields_coming = !last_non_omitted_object(current_item, output_buffer);
+            length = (size_t) ((output_buffer->format ? 1 : 0) + (more_fields_coming ? 1 : 0));
+            output_pointer = ensure(output_buffer, length + 1);
+            if (output_pointer == NULL) {
+                return false;
+            }
+            if (more_fields_coming) {
+                *output_pointer++ = ',';
+            }
+
+            if (output_buffer->format) {
+                *output_pointer++ = '\n';
+            }
+            *output_pointer = '\0';
+            output_buffer->offset += length;
         }
-        *output_pointer = '\0';
-        output_buffer->offset += length;
 
         current_item = current_item->next;
     }
 
-    output_pointer = ensure(output_buffer, output_buffer->format ? (output_buffer->depth + 1) : 2);
+#if (PRINT_TAB_CHARS == 0)
+    int needed = output_buffer->format ? (output_buffer->depth - 1) : 0;
+#else
+    int needed = output_buffer->format ? ((output_buffer->depth - 1) * PRINT_TAB_CHARS) : 0;
+#endif
+    needed += 2; // }\0
+    output_pointer = ensure(output_buffer, needed);
     if (output_pointer == NULL) {
         return false;
     }
     if (output_buffer->format) {
         size_t i;
         for (i = 0; i < (output_buffer->depth - 1); i++) {
+#if (PRINT_TAB_CHARS == 0)
             *output_pointer++ = '\t';
+#else
+            for (int tc=0; tc<PRINT_TAB_CHARS; tc++) {
+                *output_pointer++ = ' ';
+            }
+#endif
         }
     }
     *output_pointer++ = '}';

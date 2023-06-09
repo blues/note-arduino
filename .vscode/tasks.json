@@ -2,8 +2,8 @@
 	"version": "2.0.0",
 	"tasks": [
         {
-            "type": "cppbuild",
             "label": "Compile and Run ALL Tests",
+            "type": "cppbuild",
             "command": "./test/run_all_tests.sh",
             "args": [],
             "options": {
@@ -18,8 +18,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile Notecard Tests",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -54,8 +54,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile NoteI2c Arduino Tests",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -85,8 +85,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile NoteI2c Arduino Tests (-DWIRE_HAS_END)",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -117,8 +117,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile NoteLog Arduino Tests",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -148,8 +148,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile NoteSerial Arduino Tests",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -179,8 +179,8 @@
             }
         },
         {
-            "type": "cppbuild",
             "label": "Compile NoteTxn Arduino Tests",
+            "type": "cppbuild",
             "command": "g++",
             "args": [
                 "-Wall",
@@ -210,8 +210,8 @@
             }
         },
         {
-            "type": "shell",
             "label": "Clear Test Binaries",
+            "type": "shell",
             "command": "rm -rf *.tests",
             "options": {
                 "cwd": "${workspaceFolder}"

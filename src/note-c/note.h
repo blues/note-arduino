@@ -224,6 +224,7 @@ void JCheck(void);
 bool JIsPresent(J *rsp, const char *field);
 char *JGetString(J *rsp, const char *field);
 JNUMBER JGetNumber(J *rsp, const char *field);
+J *JGetArray(J *rsp, const char *field);
 J *JGetObject(J *rsp, const char *field);
 long int JGetInt(J *rsp, const char *field);
 bool JGetBool(J *rsp, const char *field);
@@ -243,6 +244,7 @@ const char *JType(J *item);
 #define JTYPE_NOT_PRESENT		0
 #define JTYPE_BOOL_TRUE			1
 #define JTYPE_BOOL_FALSE		2
+#define JTYPE_BOOL              JTYPE_BOOL_TRUE
 #define JTYPE_NULL				3
 #define JTYPE_NUMBER_ZERO		4
 #define JTYPE_NUMBER			5
@@ -255,6 +257,9 @@ const char *JType(J *item);
 #define JTYPE_OBJECT			12
 #define JTYPE_ARRAY				13
 int JGetType(J *rsp, const char *field);
+int JGetItemType(J *item);
+int JBaseItemType(int type);
+#define JGetObjectItemName(j) (j->string)
 
 // Helper functions for apps that wish to limit their C library dependencies
 #define JNTOA_PRECISION (16)

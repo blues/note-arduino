@@ -69,6 +69,19 @@ public:
     */
     /**************************************************************************/
     static const size_t REQUEST_HEADER_SIZE = 2;
+
+    /**************************************************************************/
+    /*!
+        @brief  Maximum size of a Serial-Over-I2C request.
+
+        @details The requests made to and responses received from the low-level
+                 I2C controller can be no larger than (REQUEST_MAX_SIZE
+                 - REQUEST_HEADER_SIZE).
+
+        @see NoteI2c::receive
+    */
+    /**************************************************************************/
+    static const size_t REQUEST_MAX_SIZE = 255;
 };
 
 /******************************************************************************/

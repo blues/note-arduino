@@ -93,6 +93,7 @@ add_test(NoteSetFnSerial_test)
 add_test(NoteSetFnI2C_test)
 add_test(JIsPresent_test)
 add_test(JGetString_test)
+add_test(JGetArray_test)
 add_test(JGetObject_test)
 add_test(JBoolValue_test)
 add_test(JStringValue_test)
@@ -148,6 +149,8 @@ if(NOTE_C_COVERAGE)
     add_custom_target(
         coverage
         COMMAND mkdir -p coverage
+        # Zero out the coverage counters from any previous runs.
+        COMMAND lcov --zerocounters --directory ${NOTE_C_SRC_DIR}
         COMMAND ${CMAKE_CTEST_COMMAND}
         WORKING_DIRECTORY ${CMAKE_CURENT_BINARY_DIR}
     )

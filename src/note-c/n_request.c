@@ -129,7 +129,7 @@ bool NoteRequest(J *req)
             no response, or if the response indicates an io error.
     @param   req
                The `J` cJSON request object.
-             timeoutSeconds
+    @param   timeoutSeconds
                Upper limit for retries if there is no response, or if the
                response contains an io error.
   @returns a boolean. Returns `true` if successful or `false` if an error
@@ -188,7 +188,7 @@ J *NoteRequestResponse(J *req)
             no response, or if the response indicates an io error.
     @param   req
                The `J` cJSON request object.
-             timeoutSeconds
+    @param   timeoutSeconds
                Upper limit for retries if there is no response, or if the
                response contains an io error.
   @returns a `J` cJSON object with the response, or NULL if there is

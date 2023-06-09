@@ -26,7 +26,7 @@ extern "C" {
     @brief  How long to wait for the card for any given transaction.
 */
 /**************************************************************************/
-#define NOTECARD_TRANSACTION_TIMEOUT_SEC     10
+#define NOTECARD_TRANSACTION_TIMEOUT_SEC     30
 
 // The notecard is a real-time device that has a fixed size interrupt buffer.
 // We can push data at it far, far faster than it can process it, therefore we

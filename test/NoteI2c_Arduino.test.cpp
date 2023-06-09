@@ -494,6 +494,54 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_
   return result;
 }
 
+int test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_first_call_to_two_wire_read_returns_available_value_greater_than_note_i2c_request_max_size_minus_note_i2c_request_header_size()
+{
+  int result;
+
+  // Arrange
+  const uint8_t AVAILABLE_SIZE = ((NoteI2c_Arduino::REQUEST_MAX_SIZE - NoteI2c_Arduino::REQUEST_HEADER_SIZE) + 1);
+  const uint16_t EXPECTED_ADDRESS = 0x17;
+  const uint8_t REQUEST_SIZE = 13;
+  uint8_t response_buffer[32];
+  uint32_t bytes_remaining;
+
+  twoWireBeginTransmission_Parameters.reset();
+  twoWireWriteByte_Parameters.reset();
+  twoWireEndTransmission_Parameters.reset();
+  twoWireRequestFrom_Parameters.reset();
+  twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
+  twoWireRead_Parameters.reset();
+  twoWireRead_Parameters.results = {AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
+  NoteI2c_Arduino notei2c(Wire);
+
+  // Action
+  notei2c.receive(
+    EXPECTED_ADDRESS,
+    response_buffer,
+    REQUEST_SIZE,
+    &bytes_remaining
+  );
+
+  // Assert
+  if (
+      twoWireRequestFrom_Parameters.invoked
+   && (1 >= twoWireRead_Parameters.invoked)
+  )
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << twoWireRead_Parameters.invoked << ", EXPECTED: <= 1" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_from_returns_value_other_than_buffer_size_plus_note_i2c_request_header_size()
 {
   int result;
@@ -988,6 +1036,54 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   twoWireRequestFrom_Parameters.result = sizeof(response_buffer);
   twoWireRead_Parameters.reset();
   twoWireRead_Parameters.results = {0, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
+  NoteI2c_Arduino notei2c(Wire);
+
+  // Action
+  const char * const ACTUAL_RESULT = notei2c.receive(
+    EXPECTED_ADDRESS,
+    response_buffer,
+    REQUEST_SIZE,
+    &bytes_remaining
+  );
+
+  // Assert
+  if (
+      ACTUAL_RESULT
+   && !memcmp(ACTUAL_RESULT, EXPECTED_RESULT, strlen(EXPECTED_RESULT))
+  )
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_available_byte_count()
+{
+  int result;
+
+  // Arrange
+  const uint8_t AVAILABLE_SIZE = ((NoteI2c_Arduino::REQUEST_MAX_SIZE - NoteI2c_Arduino::REQUEST_HEADER_SIZE) + 1);
+  const uint16_t EXPECTED_ADDRESS = 0x17;
+  const uint8_t REQUEST_SIZE = 13;
+  const char * EXPECTED_RESULT = "serial-over-i2c: available byte count greater than max allowed {io}";
+  uint8_t response_buffer[32];
+  uint32_t bytes_remaining;
+
+  twoWireBeginTransmission_Parameters.reset();
+  twoWireWriteByte_Parameters.reset();
+  twoWireEndTransmission_Parameters.reset();
+  twoWireRequestFrom_Parameters.reset();
+  twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
+  twoWireRead_Parameters.reset();
+  twoWireRead_Parameters.results = {AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
   NoteI2c_Arduino notei2c(Wire);
 
   // Action
@@ -1547,6 +1643,7 @@ int main(void)
       {test_notei2c_arduino_receive_updates_available_parameter_with_remaining_bytes, "test_notei2c_arduino_receive_updates_available_parameter_with_remaining_bytes"},
       {test_notei2c_arduino_receive_does_not_request_or_read_i2c_when_trasmission_error_occurs, "test_notei2c_arduino_receive_does_not_request_or_read_i2c_when_trasmission_error_occurs"},
       {test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_from_returns_zero, "test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_from_returns_zero"},
+      {test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_first_call_to_two_wire_read_returns_available_value_greater_than_note_i2c_request_max_size_minus_note_i2c_request_header_size, "test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_first_call_to_two_wire_read_returns_available_value_greater_than_note_i2c_request_max_size_minus_note_i2c_request_header_size"},
       {test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_from_returns_value_other_than_buffer_size_plus_note_i2c_request_header_size, "test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_from_returns_value_other_than_buffer_size_plus_note_i2c_request_header_size"},
       {test_notei2c_arduino_receive_will_not_read_full_response_when_i2c_over_serial_protocol_returns_value_other_than_buffer_size, "test_notei2c_arduino_receive_will_not_read_full_response_when_i2c_over_serial_protocol_returns_value_other_than_buffer_size"},
       {test_notei2c_arduino_receive_returns_nullptr_on_success, "test_notei2c_arduino_receive_returns_nullptr_on_success"},
@@ -1558,6 +1655,7 @@ int main(void)
       {test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmission_failure, "test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmission_failure"},
       {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_failure_to_respond, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_failure_to_respond"},
       {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_raw_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_raw_byte_count"},
+      {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_available_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_available_byte_count"},
       {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_protocol_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_protocol_byte_count"},
       {test_notei2c_arduino_reset_invokes_begin_method_on_constructor_twowire_parameter, "test_notei2c_arduino_reset_invokes_begin_method_on_constructor_twowire_parameter"},
       {test_notei2c_arduino_reset_returns_true, "test_notei2c_arduino_reset_returns_true"},
