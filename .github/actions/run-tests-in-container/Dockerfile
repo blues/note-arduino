@@ -15,6 +15,7 @@ RUN ["ash", "-c", "\
     apk add --no-cache \
       g++ \
       gdb \
+      gzip \
       valgrind \
 "]
 

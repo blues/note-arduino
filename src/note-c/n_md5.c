@@ -29,7 +29,7 @@
 #include "n_lib.h"
 
 // Forwards
-void htoa8(unsigned char n, unsigned char *p);
+void n_htoa8(unsigned char n, unsigned char *p);
 static void putu32 (unsigned long data, unsigned char *addr);
 static unsigned long getu32 (const unsigned char *addr);
 
@@ -54,7 +54,7 @@ static void putu32 (unsigned long data, unsigned char *addr)
 }
 
 /* Convert an 8-bit number to 2 hex digits, null-terminating it */
-void htoa8(unsigned char n, unsigned char *p)
+void n_htoa8(unsigned char n, unsigned char *p)
 {
     unsigned char nibble = (n >> 4) & 0xf;
     if (nibble >= 10) {
@@ -304,7 +304,7 @@ void NoteMD5HashString(unsigned char *data, unsigned long len, char *strbuf, uns
     NoteMD5Hash(data, len, hash);
     char hashstr[NOTE_MD5_HASH_SIZE*3] = {0};
     for (int i=0; i<NOTE_MD5_HASH_SIZE; i++) {
-        htoa8(hash[i], (unsigned char *)&hashstr[i*2]);
+        n_htoa8(hash[i], (unsigned char *)&hashstr[i*2]);
     }
     hashstr[NOTE_MD5_HASH_SIZE*2+1] = 0;
     strlcpy(strbuf, hashstr, buflen);
@@ -315,7 +315,7 @@ void NoteMD5HashToString(unsigned char *hash, char *strbuf, unsigned long buflen
 {
     char hashstr[NOTE_MD5_HASH_SIZE*3] = {0};
     for (int i=0; i<NOTE_MD5_HASH_SIZE; i++) {
-        htoa8(hash[i], (unsigned char *)&hashstr[i*2]);
+        n_htoa8(hash[i], (unsigned char *)&hashstr[i*2]);
     }
     strlcpy(strbuf, hashstr, buflen);
 }

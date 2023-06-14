@@ -89,7 +89,6 @@ typedef struct {
 static error global_error = { NULL, 0 };
 
 // Forwards
-void htoa16(uint16_t n, unsigned char *p);
 static J *JNew_Item(void);
 
 N_CJSON_PUBLIC(const char *) JGetErrorPtr(void)
@@ -712,7 +711,7 @@ fail:
 }
 
 /* Convert a 16-bit number to 4 hex digits, null-terminating it */
-void htoa16(uint16_t n, unsigned char *p)
+void n_htoa16(uint16_t n, unsigned char *p)
 {
     int i;
     for (i=0; i<4; i++) {
@@ -827,7 +826,7 @@ static Jbool print_string_ptr(const unsigned char * const input, printbuffer * c
             default:
                 /* escape and print as unicode codepoint */
                 *output_pointer++ = 'u';
-                htoa16(*input_pointer, output_pointer);
+                n_htoa16(*input_pointer, output_pointer);
                 output_pointer += 4;
                 break;
             }

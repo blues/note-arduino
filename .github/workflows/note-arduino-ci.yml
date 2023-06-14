@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout Code
         id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run Tests In Container
         id: containerized_tests
         uses: ./.github/actions/run-tests-in-container
@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Checkout Code
         id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Compile Examples
         id: compile_examples
         uses: ./.github/actions/compile-examples

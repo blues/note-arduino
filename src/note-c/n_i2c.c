@@ -110,8 +110,8 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
     // Dynamically grow the buffer as we read.  Note that we always put the +1 in the alloc
     // so we can be assured that it can be null-terminated, which must be the case because
     // our json parser requires a null-terminated string.
-    int growlen = ALLOC_CHUNK;
-    int jsonbufAllocLen = growlen;
+    size_t growlen = ALLOC_CHUNK;
+    size_t jsonbufAllocLen = growlen;
     uint8_t *jsonbuf = (uint8_t *) _Malloc(jsonbufAllocLen+1);
     if (jsonbuf == NULL) {
 #ifdef ERRDBG
@@ -124,7 +124,7 @@ const char *i2cNoteTransaction(char *json, char **jsonResponse)
     // Loop, building a reply buffer out of received chunks.  We'll build the reply in the same
     // buffer we used to transmit, and will grow it as necessary.
     bool receivedNewline = false;
-    int jsonbufLen = 0;
+    size_t jsonbufLen = 0;
     uint16_t chunkLen = 0;
     uint32_t startMs = _GetMs();
     while (true) {

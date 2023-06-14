@@ -39,6 +39,7 @@
 
 // In case they're not yet defined
 #include <float.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -136,17 +137,41 @@ void NoteSetFnNoteMutex(mutexFn lockNotefn, mutexFn unlockNotefn);
 void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
 void NoteSetFn(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
 void NoteSetFnSerial(serialResetFn resetfn, serialTransmitFn writefn, serialAvailableFn availfn, serialReceiveFn readfn);
-
-#define NOTE_I2C_ADDR_DEFAULT	0x17
-#ifndef NOTE_I2C_MAX_DEFAULT
-#define NOTE_I2C_MAX_DEFAULT	30
-#endif
-#ifndef NOTE_I2C_MAX_MAX
-#define NOTE_I2C_MAX_MAX		127
-#endif
 void NoteSetFnI2C(uint32_t i2caddr, uint32_t i2cmax, i2cResetFn resetfn, i2cTransmitFn transmitfn, i2cReceiveFn receivefn);
 void NoteSetFnDisabled(void);
 void NoteSetI2CAddress(uint32_t i2caddress);
+
+// The Notecard, whose default I2C address is below, uses a serial-to-i2c
+// protocol whose "byte count" must fit into a single byte and which must not
+// include a 2-byte header field.  This is why the maximum that can be
+// transmitted by note-c in a single I2C I/O is 255 - 2 = 253 bytes.
+#define NOTE_I2C_ADDR_DEFAULT	0x17
+
+// Serial-to-i2c protocol header size in bytes
+#ifndef NOTE_I2C_HEADER_SIZE
+#define NOTE_I2C_HEADER_SIZE 2
+#endif
+
+// Maximum bytes capable of being transmitted in a single read/write operation
+#ifndef NOTE_I2C_MAX_MAX
+#define NOTE_I2C_MAX_MAX (UCHAR_MAX - NOTE_I2C_HEADER_SIZE)
+#endif
+
+// In ARDUINO implementations, which to date is the largest use of this library,
+// the Wire package is implemented in a broad variety of ways by different
+// vendors.  The default implementation has a mere 32-byte static I2C buffer,
+// which means that the maximum to be transmitted in a single I/O (given our
+// 2-byte serial-to-i2c protocol header) is 30 bytes.  However, if we know
+// the specific platform (such as STM32DUINO) we can relax this restriction.
+#if defined(NOTE_I2C_MAX_DEFAULT)
+// user is overriding it at compile time
+#elif defined(ARDUINO_ARCH_STM32)
+// we know that stm32duino dynamically allocates I/O buffer
+#define NOTE_I2C_MAX_DEFAULT NOTE_I2C_MAX_MAX
+#else
+// default to what's known to be safe for all Arduino implementations
+#define NOTE_I2C_MAX_DEFAULT	30
+#endif
 
 // User agent
 J *NoteUserAgent(void);

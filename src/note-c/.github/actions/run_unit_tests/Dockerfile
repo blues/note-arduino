@@ -12,7 +12,7 @@ ARG UID=1000
 ARG USER="blues"
 
 # POSIX compatible (Linux/Unix) base image.
-FROM debian:stable-slim
+FROM --platform=linux/amd64 debian:stable-slim
 
 # Import Global Argument(s)
 ARG DEBIAN_FRONTEND

@@ -97,6 +97,11 @@ bool NoteHardReset(void);
 const char *NoteJSONTransaction(char *json, char **jsonResponse);
 bool NoteIsDebugOutputActive(void);
 
+// Utilities
+void n_htoa32(uint32_t n, char *p);
+void n_htoa16(uint16_t n, unsigned char *p);
+uint64_t n_atoh(char *p, int maxlen);
+
 // Constants, a global optimization to save static string memory
 extern const char *c_null;
 #define c_null_len 4
