@@ -725,7 +725,11 @@ NOTE_C_STATIC char *crcAdd(char *json, uint16_t seqno)
 /**************************************************************************/
 NOTE_C_STATIC bool crcError(char *json, uint16_t shouldBeSeqno)
 {
+    // Strip off any crlf for crc calculation
     size_t jsonLen = strlen(json);
+    while (jsonLen > 0 && json[jsonLen-1] <= ' ') {
+        jsonLen--;
+    }
     // Minimum valid JSON is "{}" (2 bytes) and must end with a closing "}".
     if (jsonLen < CRC_FIELD_LENGTH+2 || json[jsonLen-1] != '}') {
         return false;
