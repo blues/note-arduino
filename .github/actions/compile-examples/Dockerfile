@@ -9,13 +9,13 @@
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
-ARG ARDUINO_CLI_VERSION=0.23.0
+ARG ARDUINO_CLI_VERSION=0.33.0
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UID=1000
 ARG USER="blues"
 
 # POSIX compatible (Linux/Unix) base image
-FROM debian:stable-slim
+FROM debian:bullseye-slim
 
 # Import global arguments
 ARG ARDUINO_CLI_VERSION
