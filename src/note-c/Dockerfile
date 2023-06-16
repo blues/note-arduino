@@ -75,5 +75,3 @@ RUN ["dash", "-c", "\
  && cmake --build build/ --target install \
  && rm -rf Catch2-3.2.1  v3.2.1.tar.gz \
 "]
-
-ENTRYPOINT ["./scripts/run_unit_tests.sh", "--coverage", "--mem-check"]

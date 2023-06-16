@@ -35,6 +35,7 @@ static uint16_t lastRequestSeqno = 0;
 NOTE_C_STATIC int32_t crc32(const void* data, size_t length);
 NOTE_C_STATIC char *crcAdd(char *json, uint16_t seqno);
 NOTE_C_STATIC bool crcError(char *json, uint16_t shouldBeSeqno);
+static bool notecardSupportsCrc = false;
 #endif
 
 /**************************************************************************/
@@ -425,23 +426,22 @@ J *NoteTransaction(J *req)
             _Free(responseJSON);
             errStr = "crc error {io}";
             lastRequestRetries++;
-            _Debugln("retrying CRC error on notecard response detected by host");
+            _Debugln("CRC error on response");
             _DelayMs(500);
             continue;
         }
 
-        // There's a possibility that we got back a response that has an I/O
-        // error.  In order to determine this, we'll need to unmarshal it.  As
-        // such, do this first by brute force and then 'correctly'.
-        if (strstr((char *)responseJSON, c_ioerr) == NULL) {
-            break;
-        }
+        // See if the response JSON can't be unmarshaled, or if it contains an {io} error
         J *rsp = JParse(responseJSON);
-        if (rsp == NULL) {
-            break;
+        bool isIoError = (rsp == NULL);
+        if (rsp != NULL) {
+            isIoError = NoteErrorContains(JGetString(rsp, c_err), c_ioerr);
+            if (isIoError) {
+                _Debug("err: ");
+                _Debugln(JGetString(rsp, c_err));
+            }
+            JDelete(rsp);
         }
-        bool isIoError = NoteErrorContains(JGetString(rsp, c_err), c_ioerr);
-        JDelete(rsp);
         if (isIoError) {
             _Free(responseJSON);
             errStr = "notecard i/o error {io}";
@@ -734,10 +734,14 @@ NOTE_C_STATIC bool crcError(char *json, uint16_t shouldBeSeqno)
     if (jsonLen < CRC_FIELD_LENGTH+2 || json[jsonLen-1] != '}') {
         return false;
     }
+    // See if it has a compliant CRC field
     size_t fieldOffset = ((jsonLen-1) - CRC_FIELD_LENGTH);
     if (memcmp(&json[fieldOffset+CRC_FIELD_NAME_OFFSET], CRC_FIELD_NAME_TEST, sizeof(CRC_FIELD_NAME_TEST)-1) != 0) {
-        return false;
+        // If we've seen a CRC before, we should see one every time
+        return notecardSupportsCrc ? true : false;
     }
+    // If we get here, we've seen at least one CRC from the Notecard, so we should expect it.
+    notecardSupportsCrc = true;
     char *p = &json[fieldOffset + CRC_FIELD_NAME_OFFSET + (sizeof(CRC_FIELD_NAME_TEST)-1)];
     uint16_t actualSeqno = (uint16_t) n_atoh(p, 4);
     uint32_t actualCrc32 = (uint32_t) n_atoh(p+5, 8);

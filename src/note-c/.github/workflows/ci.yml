@@ -7,28 +7,100 @@ on:
     branches: [ master ]
 
 jobs:
+  check_dockerfile_changed:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # TODO: This is a 3rd party GitHub action from some dude. Ideally, we'd
+      #       use something more "official".
+      - name: Check if Dockerfile changed
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: 'master'
+          filters: |
+            changed:
+              - 'Dockerfile'
+
   run_unit_tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: check_dockerfile_changed
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Run unit tests
-        uses: ./.github/actions/run_unit_tests
-      - name: Coveralls Action Bug Workaround
-        id: coveralls_bug_workaround
-        run: sudo sed -i 's/github\/workspace/home\/runner\/work\/note-c\/note-c/g' ./build/test/coverage/lcov.info
-      - name: Publish Test Coverage
-        id: publish_coverage
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Rebuild image if Dockerfile changed
+        if: ${{ needs.check_dockerfile_changed.outputs.changed == 'true' }}
+        uses: docker/build-push-action@v4
+        with:
+          load: true
+          tags: ghcr.io/blues/note_c_ci:latest
+
+      - name: Run tests
+        run: |
+          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/run_unit_tests.sh ghcr.io/blues/note_c_ci:latest --coverage --mem-check
+
+      - name: Adjust lcov source file paths for Coveralls
+        run: sudo sed -i 's/\/note-c\///g' ./build/test/coverage/lcov.info
+
+      - name: Publish test coverage
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./build/test/coverage/lcov.info
+
   run_astyle:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
       - name: Install astyle
         run: sudo apt-get install -y astyle
+
       - name: Check formatting
         run: ./scripts/run_astyle.sh
+
+  publish_ci_image:
+    runs-on: ubuntu-latest
+    # Make sure unit tests unit tests passed before publishing.
+    needs: [check_dockerfile_changed, run_unit_tests]
+    # Only publish the image if this is a push event and Dockerfile changed.
+    if: ${{ github.event_name == 'push' && needs.check_dockerfile_changed.outputs.changed == 'true' }}
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Push image to registry
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ghcr.io/blues/note_c_ci:latest

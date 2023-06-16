@@ -225,7 +225,7 @@ TEST_CASE("NoteTransaction")
 
         J *resp = NoteTransaction(req);
 
-        CHECK(NoteJSONTransaction_fake.call_count == 1);
+        CHECK(NoteJSONTransaction_fake.call_count >= 1);
         CHECK(resp != NULL);
         // Ensure there's an error in the response.
         CHECK(NoteResponseError(resp));

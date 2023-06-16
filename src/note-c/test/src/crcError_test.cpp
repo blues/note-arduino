@@ -73,6 +73,13 @@ TEST_CASE("crcError")
 
             NoteFree(jsonWithCrc);
         }
+
+        SECTION("Trailing CRLF") {
+            char json[] = "{\"req\":\"hub.sync\",\"crc\":\"0001:10BAC79A\"}\r\n";
+
+            // Trailing \r\n should be ignored.
+            CHECK(!crcError(json, seqNo));
+        }
     }
 }
 
