@@ -27,7 +27,8 @@ const uint8_t *img_map = example_img_map;
 const size_t img_len = example_img_len;
 
 #define CHUNK_SIZE 8192
-uint8_t temp_buffer[CHUNK_SIZE + 128];
+size_t req_size = NoteBinaryRequiredTxBuffer(CHUNK_SIZE);
+uint8_t *temp_buffer = new uint8_t[req_size];
 
 // This is the unique Notehub Product Identifier for your device
 // More details at https://dev.blues.io/tools-and-sdks/samples/product-uid
@@ -61,11 +62,11 @@ void setup()
     // using malloc() and initializes its "req" field with the type of request.
     J *req = notecard.newRequest("hub.set");
 
-    // This command (required) causes the data to be delivered to the Project on
+    // This parameter (required) causes the data to be delivered to the Project on
     // notehub.io that has claimed this Product ID (see above).
     JAddStringToObject(req, "product", PRODUCT_UID);
 
-    // This command determines how often the Notecard connects to the service.
+    // This parameter determines how often the Notecard connects to the service.
     // "continous" mode is required for binary file transfers
     JAddStringToObject(req, "mode", "continuous");
     notecard.sendRequestWithRetry(req, 5); // 5 seconds
@@ -77,8 +78,7 @@ void setup()
     // OUTBOUND FILE EXAMPLE
     // #####################
 
-    // Check the binary buffer to make sure the fragment size will fit
-    setup_binary_buffer(CHUNK_SIZE, sizeof(temp_buffer));
+    setup_binary_buffer(req_size);
     notecard.logDebugf("Sending image of size %u, in chunks of size: %u\n", img_len, CHUNK_SIZE);
 
     // send the binary file to Notecard in fragments of size CHUNK_SIZE
@@ -126,6 +126,7 @@ void setup()
         uint8_t *my_binary_data = (uint8_t *)malloc(buffer_len);
         size_t received_byte_count = 0;
         NoteBinaryReceive(my_binary_data, buffer_len, &received_byte_count);
+        free(my_binary_data);
 
         // Clear the binary buffer on the Notecard after the host has handled the binary data
         NoteBinaryReset();

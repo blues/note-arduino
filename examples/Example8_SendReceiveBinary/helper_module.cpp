@@ -9,27 +9,15 @@ struct context
 
 static struct context prv_ctx;
 
-int setup_binary_buffer(size_t chunk_size, size_t buf_size)
+void setup_binary_buffer(size_t buf_size)
 {
-	size_t req_size = NoteBinaryRequiredTxBuffer(chunk_size);
-
-	NoteDebugf("Requested size: %u, available size: %u\n", req_size, buf_size);
-
-	if (req_size > buf_size)
-	{
-		NoteDebug("Requested size is too big\n");
-		return -1;
-	}
 	prv_ctx.buf_size = buf_size;
 	prv_ctx.notecard_binary_offset = 0;
-
-	return 0;
 }
 
 int send_binary_data_to_notecard(const void *data, size_t len)
 {
-	const char *err =
-		NoteBinaryTransmit((uint8_t *)data, len, prv_ctx.buf_size, prv_ctx.notecard_binary_offset);
+	const char *err = NoteBinaryTransmit((uint8_t *)data, len, prv_ctx.buf_size, prv_ctx.notecard_binary_offset);
 
 	if (err)
 	{
@@ -48,9 +36,10 @@ int send_binary_data_to_notecard(const void *data, size_t len)
 void send_binary_data_to_notehub(void)
 {
 	// notecard must be in "continous" mode and connected to notehub first
-	const size_t RETRY_COUNT = 5;
+	const size_t RETRY_COUNT = 10;
 	size_t attempt = 0;
-	for (bool connected = false; !connected && attempt < RETRY_COUNT; ++attempt)
+	bool connected = false;
+	for (connected = false; !connected && attempt < RETRY_COUNT; ++attempt)
 	{
 		if (J *rsp = NoteRequestResponse(NoteNewRequest("hub.status")))
 		{
@@ -68,27 +57,29 @@ void send_binary_data_to_notehub(void)
 		}
 		if (!connected)
 		{
-			delay(60000); // Wait 1 minute before retrying
+			delay(5000); // Wait 5 seconds before retrying
 		}
 	}
 
 	// configure the web.post request according to your specifications
 	// https://dev.blues.io/notecard/notecard-walkthrough/web-transactions/
-	if (J *req = NoteNewRequest("web.post"))
+	if (connected)
 	{
-		JAddStringToObject(req, "route", "ImageTestRoute"); // update with your route name
-		// JAddStringToObject(req, "name", "/notehub-images"); // update with remote path (if needed)
-		JAddStringToObject(req, "content", "images/jpeg"); // update with your content type
-		JAddBoolToObject(req, "binary", true);
-		JAddBoolToObject(req, "verify", true);
-
-		if (!NoteRequest(req))
+		if (J *req = NoteNewRequest("web.post"))
 		{
-			NoteDebug("Error sending data\n");
-			delay(15000);
-		}
-	}
+			JAddStringToObject(req, "route", "ImageTestRoute"); // update with your route name
+			// JAddStringToObject(req, "name", "/notehub-images"); // update with remote path (if needed)
+			JAddStringToObject(req, "content", "images/jpeg"); // update with your content type
+			JAddBoolToObject(req, "binary", true);
+			JAddBoolToObject(req, "verify", true);
 
-	prv_ctx.notecard_binary_offset = 0;
-	NoteBinaryReset();
+			if (!NoteRequest(req))
+			{
+				NoteDebug("Error sending data\n");
+			}
+		}
+
+		prv_ctx.notecard_binary_offset = 0;
+		NoteBinaryReset();
+	}
 }
