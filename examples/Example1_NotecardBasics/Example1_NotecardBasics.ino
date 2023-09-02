@@ -127,7 +127,7 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        return;
+        while(1);
     }
 
     // Rather than simulating a temperature reading, use a Notecard request to

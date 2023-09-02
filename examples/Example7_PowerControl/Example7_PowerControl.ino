@@ -134,7 +134,7 @@ void loop()
     // Bump the number of cycles
     if (++globalState.cycles > 25)
     {
-        return;
+        while(1);
     }
 
     // Simulation of a device taking a measurement of a temperature sensor.

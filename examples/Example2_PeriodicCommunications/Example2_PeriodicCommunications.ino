@@ -173,7 +173,7 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        return;
+        while(1);
     }
 
     // Read the notecard's current temperature and voltage, as simulated sensor

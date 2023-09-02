@@ -90,7 +90,7 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        return;
+        while(1);
     }
 
     // Simulate a temperature reading, between 5.0 and 35.0 degrees C
