@@ -74,7 +74,9 @@ void loop()
     static unsigned event_counter = 0;
     if (++event_counter > 5)
     {
-        while(1);
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        delay(10000); // 10 seconds
+        return;
     }
 
     // Send data to the Notecard storage and pull it back

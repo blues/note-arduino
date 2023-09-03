@@ -173,7 +173,9 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        while(1);
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        delay(10000); // 10 seconds
+        return;
     }
 
     // Read the notecard's current temperature and voltage, as simulated sensor

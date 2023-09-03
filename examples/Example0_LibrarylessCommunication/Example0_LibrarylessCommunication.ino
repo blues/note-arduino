@@ -90,7 +90,9 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        while(1);
+        txRxPinsSerial.println("Demo cycle complete. Program stopped. Press RESET to restart.");
+        delay(10000); // 10 seconds
+        return;
     }
 
     // Simulate a temperature reading, between 5.0 and 35.0 degrees C

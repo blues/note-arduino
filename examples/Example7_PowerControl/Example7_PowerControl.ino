@@ -134,7 +134,9 @@ void loop()
     // Bump the number of cycles
     if (++globalState.cycles > 25)
     {
-        while(1);
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        delay(10000); // 10 seconds
+        return;
     }
 
     // Simulation of a device taking a measurement of a temperature sensor.
