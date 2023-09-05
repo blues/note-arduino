@@ -38,6 +38,8 @@ jobs:
           - ./examples/Example5_UsingTemplates/Example5_UsingTemplates.ino
           - ./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino
           - ./examples/Example7_PowerControl/Example7_PowerControl.ino
+          - ./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino
+          - ./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino
         fully-qualified-board-name:
           - STMicroelectronics:stm32:BluesW:pnum=SWAN_R5
           - esp32:esp32:featheresp32
