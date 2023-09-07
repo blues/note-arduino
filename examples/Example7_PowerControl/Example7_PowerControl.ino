@@ -134,7 +134,7 @@ void loop()
     // Bump the number of cycles
     if (++globalState.cycles > 25)
     {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.\n");
         delay(10000); // 10 seconds
         return;
     }
