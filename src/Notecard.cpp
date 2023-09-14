@@ -248,6 +248,15 @@ void Notecard::begin(NoteSerial * noteSerial_)
     } else {
         NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
     }
+
+    // Set the default debug serial throttling
+    J *req = NoteNewRequest("card.aux.serial");
+    if (req != NULL)
+    {
+        JAddIntToObject(req, "max", SERIAL_RX_BUFFER_SIZE - 1);
+        JAddIntToObject(req, "ms", 1);
+        NoteRequestWithRetry(req, 15);
+    }
 }
 
 /**************************************************************************/
