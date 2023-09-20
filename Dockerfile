@@ -1,4 +1,4 @@
-# Copyright 2022 Blues Inc.  All rights reserved.
+# Copyright 2023 Blues Inc.  All rights reserved.
 # Use of this source code is governed by licenses granted by the
 # copyright holder including that found in the LICENSE file.
 
@@ -15,7 +15,7 @@ ARG UID=1000
 ARG USER="blues"
 
 # POSIX compatible (Linux/Unix) base image
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Import global arguments
 ARG ARDUINO_CLI_VERSION
@@ -55,14 +55,20 @@ RUN ["dash", "-c", "\
      bash-completion \
      ca-certificates \
      curl \
+     g++ \
+     gdb \
+     gzip \
+     lcov \
      python-is-python3 \
      python3 \
      python3-pip \
      ssh \
      tree \
+     valgrind \
  && pip install \
      adafruit-nrfutil \
      pyserial \
+    --break-system-packages \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
@@ -104,11 +110,3 @@ RUN ["dash", "-c", "\
  && arduino-cli core install STMicroelectronics:stm32 \
  && arduino-cli lib install \"Blues Wireless Notecard Pseudo Sensor\" \
 "]
-
-# Set Execution Environment
-USER root
-WORKDIR /host-volume
-
-ENTRYPOINT ["arduino-cli"]
-
-CMD ["help"]
