@@ -1,4 +1,4 @@
-# Copyright 2022 Blues Inc.  All rights reserved.
+# Copyright 2023 Blues Inc.  All rights reserved.
 # Use of this source code is governed by licenses granted by the
 # copyright holder including that found in the LICENSE file.
 
@@ -55,11 +55,16 @@ RUN ["dash", "-c", "\
      bash-completion \
      ca-certificates \
      curl \
+     g++ \
+     gdb \
+     gzip \
+     lcov \
      python-is-python3 \
      python3 \
      python3-pip \
      ssh \
      tree \
+     valgrind \
  && pip install \
      adafruit-nrfutil \
      pyserial \
@@ -104,11 +109,3 @@ RUN ["dash", "-c", "\
  && arduino-cli core install STMicroelectronics:stm32 \
  && arduino-cli lib install \"Blues Wireless Notecard Pseudo Sensor\" \
 "]
-
-# Set Execution Environment
-USER root
-WORKDIR /host-volume
-
-ENTRYPOINT ["arduino-cli"]
-
-CMD ["help"]

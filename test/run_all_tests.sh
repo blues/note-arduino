@@ -7,6 +7,10 @@ DEFAULT='\x1B[0;0m'
 
 all_tests_result=0
 
+# This fixes a problem when running valgrind in a Docker container when the
+# host machine is running Fedora. See https://stackoverflow.com/a/75293014.
+ulimit -n 1024
+
 if [ 0 -eq $all_tests_result ]; then
   echo && echo -e "${YELLOW}Compiling and running Notecard Test Suite...${DEFAULT}"
   g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -std=c++11 -O0 -g \
@@ -164,8 +168,8 @@ if [ 0 -eq ${all_tests_result} ]; then
 
   # Run coverage if available
   if [ $(which lcov) ]; then
-    rm mock-*.gc?? *_Mock.gc?? *test.gc?? \
-    && gcov --version \
+    rm mock-*.gc?? *_Mock.gc?? *test.gc??
+    gcov --version \
     && lcov --version \
     && mkdir -p ./coverage \
     && lcov --capture \
@@ -177,7 +181,7 @@ if [ 0 -eq ${all_tests_result} ]; then
       echo -e "${YELLOW}COVERAGE REPORT NOT PRODUCED!!!${DEFAULT}";
       all_tests_result=998
     else
-      lcov --summary ./coverage/lcov.info
+      lcov --summary --rc lcov_branch_coverage=1 ./coverage/lcov.info
     fi
   fi
   rm -f failed_test_run
