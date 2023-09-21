@@ -1,0 +1,17 @@
+name: 'Load note-c CI Docker image'
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Download image artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: note_c_ci_image
+        path: /tmp
+
+    - name: Load Docker image
+      shell: bash
+      run: |
+        docker load --input /tmp/note_c_ci_image.tar
