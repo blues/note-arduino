@@ -9,7 +9,7 @@
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
-ARG ARDUINO_CLI_VERSION=0.33.0
+ARG ARDUINO_CLI_VERSION=0.34.2
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UID=1000
 ARG USER="blues"
@@ -65,10 +65,9 @@ RUN ["dash", "-c", "\
      ssh \
      tree \
      valgrind \
- && pip install \
+ && pip install --break-system-packages \
      adafruit-nrfutil \
      pyserial \
-    --break-system-packages \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
