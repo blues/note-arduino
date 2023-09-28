@@ -43,10 +43,8 @@ bool NoteGetEnvVarNotFound(const char *variable, const char *defaultVal,
     return false;
 }
 
-TEST_CASE("NoteGetEnvNumber, NoteGetEnvInt")
+SCENARIO("NoteGetEnvNumber, NoteGetEnvInt")
 {
-    RESET_FAKE(NoteGetEnv);
-
     const char var[] = "var";
     long int defaultVal = -7897;
 
@@ -64,8 +62,9 @@ TEST_CASE("NoteGetEnvNumber, NoteGetEnvInt")
         CHECK(NoteGetEnvInt(var, defaultVal) == defaultVal);
     }
 
+    RESET_FAKE(NoteGetEnv);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

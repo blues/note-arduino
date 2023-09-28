@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetEnv")
+SCENARIO("NoteGetEnv")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     const char envKey[] = "MyKey";
     const char defaultVal[] = "my default val";
@@ -95,8 +92,11 @@ TEST_CASE("NoteGetEnv")
 
         JDelete(req);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

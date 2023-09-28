@@ -20,7 +20,7 @@
 
 DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(bool, serialNoteReset)
-FAKE_VALUE_FUNC(const char *, serialNoteTransaction, char *, char **)
+FAKE_VALUE_FUNC(const char *, serialNoteTransaction, char *, char **, size_t)
 
 namespace
 {
@@ -54,11 +54,8 @@ char SerialReceive()
 }
 
 
-TEST_CASE("NoteSetFnSerial")
+SCENARIO("NoteSetFnSerial")
 {
-    RESET_FAKE(serialNoteReset);
-    RESET_FAKE(serialNoteTransaction);
-
     char req[] = "{ \"req\": \"note.add\" }";
     char *resp = NULL;
     serialNoteReset_fake.return_val = true;
@@ -84,7 +81,7 @@ TEST_CASE("NoteSetFnSerial")
     CHECK(NoteHardReset());
     CHECK(serialNoteReset_fake.call_count == 1);
 
-    CHECK(NoteJSONTransaction(req, &resp) == NULL);
+    CHECK(NoteJSONTransaction(req, &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) == NULL);
     CHECK(serialNoteTransaction_fake.call_count == 1);
 
     // Unset the callbacks and ensure they aren't called again.
@@ -108,10 +105,13 @@ TEST_CASE("NoteSetFnSerial")
     CHECK(NoteHardReset());
     CHECK(serialNoteReset_fake.call_count == 1);
 
-    CHECK(NoteJSONTransaction(req, &resp) != NULL);
+    CHECK(NoteJSONTransaction(req, &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) != NULL);
     CHECK(serialNoteTransaction_fake.call_count == 1);
+
+    RESET_FAKE(serialNoteReset);
+    RESET_FAKE(serialNoteTransaction);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

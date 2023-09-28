@@ -21,7 +21,7 @@
 
 DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(bool, NoteReset)
-FAKE_VALUE_FUNC(const char *, NoteJSONTransaction, char *, char **)
+FAKE_VALUE_FUNC(const char *, NoteJSONTransaction, char *, char **, size_t)
 FAKE_VALUE_FUNC(bool, NoteTransactionStart, uint32_t)
 FAKE_VALUE_FUNC(J *, NoteUserAgent)
 FAKE_VALUE_FUNC(bool, crcError, char *, uint16_t)
@@ -29,7 +29,7 @@ FAKE_VALUE_FUNC(bool, crcError, char *, uint16_t)
 namespace
 {
 
-const char *NoteJSONTransactionValid(char *, char **resp)
+const char *NoteJSONTransactionValid(char *, char **resp, size_t)
 {
     static char respString[] = "{ \"total\": 1 }";
 
@@ -42,7 +42,7 @@ const char *NoteJSONTransactionValid(char *, char **resp)
     return NULL;
 }
 
-const char *NoteJSONTransactionBadJSON(char *, char **resp)
+const char *NoteJSONTransactionBadJSON(char *, char **resp, size_t)
 {
     static char respString[] = "Bad JSON";
 
@@ -55,7 +55,7 @@ const char *NoteJSONTransactionBadJSON(char *, char **resp)
     return NULL;
 }
 
-const char *NoteJSONTransactionIOError(char *, char **resp)
+const char *NoteJSONTransactionIOError(char *, char **resp, size_t)
 {
     static char respString[] = "{\"err\": \"{io}\"}";
 
@@ -68,14 +68,9 @@ const char *NoteJSONTransactionIOError(char *, char **resp)
     return NULL;
 }
 
-TEST_CASE("NoteTransaction")
+SCENARIO("NoteTransaction")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteReset);
-    RESET_FAKE(NoteJSONTransaction);
-    RESET_FAKE(NoteTransactionStart);
-    RESET_FAKE(crcError);
 
     // NoteReset's mock should succeed unless the test explicitly instructs
     // it to fail.
@@ -127,6 +122,32 @@ TEST_CASE("NoteTransaction")
         // Ensure there's an error in the response.
         CHECK(resp != NULL);
         CHECK(NoteResponseError(resp));
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    WHEN("A response is expected and the response has a {bad-bin} error") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+        NoteJSONTransaction_fake.custom_fake = [](char *, char **response, size_t) -> const char * {
+            *response = (char *)malloc(20);
+            strncpy(*response, "{\"err\":\"{bad-bin}\"}", 20);
+            return nullptr;
+        };
+
+        J *resp = NoteTransaction(req);
+
+        // Ensure the mock is called at least once
+        // Here the error causes multiple invocations by retries
+        REQUIRE(NoteJSONTransaction_fake.call_count >= 1);
+
+        // Ensure there's an error in the response.
+        REQUIRE(resp != NULL);
+
+        THEN("The transaction is not retried") {
+            CHECK(NoteJSONTransaction_fake.call_count == 1);
+        }
 
         JDelete(req);
         JDelete(resp);
@@ -250,8 +271,109 @@ TEST_CASE("NoteTransaction")
         JDelete(resp);
     }
 #endif // !NOTE_DISABLE_USER_AGENT
+
+    SECTION("Regular transactions have a timeout of CARD_INTER_TRANSACTION_TIMEOUT_SEC seconds") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000));
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`note.add` with `milliseconds` updates timeout value with `milliseconds`") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "milliseconds", 9171979);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == 9171979);
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`note.add` with `seconds` updates timeout value with `seconds`") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "seconds", 917);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == (917 * 1000));
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`note.add` with both `milliseconds` and `seconds` updates timeout value with `milliseconds`") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "seconds", 917);
+        JAddIntToObject(req, "milliseconds", 9171979);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == 9171979);
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`web.post` with `milliseconds` updates timeout value with `milliseconds`") {
+        J *req = NoteNewRequest("web.post");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "milliseconds", 9171979);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == 9171979);
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`web.post` with `seconds` updates timeout value with `seconds`") {
+        J *req = NoteNewRequest("web.post");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "seconds", 1979);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == (1979 * 1000));
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`web.post` with both `milliseconds` and `seconds` updates timeout value with `milliseconds`") {
+        J *req = NoteNewRequest("web.post");
+        REQUIRE(req != NULL);
+        JAddIntToObject(req, "seconds", 917);
+        JAddIntToObject(req, "milliseconds", 9171979);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == 9171979);
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    SECTION("`web.post` without `milliseconds` or `seconds` updates timeout value with 90 seconds") {
+        J *req = NoteNewRequest("web.post");
+        REQUIRE(req != NULL);
+
+        J *resp = NoteTransaction(req);
+        CHECK(NoteJSONTransaction_fake.arg2_val == (90 * 1000));
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    RESET_FAKE(NoteReset);
+    RESET_FAKE(NoteJSONTransaction);
+    RESET_FAKE(NoteTransactionStart);
+    RESET_FAKE(crcError);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

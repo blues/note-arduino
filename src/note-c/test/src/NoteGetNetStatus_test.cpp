@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetNetStatus")
+SCENARIO("NoteGetNetStatus")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     char statusBuf[64];
 
@@ -60,8 +57,11 @@ TEST_CASE("NoteGetNetStatus")
             CHECK(!strcmp(statusBuf, status));
         }
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

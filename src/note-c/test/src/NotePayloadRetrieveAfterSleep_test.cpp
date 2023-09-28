@@ -26,13 +26,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NotePayloadRetrieveAfterSleep")
+SCENARIO("NotePayloadRetrieveAfterSleep")
 {
     NoteSetFnDefault(NULL, free, NULL, NULL);
-
-    RESET_FAKE(NoteMalloc);
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     NoteMalloc_fake.custom_fake = malloc;
 
@@ -136,8 +132,12 @@ TEST_CASE("NotePayloadRetrieveAfterSleep")
     }
 
     NotePayloadFree(&payload);
+
+    RESET_FAKE(NoteMalloc);
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

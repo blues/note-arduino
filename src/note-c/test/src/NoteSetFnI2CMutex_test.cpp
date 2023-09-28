@@ -33,7 +33,7 @@ void UnlockI2C()
     ++unlockI2CCalled;
 }
 
-TEST_CASE("NoteSetFnI2CMutex")
+SCENARIO("NoteSetFnI2CMutex")
 {
     NoteSetFnI2CMutex(LockI2C, UnlockI2C);
 
@@ -55,4 +55,4 @@ TEST_CASE("NoteSetFnI2CMutex")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

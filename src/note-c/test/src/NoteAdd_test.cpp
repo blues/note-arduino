@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteAdd")
+SCENARIO("NoteAdd")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     const char file[] = "data.qo";
     J *body = JCreateObject();
@@ -68,8 +65,11 @@ TEST_CASE("NoteAdd")
 
         JDelete(req);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

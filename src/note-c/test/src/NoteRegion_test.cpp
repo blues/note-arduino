@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteRegion")
+SCENARIO("NoteRegion")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     char *country = NULL;
     char *area = NULL;
@@ -94,8 +91,11 @@ TEST_CASE("NoteRegion")
             CHECK(tzOffset == -300);
         }
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

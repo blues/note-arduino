@@ -6,3 +6,4 @@ html/
 # VS Code workspace files
 *.code-workspace
 *.orig
+settings.json

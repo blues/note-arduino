@@ -426,11 +426,13 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
             /* If not, print with 17 decimal places of precision */
             length = sprintf((char*)number_buffer, "%1.17g", d);
         }
-        while (length > 1 && number_buffer[length-1] == '0') {
-            number_buffer[--length] = '\0';
-        }
-        if (length > 1 && number_buffer[length-1] == '.') {
-            number_buffer[--length] = '\0';
+        if (strchr((char*)number_buffer, '.') != NULL) {
+            while (length > 1 && number_buffer[length-1] == '0') {
+                number_buffer[--length] = '\0';
+            }
+            if (length > 1 && number_buffer[length-1] == '.') {
+                number_buffer[--length] = '\0';
+            }
         }
 #else
         char *nbuf = (char *) number_buffer;
@@ -1011,7 +1013,7 @@ fail:
 N_CJSON_PUBLIC(char *) JPrint(const J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return NULL;
     }
     return (char*)print(item, true, false);
 }
@@ -1019,7 +1021,7 @@ N_CJSON_PUBLIC(char *) JPrint(const J *item)
 N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return NULL;
     }
     return (char*)print(item, false, false);
 }
@@ -1027,7 +1029,7 @@ N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
 N_CJSON_PUBLIC(char *) JPrintUnformattedOmitEmpty(const J *item)
 {
     if (item == NULL) {
-        return (char *)"";
+        return NULL;
     }
     return (char*)print(item, false, true);
 }
@@ -1037,7 +1039,7 @@ N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
     printbuffer p = { 0, 0, 0, 0, 0, 0, 0 };
 
     if (item == NULL) {
-        return (char *)"";
+        return NULL;
     }
 
     if (prebuffer < 0) {

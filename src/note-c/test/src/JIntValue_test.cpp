@@ -20,7 +20,7 @@
 namespace
 {
 
-TEST_CASE("JIntValue")
+SCENARIO("JIntValue")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 
@@ -46,4 +46,4 @@ TEST_CASE("JIntValue")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

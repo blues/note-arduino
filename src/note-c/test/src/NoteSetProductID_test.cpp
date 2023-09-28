@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSetProductID")
+SCENARIO("NoteSetProductID")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     const char id[] = "myid";
 
@@ -68,8 +65,11 @@ TEST_CASE("NoteSetProductID")
 
         JDelete(req);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

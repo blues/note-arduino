@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSetSyncMode")
+SCENARIO("NoteSetSyncMode")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     const char mode[] = "periodic";
     int uploadMins = 30;
@@ -91,8 +88,11 @@ TEST_CASE("NoteSetSyncMode")
 
         JDelete(req);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

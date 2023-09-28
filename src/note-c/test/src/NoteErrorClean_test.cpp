@@ -20,7 +20,7 @@
 namespace
 {
 
-TEST_CASE("NoteErrorClean")
+SCENARIO("NoteErrorClean")
 {
     SECTION("hub.status response") {
         char str[] = "connected (session open) {connected}";
@@ -47,4 +47,4 @@ TEST_CASE("NoteErrorClean")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

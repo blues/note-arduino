@@ -20,16 +20,21 @@
 namespace
 {
 
-TEST_CASE("JIsPresent")
+SCENARIO("JIsPresent")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 
     const char field[] = "req";
     J *json = JCreateObject();
+    REQUIRE(json != NULL);
     JAddStringToObject(json, field, "note.add");
 
     SECTION("NULL JSON") {
         CHECK(!JIsPresent(NULL, ""));
+    }
+
+    SECTION("NULL field") {
+        CHECK(!JIsPresent(json, NULL));
     }
 
     SECTION("Field not present") {
@@ -45,4 +50,4 @@ TEST_CASE("JIsPresent")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

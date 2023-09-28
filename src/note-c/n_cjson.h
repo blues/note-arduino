@@ -175,6 +175,7 @@ N_CJSON_PUBLIC(void) JDelete(J *c);
 
 /* Returns the number of items in an array (or object). */
 N_CJSON_PUBLIC(int) JGetArraySize(const J *array);
+#define	JGetObjectItems JGetArraySize
 /* Retrieve item number "index" from array "array". Returns NULL if unsuccessful. */
 N_CJSON_PUBLIC(J *) JGetArrayItem(const J *array, int index);
 /* Get item "string" from object. Case insensitive. */
@@ -271,7 +272,7 @@ N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, const Jbool boolean);
 N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const JNUMBER number);
-#define JAddIntToObject(x, y, z) JAddNumberToObject(x, y, (JNUMBER)(z))
+#define JAddIntToObject(object, name, integer) JAddNumberToObject(object, name, (JNUMBER)(integer))
 N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name, const char * const string);
 N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, const char * const raw);
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name);

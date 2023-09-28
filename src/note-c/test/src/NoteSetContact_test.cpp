@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSetContact")
+SCENARIO("NoteSetContact")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     char nameBuf[] = "John Doe";
     char orgBuf[] = "Blues";
@@ -68,8 +65,11 @@ TEST_CASE("NoteSetContact")
     }
 
     JDelete(req);
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

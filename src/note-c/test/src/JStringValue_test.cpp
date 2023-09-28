@@ -20,7 +20,7 @@
 namespace
 {
 
-TEST_CASE("JStringValue")
+SCENARIO("JStringValue")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 
@@ -46,4 +46,4 @@ TEST_CASE("JStringValue")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetStatus")
+SCENARIO("NoteGetStatus")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     char statusBuf[16] = {1};
     JTIME bootTime = 1;
@@ -91,8 +88,11 @@ TEST_CASE("NoteGetStatus")
         CHECK(usb);
         CHECK(signals == expectedSignals);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

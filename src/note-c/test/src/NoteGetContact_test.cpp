@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetContact")
+SCENARIO("NoteGetContact")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     char nameBuf[16];
     // Set the first character of each buffer to something non-zero so that we
@@ -103,8 +100,11 @@ TEST_CASE("NoteGetContact")
     }
 
     JDelete(req);
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

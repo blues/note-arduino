@@ -28,7 +28,7 @@ size_t DebugHook(const char *text)
     return strlen(text);
 }
 
-TEST_CASE("NoteDebugf")
+SCENARIO("NoteDebugf")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
     const char msg[] = "Hello world!";
@@ -46,4 +46,4 @@ TEST_CASE("NoteDebugf")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

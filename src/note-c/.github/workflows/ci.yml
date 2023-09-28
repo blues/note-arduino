@@ -27,12 +27,10 @@ jobs:
             changed:
               - 'Dockerfile'
 
-  run_unit_tests:
+  build_ci_docker_image:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    needs: check_dockerfile_changed
+    needs: [check_dockerfile_changed]
+    if: ${{ needs.check_dockerfile_changed.outputs.changed == 'true' }}
 
     steps:
       - name: Checkout code
@@ -48,12 +46,51 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Rebuild image if Dockerfile changed
-        if: ${{ needs.check_dockerfile_changed.outputs.changed == 'true' }}
+      - name: Rebuild image
         uses: docker/build-push-action@v4
         with:
+          context: .
           load: true
           tags: ghcr.io/blues/note_c_ci:latest
+          outputs: type=docker,dest=/tmp/note_c_ci_image.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: note_c_ci_image
+          path: /tmp/note_c_ci_image.tar
+
+  run_doxygen:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build_ci_docker_image]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Load CI Docker image
+        # Only load the Docker image artifact if build_ci_docker_image actually
+        # ran (e.g. it wasn't skipped and was successful).
+        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        uses: ./.github/actions/load-ci-image
+
+      - name: Run doxygen
+        run: |
+          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/run_doxygen.sh ghcr.io/blues/note_c_ci:latest
+
+  run_unit_tests:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build_ci_docker_image]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Load CI Docker image
+        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        uses: ./.github/actions/load-ci-image
 
       - name: Run tests
         run: |
@@ -70,23 +107,27 @@ jobs:
 
   run_astyle:
     runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build_ci_docker_image]
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install astyle
-        run: sudo apt-get install -y astyle
+      - name: Load CI Docker image
+        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        uses: ./.github/actions/load-ci-image
 
-      - name: Check formatting
-        run: ./scripts/run_astyle.sh
+      - name: Run astyle
+        run: |
+          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/run_astyle.sh ghcr.io/blues/note_c_ci:latest
 
   publish_ci_image:
     runs-on: ubuntu-latest
     # Make sure unit tests unit tests passed before publishing.
-    needs: [check_dockerfile_changed, run_unit_tests]
-    # Only publish the image if this is a push event and Dockerfile changed.
-    if: ${{ github.event_name == 'push' && needs.check_dockerfile_changed.outputs.changed == 'true' }}
+    needs: [build_ci_docker_image, run_unit_tests]
+    # Only publish the image if this is a push event and the Docker image was rebuilt
+    if: ${{ github.event_name == 'push' && needs.build_ci_docker_image.result == 'success' }}
 
     steps:
       - name: Login to GitHub Container Registry

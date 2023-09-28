@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteSleep, char *, uint32_t, const char *)
 namespace
 {
 
-TEST_CASE("NotePayloadSaveAndSleep")
+SCENARIO("NotePayloadSaveAndSleep")
 {
     NoteSetFnDefault(NULL, free, NULL, NULL);
-
-    RESET_FAKE(NoteMalloc);
-    RESET_FAKE(NoteSleep);
 
     uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF};
     NotePayloadDesc payload;
@@ -69,8 +66,11 @@ TEST_CASE("NotePayloadSaveAndSleep")
 
         CHECK(!NotePayloadSaveAndSleep(&payload, 30, NULL));
     }
+
+    RESET_FAKE(NoteMalloc);
+    RESET_FAKE(NoteSleep);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

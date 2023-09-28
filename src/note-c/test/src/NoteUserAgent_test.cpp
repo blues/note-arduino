@@ -32,11 +32,10 @@ void NoteUserAgentUpdate(J *)
 namespace
 {
 
-TEST_CASE("NoteUserAgent")
+SCENARIO("NoteUserAgent")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 
-    RESET_FAKE(JCreateObject);
     calledNoteUserAgentUpdate = false;
 
     SECTION("JCreateObject fails") {
@@ -89,8 +88,10 @@ TEST_CASE("NoteUserAgent")
 
         JDelete(json);
     }
+
+    RESET_FAKE(JCreateObject);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

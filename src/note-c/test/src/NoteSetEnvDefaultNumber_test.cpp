@@ -33,14 +33,15 @@ bool NoteSetEnvDefaultSaveBuffer(const char *, char *buf)
     return true;
 }
 
-TEST_CASE("NoteSetEnvDefaultNumber, NoteSetEnvDefaultInt")
+SCENARIO("NoteSetEnvDefaultNumber, NoteSetEnvDefaultInt")
 {
-    RESET_FAKE(NoteSetEnvDefault);
+    // Arrange
     NoteSetEnvDefault_fake.custom_fake = NoteSetEnvDefaultSaveBuffer;
-
     const char var[] = "var";
     long int val = -123456;
 
+    // Act, Assert
+    //TODO: Organize
     CHECK(NoteSetEnvDefaultNumber(var, val));
     CHECK(strcmp("-123456", valBuf) == 0);
 
@@ -48,8 +49,10 @@ TEST_CASE("NoteSetEnvDefaultNumber, NoteSetEnvDefaultInt")
 
     CHECK(NoteSetEnvDefaultInt(var, val));
     CHECK(strcmp("-123456", valBuf) == 0);
+
+    RESET_FAKE(NoteSetEnvDefault);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

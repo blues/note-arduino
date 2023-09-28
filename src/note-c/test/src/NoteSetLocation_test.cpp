@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSetLocation")
+SCENARIO("NoteSetLocation")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     float lat = 1.0;
     float lon = 2.0;
@@ -61,8 +58,11 @@ TEST_CASE("NoteSetLocation")
 
         JDelete(NoteNewRequest_fake.return_val);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

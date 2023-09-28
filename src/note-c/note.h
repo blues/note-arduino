@@ -192,38 +192,47 @@ void NoteDebugf(const char *format, ...);
 #define NOTE_C_LOG_LEVEL_DEBUG  3
 
 void NoteDebugWithLevel(uint8_t level, const char *msg);
+void NoteDebugWithLevelLn(uint8_t level, const char *msg);
 
 #define _NOTE_C_STRINGIZE(x) #x
 #define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
 
+#ifdef NOTE_C_LOG_SHOW_FILE_AND_LINE
+#define NOTE_C_LOG_FILE_AND_LINE(lvl) do { \
+  NoteDebugWithLevel(lvl, __FILE__ ":" NOTE_C_STRINGIZE(__LINE__) " "); \
+} while (0);
+#else
+#define NOTE_C_LOG_FILE_AND_LINE(lvl)
+#endif
+
 #define NOTE_C_LOG_ERROR(msg) do { \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, __FILE__ ":" \
-  NOTE_C_STRINGIZE(__LINE__) " (ERROR) "); \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, msg); \
+  NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_ERROR); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "[ERROR] "); \
+  NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_ERROR, msg); \
 } while (0);
 
 #define NOTE_C_LOG_WARN(msg) do { \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, __FILE__ ":" \
-  NOTE_C_STRINGIZE(__LINE__) " (WARN) "); \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, msg); \
+  NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_WARN); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, "[WARN] "); \
+  NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_WARN, msg); \
 } while (0);
 
 #define NOTE_C_LOG_INFO(msg) do { \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, __FILE__ ":" \
-  NOTE_C_STRINGIZE(__LINE__) " (INFO) "); \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, msg); \
+  NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_INFO); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, "[INFO] "); \
+  NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_INFO, msg); \
 } while (0);
 
 #define NOTE_C_LOG_DEBUG(msg) do { \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, __FILE__ ":" \
-  NOTE_C_STRINGIZE(__LINE__) " (DEBUG) "); \
-  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, msg); \
+  NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_DEBUG); \
+  NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, "[DEBUG] "); \
+  NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_DEBUG, msg); \
 } while (0);
 
 // The max log level for NoteDebugWithLevel is only configurable at
-// compile-time, via NOTE_C_LOG_LEVEL_MAX.
-#ifndef NOTE_C_LOG_LEVEL_MAX
-#define NOTE_C_LOG_LEVEL_MAX NOTE_C_LOG_LEVEL_ERROR
+// compile-time, via NOTE_C_LOG_LEVEL.
+#ifndef NOTE_C_LOG_LEVEL
+#define NOTE_C_LOG_LEVEL NOTE_C_LOG_LEVEL_INFO
 #endif
 
 void *NoteMalloc(size_t size);
@@ -314,7 +323,21 @@ void NoteMD5Hash(unsigned char* data, unsigned long len, unsigned char *retHash)
 void NoteMD5HashString(unsigned char *data, unsigned long len, char *strbuf, unsigned long buflen);
 void NoteMD5HashToString(unsigned char *hash, char *strbuf, unsigned long buflen);
 
-// High-level helper functions that are both useful and serve to show developers how to call the API
+// High-level helper functions that are both useful and serve to show developers
+// how to call the API
+uint32_t NoteBinaryCodecDecode(const uint8_t *encData, uint32_t encDataLen,
+                               uint8_t *decBuf, uint32_t decBufSize);
+uint32_t NoteBinaryCodecEncode(const uint8_t *decData, uint32_t decDataLen,
+                               uint8_t *encBuf, uint32_t encBufSize);
+uint32_t NoteBinaryCodecMaxDecodedLength(uint32_t bufferSize);
+uint32_t NoteBinaryCodecMaxEncodedLength(uint32_t unencodedLength);
+const char * NoteBinaryStoreDecodedLength(uint32_t *len);
+const char * NoteBinaryStoreEncodedLength(uint32_t *len);
+const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
+                                    uint32_t decodedOffset, uint32_t decodedLen);
+const char * NoteBinaryStoreReset(void);
+const char * NoteBinaryStoreTransmit(uint8_t *unencodedData, uint32_t unencodedLen,
+                                     uint32_t bufLen, uint32_t notecardOffset);
 uint32_t NoteSetSTSecs(uint32_t secs);
 bool NoteTimeValid(void);
 bool NoteTimeValidST(void);

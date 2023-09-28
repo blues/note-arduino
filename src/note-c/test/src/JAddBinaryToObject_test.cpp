@@ -37,11 +37,8 @@ J *JCreateStringValueCustom(const char *string)
     return node;
 }
 
-TEST_CASE("JAddBinaryToObject")
+SCENARIO("JAddBinaryToObject")
 {
-    RESET_FAKE(NoteMalloc);
-    RESET_FAKE(JCreateStringValue);
-
     NoteSetFnDefault(NULL, free, NULL, NULL);
     NoteMalloc_fake.custom_fake = malloc;
 
@@ -79,8 +76,11 @@ TEST_CASE("JAddBinaryToObject")
     }
 
     JDelete(json);
+
+    RESET_FAKE(NoteMalloc);
+    RESET_FAKE(JCreateStringValue);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

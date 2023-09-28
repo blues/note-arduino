@@ -20,7 +20,7 @@
 namespace
 {
 
-TEST_CASE("JAtoI")
+SCENARIO("JAtoI")
 {
     const char* strings[] = {
         "0",
@@ -58,4 +58,4 @@ TEST_CASE("JAtoI")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

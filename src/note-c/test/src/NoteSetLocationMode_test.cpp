@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSetLocationMode")
+SCENARIO("NoteSetLocationMode")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequest);
 
     const char mode[] = "periodic";
     const uint32_t seconds = 3600;
@@ -63,7 +60,7 @@ TEST_CASE("NoteSetLocationMode")
             CHECK(NoteSetLocationMode("", seconds));
             // If the mode parameter is the empty string, the request should
             // have mode: "-".
-            CHECK(!strcmp("-", JGetString(NoteRequest_fake.arg0_history[0],
+            CHECK(!strcmp("-", JGetString(NoteRequest_fake.arg0_val,
                                           "mode")));
         }
 
@@ -71,8 +68,11 @@ TEST_CASE("NoteSetLocationMode")
 
         JDelete(NoteNewRequest_fake.return_val);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

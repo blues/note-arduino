@@ -49,14 +49,8 @@ long unsigned int NoteGetMsMock()
     return ret;
 }
 
-TEST_CASE("serialNoteReset")
+SCENARIO("serialNoteReset")
 {
-    RESET_FAKE(NoteSerialReset);
-    RESET_FAKE(NoteSerialTransmit);
-    RESET_FAKE(NoteSerialAvailable);
-    RESET_FAKE(NoteSerialReceive);
-    RESET_FAKE(NoteGetMs);
-
     SECTION("NoteSerialReset fails") {
         NoteSerialReset_fake.return_val = false;
 
@@ -116,7 +110,7 @@ TEST_CASE("serialNoteReset")
 
     SECTION("NoteGetMs overflow") {
         NoteSerialReset_fake.return_val = true;
-        NoteSerialReceive_fake.return_val = ' ' - 1;
+        NoteSerialReceive_fake.return_val = '\n';
         bool serialAvailRetVals[] = {true, false};
         SET_RETURN_SEQ(NoteSerialAvailable, serialAvailRetVals, 2);
         long unsigned int getMsReturnVals[] = {
@@ -128,8 +122,14 @@ TEST_CASE("serialNoteReset")
 
         CHECK(serialNoteReset());
     }
+
+    RESET_FAKE(NoteSerialReset);
+    RESET_FAKE(NoteSerialTransmit);
+    RESET_FAKE(NoteSerialAvailable);
+    RESET_FAKE(NoteSerialReceive);
+    RESET_FAKE(NoteGetMs);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -174,9 +174,13 @@ i2cReceiveFn hookI2CReceive = NULL;
 
 // Internal hooks
 typedef bool (*nNoteResetFn) (void);
-typedef const char * (*nTransactionFn) (char *, char **);
+typedef const char * (*nTransactionFn) (char *, char **, size_t);
+typedef const char * (*nReceiveFn) (uint8_t *, uint32_t *, bool, size_t, uint32_t *);
+typedef const char * (*nTransmitFn) (uint8_t *, uint32_t, bool);
 static nNoteResetFn notecardReset = NULL;
 static nTransactionFn notecardTransaction = NULL;
+static nReceiveFn notecardChunkedReceive = NULL;
+static nTransmitFn notecardChunkedTransmit = NULL;
 
 //**************************************************************************/
 /*!
@@ -250,8 +254,8 @@ bool NoteIsDebugOutputActive()
 //**************************************************************************/
 /*!
   @brief  Set the platform-specific transaction initiation/completion fn's
-  @param   startfn  The platform-specific transaction initiation function to use.
-  @param   stopfn  The platform-specific transaction completion function to use.
+  @param   startFn  The platform-specific transaction initiation function to use.
+  @param   stopFn  The platform-specific transaction completion function to use.
   to use.
 */
 /**************************************************************************/
@@ -328,6 +332,8 @@ void NoteSetFnSerial(serialResetFn resetfn, serialTransmitFn transmitfn, serialA
 
     notecardReset = serialNoteReset;
     notecardTransaction = serialNoteTransaction;
+    notecardChunkedReceive = serialChunkedReceive;
+    notecardChunkedTransmit = serialChunkedTransmit;
 }
 
 //**************************************************************************/
@@ -355,6 +361,8 @@ void NoteSetFnI2C(uint32_t i2caddress, uint32_t i2cmax, i2cResetFn resetfn, i2cT
 
     notecardReset = i2cNoteReset;
     notecardTransaction = i2cNoteTransaction;
+    notecardChunkedReceive = i2cChunkedReceive;
+    notecardChunkedTransmit = i2cChunkedTransmit;
 }
 
 //**************************************************************************/
@@ -369,6 +377,8 @@ void NoteSetFnDisabled()
 
     notecardReset = NULL;
     notecardTransaction = NULL;
+    notecardChunkedReceive = NULL;
+    notecardChunkedTransmit = NULL;
 
 }
 
@@ -378,6 +388,7 @@ void NoteSetFnDisabled()
 /*!
   @brief  Write a number to the debug stream and output a newline.
   @param   line  A debug string for output.
+  @param n The number to write.
 */
 /**************************************************************************/
 void NoteDebugIntln(const char *line, int n)
@@ -421,8 +432,7 @@ void NoteDebug(const char *line)
 //**************************************************************************/
 /*!
   @brief       Write the message to the debug stream, if the level is less than
-               or equal to NOTE_C_LOG_LEVEL_MAX. Otherwise, the message is
-               dropped.
+               or equal to NOTE_C_LOG_LEVEL. Otherwise, the message is dropped.
   @param level The log level of the message. See the NOTE_C_LOG_LEVEL_* macros
                in note.h for possible values.
   @param msg   The debug message.
@@ -432,13 +442,27 @@ void NoteDebugWithLevel(uint8_t level, const char *msg)
 {
 #ifndef NOTE_NODEBUG
 
-    if (level > NOTE_C_LOG_LEVEL_MAX) {
+    if (level > NOTE_C_LOG_LEVEL) {
         return;
     }
 
     NoteDebug(msg);
 
 #endif // !NOTE_NODEBUG
+}
+
+//**************************************************************************/
+/*!
+  @brief       Same as NoteDebugWithLevel, but add a newline at the end.
+  @param level The log level of the message. See the NOTE_C_LOG_LEVEL_* macros
+               in note.h for possible values.
+  @param msg   The debug message.
+*/
+/**************************************************************************/
+void NoteDebugWithLevelLn(uint8_t level, const char *msg)
+{
+    NoteDebugWithLevel(level, msg);
+    NoteDebugWithLevel(level, c_newline);
 }
 
 //**************************************************************************/
@@ -473,8 +497,8 @@ void NoteDelayMs(uint32_t ms)
 //**************************************************************************/
 /*!
   @brief  Convert number to a hex string
-  @param   the number
-  @param   the buffer to return it into
+  @param  n the number
+  @param  p the buffer to return it into
 */
 /**************************************************************************/
 void n_htoa32(uint32_t n, char *p)
@@ -821,16 +845,65 @@ bool NoteHardReset()
 /*!
   @brief  Perform a JSON request to the Notecard using the currently-set
   platform hook.
-  @param   json the JSON request.
-  @param   jsonResponse (out) A buffer with the JSON response.
+
+  @param   request the JSON request.
+  @param   response (out) A buffer with the JSON response.
+  @param   timeoutMs The maximum amount of time, in milliseconds, to wait
+            for data to arrive. Passing zero (0) disables the timeout.
+
   @returns NULL if successful, or an error string if the transaction failed
   or the hook has not been set.
 */
 /**************************************************************************/
-const char *NoteJSONTransaction(char *json, char **jsonResponse)
+const char *NoteJSONTransaction(char *request, char **response, size_t timeoutMs)
 {
     if (notecardTransaction == NULL || hookActiveInterface == interfaceNone) {
         return "i2c or serial interface must be selected";
     }
-    return notecardTransaction(json, jsonResponse);
+    return notecardTransaction(request, response, timeoutMs);
+}
+
+/**************************************************************************/
+/*!
+  @brief  Receive bytes over from the Notecard using the currently-set
+  platform hook.
+  @param   buffer A buffer to receive bytes into.
+  @param   size (in/out)
+            - (in) The size of the buffer in bytes.
+            - (out) The length of the received data in bytes.
+  @param   delay Respect standard processing delays.
+  @param   timeoutMs The maximum amount of time, in milliseconds, to wait
+            for data to arrive. Passing zero (0) disables the timeout.
+  @param   available (in/out)
+            - (in) The amount of bytes to request. Sending zero (0) will
+                   initiate a priming query when using the I2C interface.
+            - (out) The amount of bytes unable to fit into the provided buffer.
+  @returns  A c-string with an error, or `NULL` if no error ocurred.
+*/
+/**************************************************************************/
+const char *NoteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay,
+                               size_t timeoutMs, uint32_t *available)
+{
+    if (notecardChunkedReceive == NULL || hookActiveInterface == interfaceNone) {
+        return "i2c or serial interface must be selected";
+    }
+    return notecardChunkedReceive(buffer, size, delay, timeoutMs, available);
+}
+
+/**************************************************************************/
+/*!
+  @brief  Transmit bytes over to the Notecard using the currently-set
+  platform hook.
+  @param   buffer A buffer of bytes to transmit.
+  @param   size The count of bytes in the buffer to send
+  @param   delay Respect standard processing delays.
+  @returns  A c-string with an error, or `NULL` if no error ocurred.
+*/
+/**************************************************************************/
+const char *NoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+{
+    if (notecardChunkedTransmit == NULL || hookActiveInterface == interfaceNone) {
+        return "i2c or serial interface must be selected";
+    }
+    return notecardChunkedTransmit(buffer, size, delay);
 }

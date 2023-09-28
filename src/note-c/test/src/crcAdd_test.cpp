@@ -25,11 +25,9 @@ FAKE_VALUE_FUNC(void *, NoteMalloc, size_t)
 namespace
 {
 
-TEST_CASE("crcAdd")
+SCENARIO("crcAdd")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteMalloc);
 
     char validReq[] = "{\"req\": \"hub.sync\"}";
     uint16_t seqNo = 1;
@@ -64,8 +62,10 @@ TEST_CASE("crcAdd")
             NoteFree(newJson);
         }
     }
+
+    RESET_FAKE(NoteMalloc);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

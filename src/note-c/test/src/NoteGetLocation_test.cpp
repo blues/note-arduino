@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteGetLocation")
+SCENARIO("NoteGetLocation")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     JNUMBER lat = 0;
     JNUMBER lon = 0;
@@ -65,8 +62,11 @@ TEST_CASE("NoteGetLocation")
         CHECK(lon == respLon);
         CHECK(time == respTime);
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

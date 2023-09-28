@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 namespace
 {
 
-TEST_CASE("NoteIsConnected")
+SCENARIO("NoteIsConnected")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
 
     SECTION("No response") {
         NoteRequestResponse_fake.return_val = NULL;
@@ -62,8 +59,11 @@ TEST_CASE("NoteIsConnected")
             CHECK(NoteIsConnected());
         }
     }
+
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

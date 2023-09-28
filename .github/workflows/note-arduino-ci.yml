@@ -26,6 +26,7 @@ jobs:
           filters: |
             changed:
               - 'Dockerfile'
+
   build_ci_docker_image:
     runs-on: ubuntu-latest
     needs: [check_dockerfile_changed]
@@ -93,8 +94,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: [build_ci_docker_image]
-    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         example-sketch:
           - ./examples/Example0_LibrarylessCommunication/Example0_LibrarylessCommunication.ino
@@ -105,9 +106,8 @@ jobs:
           - ./examples/Example5_UsingTemplates/Example5_UsingTemplates.ino
           - ./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino
           - ./examples/Example7_PowerControl/Example7_PowerControl.ino
-          # TODO: Uncomment these once note-c is updated with the necessary NoteBinary* functions.
-          # - ./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino
-          # - ./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino
+          - ./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino
+          - ./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino
         fully-qualified-board-name:
           - STMicroelectronics:stm32:BluesW:pnum=SWAN_R5
           - esp32:esp32:featheresp32
@@ -119,7 +119,8 @@ jobs:
           - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
           - adafruit:nrf52:feather52840:softdevice=s140v6
           - rp2040:rp2040:rpipico
-          - arduino:avr:uno
+          # The binary examples don't fit in the Uno's flash.
+          # - arduino:avr:uno
 
     steps:
       - name: Checkout code

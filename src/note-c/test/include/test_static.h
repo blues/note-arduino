@@ -12,10 +12,12 @@ extern "C" {
 #endif
 
 // Make these normally static functions externally visible if building tests.
-bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
-void setTime(JTIME seconds);
 char *crcAdd(char *json, uint16_t seqno);
 bool crcError(char *json, uint16_t shouldBeSeqno);
+void delayIO(void);
+const char * i2cNoteQueryLength(uint32_t * available, size_t timeoutMs);
+void setTime(JTIME seconds);
+bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
 
 #ifdef __cplusplus
 }

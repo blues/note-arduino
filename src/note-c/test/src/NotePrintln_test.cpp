@@ -36,19 +36,23 @@ bool NotePrintSave(const char* text)
     return true;
 }
 
-TEST_CASE("NotePrintln")
+SCENARIO("NotePrintln")
 {
+    // Arrange
     NotePrint_fake.custom_fake = NotePrintSave;
-
     const char msg[] = "Hello world!";
     size_t len = strlen(msg);
 
+    // Act
     NotePrintln(msg);
 
+    // Assert
     CHECK(!(memcmp(printBuf, msg, len)));
     CHECK(!(memcmp(printBuf + len, c_newline, 2)));
+
+    RESET_FAKE(NotePrint);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -42,7 +42,7 @@ size_t MyDebugOutput(const char *line)
     return len;
 }
 
-TEST_CASE("NoteDebug")
+SCENARIO("NoteDebug")
 {
     memset(&state, 0, sizeof(state));
 
@@ -99,8 +99,8 @@ TEST_CASE("NoteDebug")
         SECTION("NoteDebugWithLevel") {
             const char msg[] = "my message";
 
-            SECTION("Info level messages NOT logged by default") {
-                NOTE_C_LOG_INFO(msg);
+            SECTION("Debug level messages NOT logged by default") {
+                NOTE_C_LOG_DEBUG(msg);
 
                 CHECK(!state.debugOutputCalled);
             }
@@ -113,8 +113,10 @@ TEST_CASE("NoteDebug")
 #else
                 CHECK(state.debugOutputCalled);
                 CHECK(strstr(state.debugBuf, msg) != NULL);
+#ifdef NOTE_C_LOG_SHOW_FILE_AND_LINE
                 CHECK(strstr(state.debugBuf, __FILE__) != NULL);
-#endif
+#endif // NOTE_C_LOG_SHOW_FILE_AND_LINE
+#endif // NOTE_NODEBUG
             }
         }
     }
@@ -122,4 +124,4 @@ TEST_CASE("NoteDebug")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

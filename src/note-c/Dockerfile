@@ -58,6 +58,19 @@ RUN ["dash", "-c", "\
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
  "]
 
+# Download and install Doxygen 1.9.8. Currently, the version of Doxygen that
+# gets installed via apt-get doesn't have support FAIL_ON_WARNINGS_PRINT for the
+# WARN_AS_ERROR config option (added in 1.9.7).
+RUN ["dash", "-c", "\
+    curl -LO https://github.com/doxygen/doxygen/releases/download/Release_1_9_8/doxygen-1.9.8.linux.bin.tar.gz \
+ && tar xf doxygen-1.9.8.linux.bin.tar.gz \
+ && cd doxygen-1.9.8 \
+ && make INSTALL=/usr install \
+ && cd .. \
+ && rm doxygen-1.9.8.linux.bin.tar.gz \
+ && rm -rf doxygen-1.9.8 \
+"]
+
 # Download and install CMake v3.25.1. We need CMake v3.20+ in order to get the
 # ctest --test-dir option used by run_unit_tests.sh.
 RUN ["dash", "-c", "\

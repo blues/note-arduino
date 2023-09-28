@@ -43,12 +43,9 @@ J *NoteTransactionNonIOError(J *)
     return resp;
 }
 
-TEST_CASE("NoteRequestWithRetry")
+SCENARIO("NoteRequestWithRetry")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteTransaction);
-    RESET_FAKE(NoteGetMs);
 
     SECTION("NULL request") {
         CHECK(!NoteRequestWithRetry(NULL, 0));
@@ -117,6 +114,9 @@ TEST_CASE("NoteRequestWithRetry")
             CHECK(NoteTransaction_fake.call_count == 2);
         }
     }
+
+    RESET_FAKE(NoteTransaction);
+    RESET_FAKE(NoteGetMs);
 }
 
 }

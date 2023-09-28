@@ -24,10 +24,8 @@ FAKE_VALUE_FUNC(void *, NoteMalloc, size_t)
 namespace
 {
 
-TEST_CASE("JGetBinaryFromObject")
+SCENARIO("JGetBinaryFromObject")
 {
-    RESET_FAKE(NoteMalloc);
-
     NoteSetFnDefault(NULL, free, NULL, NULL);
     NoteMalloc_fake.custom_fake = malloc;
 
@@ -76,8 +74,10 @@ TEST_CASE("JGetBinaryFromObject")
     }
 
     JDelete(json);
+
+    RESET_FAKE(NoteMalloc);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

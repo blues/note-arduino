@@ -63,7 +63,7 @@ void setup()
     notecard.sendRequestWithRetry(req, 5); // 5 seconds
 
     // Reset the state of the Notecard's binary store to a known value.
-    NoteBinaryReset();
+    NoteBinaryStoreReset();
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every
@@ -74,7 +74,7 @@ void loop()
     static unsigned event_counter = 0;
     if (++event_counter > 5)
     {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.\n");
         delay(10000); // 10 seconds
         return;
     }
@@ -89,45 +89,55 @@ void loop()
         // data source. In a real application, you might be reading from an
         // EEPROM or other large data source.
         const char data_source[] = "https://youtu.be/0epWToAOlFY?t=21";
-        const size_t data_source_len = strlen(data_source);
+        const uint32_t data_source_len = strlen(data_source);
 
         // We intend to transmit the buffer in chunks of 8 bytes. The data is
         // encoded in place, so we will need to allocate a buffer that is large
-        // enough to hold the encoded data. `NoteBinaryRequiredBuffer()` will
-        // compute the worst-case size of the encoded buffer.
-        const size_t tx_chunk_size = 8;
-        const size_t tx_buffer_len = NoteBinaryRequiredBuffer(tx_chunk_size);
+        // enough to hold the encoded data, as well as the terminating newline.
+        // `NoteBinaryMaxEncodedLength()` will compute the worst-case size of
+        // the encoded length plus the byte required for the newline terminator.
+        const uint32_t tx_chunk_size = 8;
+        const uint32_t tx_buffer_len = NoteBinaryCodecMaxEncodedLength(tx_chunk_size);
         uint8_t *tx_buffer = (uint8_t *)malloc(tx_buffer_len);
 
         // Transmit the data in chunks of 8 bytes
-        size_t notecard_binary_area_offset = 0;
+        uint32_t notecard_binary_area_offset = 0;
         for (size_t chunk = 0 ; notecard_binary_area_offset < data_source_len ; ++chunk) {
-            size_t tx_len = (((data_source_len - notecard_binary_area_offset) > tx_chunk_size)
-                             ? tx_chunk_size
-                             : (data_source_len - notecard_binary_area_offset));
+            uint32_t data_len = (((data_source_len - notecard_binary_area_offset) > tx_chunk_size)
+                                  ? tx_chunk_size
+                                  : (data_source_len - notecard_binary_area_offset));
 
             // Copy bytes from the data source into the buffer. Note that the
             // data must be copied sequentially into the Notecard binary area.
             // Therefore, we use the offset for the Notecard binary area as the
             // offset into the data source to ensure our data is aligned.
-            memcpy(tx_buffer, (data_source + notecard_binary_area_offset), tx_len);
+            memcpy(tx_buffer, (data_source + notecard_binary_area_offset), data_len);
 
             // Transmit the chunk
-            notecard.logDebugf("Transmitting chunk #%d, containing %d bytes.\n", chunk, tx_len);
-            if (NoteBinaryTransmit(reinterpret_cast<uint8_t *>(tx_buffer), tx_len, tx_buffer_len, notecard_binary_area_offset)) {
+            notecard.logDebugf("Transmitting chunk #%d, containing %d bytes.\n", chunk, data_len);
+            if (NoteBinaryStoreTransmit(reinterpret_cast<uint8_t *>(tx_buffer), data_len, tx_buffer_len, notecard_binary_area_offset)) {
                 --chunk;
                 notecard.logDebug("Failed to transmit.\n");
                 continue;
             }
 
             // Update the offset
-            notecard_binary_area_offset += tx_len;
-            notecard.logDebugf("[INFO] Transmitted %d bytes.\n", tx_len);
+            notecard_binary_area_offset += data_len;
+            notecard.logDebugf("[INFO] Transmitted %d bytes.\n", data_len);
 
-            // Log for the sake of curiosity
+            // Log for the sake of curiosity (not necessary for operation)
+            // NOTE: NoteBinaryMaxEncodedLength() is imprecise. It will most
+            //       commonly return a number greater than the actual bytes
+            //       encoded. However, in this contrived example there is no
+            //       difference, so it works for the purposes of displaying the
+            //       encoded data -- which would never be done in practice.
             notecard.logDebug("\n*** Encoded Binary Transmission ***\n");
+            uint32_t tx_len = NoteBinaryCodecMaxEncodedLength(data_len);
             for (size_t i = 0 ; i < tx_len ; ++i) {
                 notecard.logDebugf("%02x ", tx_buffer[i]);
+                if ((i + 1) % 16 == 0) {
+                    notecard.logDebug("\n");
+                }
             }
             notecard.logDebug("\n*** Encoded Binary Transmission ***\n\n");
         }
@@ -144,28 +154,31 @@ void loop()
         // other large data store.
         char data_store[64] = {0};
 
+        // Calcluate the length of the decoded data
+        uint32_t rx_data_len = 0;
+        NoteBinaryStoreDecodedLength(&rx_data_len);
+
         // We intend to receive the Notecard's binary data store in chunks of
         // 12 bytes. The `offset` and `length` used to request data describe
         // decoded data. Therefore we will need to allocate a buffer that is
         // large enough to hold the encoded data that will be transferred from
-        // the Notecard. `NoteBinaryRequiredBuffer()` will compute the
-        // worst-case size of the encoded data.
-        const size_t rx_chunk_size = 12;
-        const size_t rx_buffer_len = NoteBinaryRequiredBuffer(rx_chunk_size);
+        // the Notecard, as well as the terminating newline.
+        // `NoteBinaryMaxEncodedLength()` will compute the worst-case size of
+        // the encoded length plus the byte required for the newline terminator.
+        const uint32_t rx_chunk_size = 12;
+        const uint32_t rx_buffer_len = NoteBinaryCodecMaxEncodedLength(rx_chunk_size);
         uint8_t *rx_buffer = (uint8_t *)malloc(rx_buffer_len);
-        size_t rx_data_len = 0;
-        NoteBinaryDataLength(&rx_data_len);
 
         // Receive the data in chunks of 12 bytes
         notecard_binary_area_offset = 0;
         for (size_t chunk = 0 ; notecard_binary_area_offset < rx_data_len ; ++chunk) {
-            size_t rx_len = (((rx_data_len - notecard_binary_area_offset) > rx_chunk_size)
-                             ? rx_chunk_size
-                             : (rx_data_len - notecard_binary_area_offset));
+            uint32_t rx_len = (((rx_data_len - notecard_binary_area_offset) > rx_chunk_size)
+                               ? rx_chunk_size
+                               : (rx_data_len - notecard_binary_area_offset));
 
             // Receive the chunk
             notecard.logDebugf("Receiving chunk #%d, containing %d bytes.\n", chunk, rx_len);
-            if (NoteBinaryReceive(reinterpret_cast<uint8_t *>(rx_buffer), rx_buffer_len, notecard_binary_area_offset, &rx_len)) {
+            if (NoteBinaryStoreReceive(reinterpret_cast<uint8_t *>(rx_buffer), rx_buffer_len, notecard_binary_area_offset, rx_len)) {
                 --chunk;
                 notecard.logDebug("Failed to receive.\n");
                 continue;
@@ -196,6 +209,9 @@ void loop()
         }
         notecard.logDebug("\n*** Decoded Data ***\n\n");
 
+        // Free the receive buffer
+        free(rx_buffer);
+
         // NOTE: The binary data store is not cleared on receive, which
         //       allows us to submit it to Notehub in the next step.
     }
@@ -214,7 +230,7 @@ void loop()
             if (!notecard.sendRequest(req)) {
                 // The binary store is cleared on successful transmission, but
                 // we need to reset it manually if the request failed.
-                NoteBinaryReset();
+                NoteBinaryStoreReset();
             }
         }
     }

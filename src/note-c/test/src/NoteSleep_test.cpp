@@ -25,12 +25,9 @@ FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 namespace
 {
 
-TEST_CASE("NoteSleep")
+SCENARIO("NoteSleep")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteNewCommand);
-    RESET_FAKE(NoteRequest);
 
     char payload[] = "ewogICJpbnRlcnZhbHMiOiI2MCwxMiwxNCIKfQ==";
     uint32_t seconds = 10;
@@ -61,7 +58,7 @@ TEST_CASE("NoteSleep")
             SECTION("Additional modes") {
                 CHECK(NoteSleep(payload, seconds, modes));
                 CHECK(!strcmp("sleep,modea,modeb",
-                              JGetString(NoteRequest_fake.arg0_history[0], "mode")));
+                              JGetString(NoteRequest_fake.arg0_val, "mode")));
             }
 
             SECTION("No additional modes") {
@@ -73,8 +70,11 @@ TEST_CASE("NoteSleep")
             JDelete(cmd);
         }
     }
+
+    RESET_FAKE(NoteNewCommand);
+    RESET_FAKE(NoteRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

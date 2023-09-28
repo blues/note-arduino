@@ -28,14 +28,9 @@ FAKE_VOID_FUNC(NoteDebug, const char *)
 namespace
 {
 
-TEST_CASE("NoteDebugSyncStatus")
+SCENARIO("NoteDebugSyncStatus")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteGetMs);
-    RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteRequestResponse);
-    RESET_FAKE(NoteDebug);
 
     int pollFrequencyMs = 2000;
     int maxLevel = 3;
@@ -163,8 +158,13 @@ TEST_CASE("NoteDebugSyncStatus")
     }
 
     JDelete(req);
+
+    RESET_FAKE(NoteGetMs);
+    RESET_FAKE(NoteNewRequest);
+    RESET_FAKE(NoteRequestResponse);
+    RESET_FAKE(NoteDebug);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -20,7 +20,7 @@
 namespace
 {
 
-TEST_CASE("crcError")
+SCENARIO("crcError")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
 
@@ -85,4 +85,4 @@ TEST_CASE("crcError")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

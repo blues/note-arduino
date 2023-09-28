@@ -26,3 +26,4 @@ const char *c_cmd = "cmd";
 const char *c_bad = "bad";
 const char *c_iobad = "bad {io}";
 const char *c_ioerr = "{io}";
+const char *c_badbinerr = "{bad-bin}";

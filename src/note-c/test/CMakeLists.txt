@@ -46,6 +46,10 @@ macro(add_test TEST_NAME)
         PRIVATE note_c
         PRIVATE Catch2::Catch2WithMain
     )
+    target_compile_options(${TEST_NAME}
+        PRIVATE -Og
+        PRIVATE -ggdb
+    )
 
     list(APPEND TEST_TARGETS ${TEST_NAME})
 
@@ -57,6 +61,7 @@ add_test(NoteRequest_test)
 add_test(NoteRequestResponse_test)
 add_test(NoteRequestResponseJSON_test)
 add_test(NoteRequestWithRetry_test)
+add_test(NoteReset_test)
 add_test(NoteGetEnv_test)
 add_test(NotePayload_test)
 add_test(i2cNoteTransaction_test)
@@ -139,6 +144,20 @@ add_test(NoteSetContact_test)
 add_test(NoteDebugSyncStatus_test)
 add_test(crcAdd_test)
 add_test(crcError_test)
+add_test(serialChunkedReceive_test)
+add_test(serialChunkedTransmit_test)
+add_test(i2cNoteQueryLength_test)
+add_test(i2cChunkedReceive_test)
+add_test(i2cChunkedTransmit_test)
+add_test(NoteBinaryCodecDecode_test)
+add_test(NoteBinaryCodecEncode_test)
+add_test(NoteBinaryCodecMaxDecodedLength_test)
+add_test(NoteBinaryCodecMaxEncodedLength_test)
+add_test(NoteBinaryStoreDecodedLength_test)
+add_test(NoteBinaryStoreEncodedLength_test)
+add_test(NoteBinaryStoreReceive_test)
+add_test(NoteBinaryStoreReset_test)
+add_test(NoteBinaryStoreTransmit_test)
 
 if(NOTE_C_COVERAGE)
     find_program(LCOV lcov REQUIRED)

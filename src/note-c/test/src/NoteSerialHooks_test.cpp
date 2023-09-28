@@ -35,7 +35,7 @@ void MyTxnStop()
     return;
 }
 
-TEST_CASE("NoteSerialHooks")
+SCENARIO("NoteSerialHooks")
 {
     SECTION("Hooks not set") {
         NoteTransactionStart(0);
@@ -60,4 +60,4 @@ TEST_CASE("NoteSerialHooks")
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

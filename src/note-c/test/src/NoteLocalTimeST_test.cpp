@@ -51,13 +51,9 @@ bool NoteRegionFake(char **retCountry, char **retArea, char **retZone,
     return true;
 }
 
-TEST_CASE("NoteLocalTimeST")
+SCENARIO("NoteLocalTimeST")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteTimeValidST);
-    RESET_FAKE(NoteTimeST);
-    RESET_FAKE(NoteRegion);
 
     uint16_t retYear;
     uint8_t retMonth;
@@ -93,8 +89,12 @@ TEST_CASE("NoteLocalTimeST")
         CHECK(strcmp(retWeekday, "Thu") == 0);
         CHECK(strcmp(retZone, zone) == 0);
     }
+
+    RESET_FAKE(NoteTimeValidST);
+    RESET_FAKE(NoteTimeST);
+    RESET_FAKE(NoteRegion);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

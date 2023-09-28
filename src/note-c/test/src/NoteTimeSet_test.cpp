@@ -36,12 +36,9 @@ long unsigned int NoteGetMsIncrement(void)
     return count - 1000;
 }
 
-TEST_CASE("NoteTimeSet")
+SCENARIO("NoteTimeSet")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteGetMs);
-    RESET_FAKE(NoteNewRequest);
 
     JTIME baseTime = 1679003056;
     int offset = 5;
@@ -70,7 +67,7 @@ TEST_CASE("NoteTimeSet")
         NoteTimeSet(0, offset, zone, country, area);
         currTime = NoteTime();
         // Check that a card.time request was made.
-        CHECK(strcmp(NoteNewRequest_fake.arg0_history[0], "card.time") == 0);
+        CHECK(strcmp(NoteNewRequest_fake.arg0_val, "card.time") == 0);
         // Setting the base time to 0 seconds also invalidates the region info.
         CHECK(!NoteRegion(&retCountry, &retArea, &retZone, &retOffset));
         CHECK(0 == retOffset);
@@ -87,8 +84,11 @@ TEST_CASE("NoteTimeSet")
         CHECK(strcmp("", retCountry) == 0);
         CHECK(strcmp("", retArea) == 0);
     }
+
+    RESET_FAKE(NoteGetMs);
+    RESET_FAKE(NoteNewRequest);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -24,11 +24,9 @@ FAKE_VALUE_FUNC(J *, NoteTransaction, J *)
 namespace
 {
 
-TEST_CASE("NoteRequest")
+SCENARIO("NoteRequest")
 {
     NoteSetFnDefault(malloc, free, NULL, NULL);
-
-    RESET_FAKE(NoteTransaction);
 
     SECTION("Passing a NULL request returns false") {
         CHECK(!NoteRequest(NULL));
@@ -63,8 +61,10 @@ TEST_CASE("NoteRequest")
         CHECK(NoteRequest(req));
         CHECK(NoteTransaction_fake.call_count == 1);
     }
+
+    RESET_FAKE(NoteTransaction);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

@@ -45,10 +45,8 @@ bool NotePayloadRetrieveAfterSleepValid(NotePayloadDesc *desc)
     return true;
 }
 
-TEST_CASE("NoteWake")
+SCENARIO("NoteWake")
 {
-    RESET_FAKE(NotePayloadRetrieveAfterSleep);
-
     NoteSetFnDefault(malloc, free, NULL, NULL);
     uint8_t actualState[sizeof(expectedState)] = {0};
 
@@ -72,8 +70,10 @@ TEST_CASE("NoteWake")
         CHECK(NoteWake(stateLen, actualState));
         CHECK(memcmp(expectedState, actualState, stateLen) == 0);
     }
+
+    RESET_FAKE(NotePayloadRetrieveAfterSleep);
 }
 
 }
 
-#endif // TEST
+#endif // NOTE_C_TEST

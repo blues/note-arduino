@@ -24,20 +24,21 @@ target_sources(
     note_c
     PRIVATE
         ${NOTE_C_SRC_DIR}/n_atof.c
-        ${NOTE_C_SRC_DIR}/n_cjson.c
-        ${NOTE_C_SRC_DIR}/n_const.c
-        ${NOTE_C_SRC_DIR}/n_helpers.c
-        ${NOTE_C_SRC_DIR}/n_i2c.c
-        ${NOTE_C_SRC_DIR}/n_printf.c
-        ${NOTE_C_SRC_DIR}/n_serial.c
-        ${NOTE_C_SRC_DIR}/n_ua.c
         ${NOTE_C_SRC_DIR}/n_b64.c
+        ${NOTE_C_SRC_DIR}/n_cjson.c
         ${NOTE_C_SRC_DIR}/n_cjson_helpers.c
+        ${NOTE_C_SRC_DIR}/n_cobs.c
+        ${NOTE_C_SRC_DIR}/n_const.c
         ${NOTE_C_SRC_DIR}/n_ftoa.c
+        ${NOTE_C_SRC_DIR}/n_helpers.c
         ${NOTE_C_SRC_DIR}/n_hooks.c
+        ${NOTE_C_SRC_DIR}/n_i2c.c
         ${NOTE_C_SRC_DIR}/n_md5.c
+        ${NOTE_C_SRC_DIR}/n_printf.c
         ${NOTE_C_SRC_DIR}/n_request.c
+        ${NOTE_C_SRC_DIR}/n_serial.c
         ${NOTE_C_SRC_DIR}/n_str.c
+        ${NOTE_C_SRC_DIR}/n_ua.c
 )
 target_compile_options(
     note_c
@@ -46,6 +47,8 @@ target_compile_options(
         -Wextra
         -Wpedantic
         -Werror
+        -Og
+        -ggdb
 )
 target_include_directories(
     note_c
