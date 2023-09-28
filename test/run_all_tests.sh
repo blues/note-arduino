@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 GREEN='\x1B[0;32m'
 RED='\x1B[0;31m'
