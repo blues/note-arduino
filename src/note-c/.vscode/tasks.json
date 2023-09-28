@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Note-C: Compile and Run ALL Tests",
+            "type": "cppbuild",
+            "command": "./scripts/run_unit_tests.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Note-C: Compile and Run ALL Tests (with coverage and memory check)",
+            "type": "cppbuild",
+            "command": "./scripts/run_unit_tests.sh",
+            "args": [
+                "--coverage",
+                "--mem-check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Note-C: Run `astyle` Formatter",
+            "type": "shell",
+            "command": "./scripts/run_astyle.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "LC_ALL":"C"
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "none"
+            }
+        }
+    ]
+}
