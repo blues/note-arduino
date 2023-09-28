@@ -63,7 +63,7 @@ void setup()
     notecard.sendRequestWithRetry(req, 5); // 5 seconds
 
     // Reset the state of the Notecard's binary data store to a known value.
-    NoteBinaryReset();
+    NoteBinaryStoreReset();
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every
@@ -74,7 +74,7 @@ void loop()
     static unsigned event_counter = 0;
     if (++event_counter > 5)
     {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
+        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.\n");
         delay(10000); // 10 seconds
         return;
     }
@@ -84,15 +84,21 @@ void loop()
         /////////////////////////////////////////////////
         // Transmit that beautiful bean footage
         /////////////////////////////////////////////////
+
         char data[64] = "https://youtu.be/0epWToAOlFY?t=21";
-        size_t data_len = strlen(data);
-        const size_t notecard_binary_area_offset = 0;
-        NoteBinaryTransmit(reinterpret_cast<uint8_t *>(data), data_len, sizeof(data), notecard_binary_area_offset);
+        uint32_t data_len = strlen(data);
+        const uint32_t notecard_binary_area_offset = 0;
+        NoteBinaryStoreTransmit(reinterpret_cast<uint8_t *>(data), data_len, sizeof(data), notecard_binary_area_offset);
         notecard.logDebugf("\n[INFO] Transmitted %d bytes.\n", data_len);
 
-        // Log for the sake of curiosity
+        // Log for the sake of curiosity (not necessary for operation)
+        // NOTE: NoteBinaryMaxEncodedLength() is imprecise. It will most
+        //       commonly return a number greater than the actual bytes encoded.
+        //       However, in this contrived example there is no difference,
+        //       so it works for the purposes of displaying the encoded data --
+        //       which would never be done in practice.
         notecard.logDebug("\n*** Encoded Binary Transmission ***\n");
-        size_t tx_len = NoteBinaryEncodedLength(reinterpret_cast<uint8_t *>(data), data_len);
+        uint32_t tx_len = NoteBinaryCodecMaxEncodedLength(data_len);
         for (size_t i = 0 ; i < tx_len ; ++i) {
             notecard.logDebugf("%02x ", data[i]);
             if ((i + 1) % 16 == 0) {
@@ -104,12 +110,21 @@ void loop()
         /////////////////////////////////////////////////
         // Receive data from the Notecard binary data store
         /////////////////////////////////////////////////
-        size_t rx_buffer_len = 0;
-        NoteBinaryRequiredRxMaxBuffer(&rx_buffer_len);
+
+        // Calcluate the length of the decoded data
+        data_len = 0;
+        NoteBinaryStoreDecodedLength(&data_len);
+
+        // Create a buffer to receive the entire data store. This buffer must be
+        // large enough to hold the encoded data that will be transferred from
+        // the Notecard, as well as the terminating newline.
+        // `NoteBinaryMaxEncodedLength()` will compute the worst-case size of
+        // the encoded length plus the byte required for the newline terminator.
+        uint32_t rx_buffer_len = NoteBinaryCodecMaxEncodedLength(data_len);
         uint8_t *rx_buffer = (uint8_t *)malloc(rx_buffer_len);
-        data_len = NOTE_C_BINARY_RX_ALL; // NOTE_C_BINARY_RX_ALL is a special value
-                                         // meaning "return all bytes from offset"
-        NoteBinaryReceive(reinterpret_cast<uint8_t *>(rx_buffer), rx_buffer_len, notecard_binary_area_offset, &data_len);
+
+        // Receive the data
+        NoteBinaryStoreReceive(reinterpret_cast<uint8_t *>(rx_buffer), rx_buffer_len, 0, data_len);
         notecard.logDebugf("\n[INFO] Received %d bytes.\n", data_len);
 
         // Display received buffer
@@ -118,6 +133,9 @@ void loop()
             notecard.logDebugf("%c", rx_buffer[i]);
         }
         notecard.logDebug("\n*** Decoded Data ***\n\n");
+
+        // Free the receive buffer
+        free(rx_buffer);
 
         // NOTE: The binary data store is not cleared on receive, which
         //       allows us to submit it to Notehub in the next step.
@@ -137,7 +155,7 @@ void loop()
             if (!notecard.sendRequest(req)) {
                 // The binary data store is cleared on successful transmission,
                 // but we need to reset it manually if the request failed.
-                NoteBinaryReset();
+                NoteBinaryStoreReset();
             }
         }
     }
