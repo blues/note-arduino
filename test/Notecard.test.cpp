@@ -1372,6 +1372,209 @@ int test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_w
   return result;
 }
 
+int test_notecard_begin_serial_sends_a_card_aux_serial_request_to_throttle_aux_serial_data()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  jAddNumberToObject_Parameters.reset();
+  noteNewRequest_Parameters.reset();
+  noteRequestWithRetry_Parameters.reset();
+  noteSetFnDefault_Parameters.reset();
+
+  noteNewRequest_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+
+   // Action
+  ///////////
+
+  notecard.begin(&mockSerial);
+
+   // Assert
+  ///////////
+
+  if (noteRequestWithRetry_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestWithRetry_Parameters.invoked == " << std::dec << noteRequestWithRetry_Parameters.invoked << ", EXPECTED: > 0" << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteNewRequest_Parameters.result);
+  return result;
+}
+
+int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_15_second_retry()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  jAddNumberToObject_Parameters.reset();
+  noteNewRequest_Parameters.reset();
+  noteRequestWithRetry_Parameters.reset();
+  noteSetFnDefault_Parameters.reset();
+
+  noteNewRequest_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+
+   // Action
+  ///////////
+
+  notecard.begin(&mockSerial);
+
+   // Assert
+  ///////////
+
+  if (15 == noteRequestWithRetry_Parameters.timeoutSeconds)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestWithRetry_Parameters.timeoutSeconds == " << std::dec << noteRequestWithRetry_Parameters.timeoutSeconds << ", EXPECTED: 15" << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteNewRequest_Parameters.result);
+  return result;
+}
+
+int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_parameter_set_to_arduino_serial_rx_buffer_size_constant_minus_one()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  jAddNumberToObject_Parameters.reset();
+  noteNewRequest_Parameters.reset();
+  noteRequestWithRetry_Parameters.reset();
+  noteSetFnDefault_Parameters.reset();
+
+  noteNewRequest_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+
+   // Action
+  ///////////
+
+  notecard.begin(&mockSerial);
+
+   // Assert
+  ///////////
+
+  if ("max" == jAddNumberToObject_Parameters.name[0]
+   && (SERIAL_RX_BUFFER_SIZE - 1) == jAddNumberToObject_Parameters.number[0]
+  ) {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tjAddNumberToObject_Parameters.name == \"" << std::dec << jAddNumberToObject_Parameters.name[0] << "\", EXPECTED: \"max\"" << std::endl;
+    std::cout << "\tjAddNumberToObject_Parameters.number == " << std::dec << jAddNumberToObject_Parameters.number[0] << ", EXPECTED: " << (SERIAL_RX_BUFFER_SIZE - 1) << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteNewRequest_Parameters.result);
+  return result;
+}
+
+int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter_set_to_one()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  jAddNumberToObject_Parameters.reset();
+  noteNewRequest_Parameters.reset();
+  noteRequestWithRetry_Parameters.reset();
+  noteSetFnDefault_Parameters.reset();
+
+  noteNewRequest_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+
+   // Action
+  ///////////
+
+  notecard.begin(&mockSerial);
+
+   // Assert
+  ///////////
+
+  if ("ms" == jAddNumberToObject_Parameters.name[1]
+   && 1 == jAddNumberToObject_Parameters.number[1]
+  ) {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tjAddNumberToObject_Parameters.name == \"" << std::dec << jAddNumberToObject_Parameters.name[1] << "\", EXPECTED: \"ms\"" << std::endl;
+    std::cout << "\tjAddNumberToObject_Parameters.number == " << std::dec << jAddNumberToObject_Parameters.number[1] << ", EXPECTED: 1" << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteNewRequest_Parameters.result);
+  return result;
+}
+
+int test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_interface_has_not_been_instantiated()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  jAddNumberToObject_Parameters.reset();
+  noteNewRequest_Parameters.reset();
+  noteRequestWithRetry_Parameters.reset();
+  noteSetFnDefault_Parameters.reset();
+
+  noteNewRequest_Parameters.result = reinterpret_cast<J *>(malloc(sizeof(J)));
+
+   // Action
+  ///////////
+
+  notecard.begin(static_cast<NoteSerial *>(nullptr));
+
+   // Assert
+  ///////////
+
+  if (!noteRequestWithRetry_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteRequestWithRetry_Parameters.invoked == " << std::dec << noteRequestWithRetry_Parameters.invoked << ", EXPECTED: 0" << std::endl;
+    std::cout << "[";
+  }
+
+  free(noteNewRequest_Parameters.result);
+  return result;
+}
+
 int test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer()
 {
   int result;
@@ -4635,6 +4838,11 @@ int main(void)
       {test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_serial_shares_a_serial_receive_function_pointer, "test_notecard_begin_serial_shares_a_serial_receive_function_pointer"},
       {test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_serial_sends_a_card_aux_serial_request_to_throttle_aux_serial_data, "test_notecard_begin_serial_sends_a_card_aux_serial_request_to_throttle_aux_serial_data"},
+      {test_notecard_begin_serial_sends_a_card_aux_serial_request_with_15_second_retry, "test_notecard_begin_serial_sends_a_card_aux_serial_request_with_15_second_retry"},
+      {test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_parameter_set_to_arduino_serial_rx_buffer_size_constant_minus_one, "test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_parameter_set_to_arduino_serial_rx_buffer_size_constant_minus_one"},
+      {test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter_set_to_one, "test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter_set_to_one"},
+      {test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_interface_has_not_been_instantiated"},
       {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},

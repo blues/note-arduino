@@ -2,6 +2,7 @@
 #define MOCK_PARAMETERS_HPP
 
 #include <string>
+#include <vector>
 
 #include "note-c/note.h"
 
@@ -18,6 +19,32 @@ void MockNoteDeleteResponse(J*);
 
 bool MockNoteResponseError(J*);
 #define NoteResponseError(x) MockNoteResponseError(x)
+
+struct JAddNumberToObject_Parameters {
+    JAddNumberToObject_Parameters(
+        void
+    ) :
+        invoked(0),
+        default_result(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        object.clear();
+        name.clear();
+        number.clear();
+        result.clear();
+        default_result = nullptr;
+    }
+    size_t invoked;
+    std::vector<J *> object;
+    std::vector<std::string> name;
+    std::vector<JNUMBER> number;
+    std::vector<J *> result;
+    J *default_result;
+};
 
 struct NoteDebug_Parameters {
     NoteDebug_Parameters(
@@ -423,6 +450,7 @@ struct NoteSetUserAgent_Parameters {
     std::string agent_cache;
 };
 
+extern JAddNumberToObject_Parameters jAddNumberToObject_Parameters;
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
