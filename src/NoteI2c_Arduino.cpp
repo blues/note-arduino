@@ -52,6 +52,10 @@ NoteI2c_Arduino::receive (
         transmission_error = _i2cPort.endTransmission();
 
         switch (transmission_error) {
+        case 0:
+            // I2C transmission was successful
+            result = nullptr;
+            break;
         case 1:
             result = ERRSTR("i2c: data too long to fit in transmit buffer {io}",i2cerr);
             break;
@@ -71,12 +75,12 @@ NoteI2c_Arduino::receive (
             result = ERRSTR("i2c: unknown error encounter during I2C transmission {io}",i2cerr);
         }
 
-        // Delay briefly ensuring that the Notecard can
-        // deliver the data in real-time to the I2C ISR
-        ::delay(2);
-
         // Read and cache response from Notecard
         if (!transmission_error) {
+            // Delay briefly ensuring that the Notecard can
+            // deliver the data in real-time to the I2C ISR
+            ::delay(2);
+
             const int request_length = requested_byte_count_ + NoteI2c::REQUEST_HEADER_SIZE;
             const int response_length = _i2cPort.requestFrom((int)device_address_, request_length);
             if (!response_length) {
