@@ -89,9 +89,9 @@ NoteI2c_Arduino::receive (
                 result = ERRSTR("serial-over-i2c: unexpected raw byte count {io}",i2cerr);
             } else {
                 // Ensure available byte count is within expected range
-                static const size_t AVAILBLE_MAX = (NoteI2c::REQUEST_MAX_SIZE - NoteI2c::REQUEST_HEADER_SIZE);
+                static const size_t AVAILABLE_MAX = (NoteI2c::REQUEST_MAX_SIZE - NoteI2c::REQUEST_HEADER_SIZE);
                 uint32_t available = _i2cPort.read();
-                if (available > AVAILBLE_MAX) {
+                if (available > AVAILABLE_MAX) {
                     result = ERRSTR("serial-over-i2c: available byte count greater than max allowed {io}",i2cerr);
                 } else if (requested_byte_count_ != static_cast<uint8_t>(_i2cPort.read())) {
                     // Ensure protocol response length matches size request
