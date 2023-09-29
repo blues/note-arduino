@@ -44,6 +44,14 @@
 
 #include "NoteTime.h"
 
+// AUX serial throttling is based on the Arduino define `SERIAL_RX_BUFFER_SIZE`.
+// Unfortunately, some platforms do NOT specify the define. In this case, 64
+// bytes is selected as the default value, because it is a common buffer size
+// across several platforms.
+#ifndef SERIAL_RX_BUFFER_SIZE
+#define SERIAL_RX_BUFFER_SIZE 64
+#endif
+
 /***************************************************************************
  SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
  ***************************************************************************/
