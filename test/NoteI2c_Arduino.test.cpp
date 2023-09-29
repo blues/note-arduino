@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cstring>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteI2c_Arduino.cpp NoteI2c_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteI2c_arduino.tests && ./noteI2c_arduino.tests || echo "Tests Result: $?"
 
 int test_make_note_i2c_instantiates_notei2c_object()
 {
@@ -27,7 +27,7 @@ int test_make_note_i2c_instantiates_notei2c_object()
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c == " << !!notei2c << ", EXPECTED: not nullptr" << std::endl;
+    std::cout << "\tnotei2c == " << (!!notei2c ? "not nullptr" : "nullptr") << ", EXPECTED: not nullptr" << std::endl;
     std::cout << "[";
   }
 
@@ -113,7 +113,7 @@ int test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method()
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireBegin_Parameters.invoked == " << !!twoWireBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireBegin_Parameters.invoked == " << (!!twoWireBegin_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
     std::cout << "[";
   }
 
@@ -161,7 +161,7 @@ int test_notei2c_arduino_receive_requests_response_data_from_notecard()
     std::cout << "\ttwoWireBeginTransmission_Parameters.address == 0x" << std::hex << static_cast<int>(twoWireBeginTransmission_Parameters.address) << ", EXPECTED: 0x" << EXPECTED_ADDRESS << std::dec << std::endl;
     std::cout << "\ttwoWireWriteByte_Parameters.write_buffer[0] == " << static_cast<int>(twoWireWriteByte_Parameters.write_buffer[0]) << ", EXPECTED: " << 0 << std::endl;
     std::cout << "\ttwoWireWriteByte_Parameters.write_buffer[1] == " << static_cast<int>(twoWireWriteByte_Parameters.write_buffer[1]) << ", EXPECTED: " << static_cast<int>(REQUEST_SIZE) << std::endl;
-    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << !!twoWireEndTransmission_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << (!!twoWireEndTransmission_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
     std::cout << "[";
   }
 
@@ -228,6 +228,10 @@ int test_notei2c_arduino_receive_will_not_retry_transmission_on_i2c_success()
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
   twoWireEndTransmission_Parameters.results = {0};
+  twoWireRequestFrom_Parameters.reset();
+  twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
+  twoWireRead_Parameters.reset();
+  twoWireRead_Parameters.results = {0, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
   NoteI2c_Arduino notei2c(Wire);
 
   // Action
@@ -286,9 +290,10 @@ int test_notei2c_arduino_receive_will_only_retry_i2c_transmission_thrice()
 
   // Assert
   if (
-      twoWireBeginTransmission_Parameters.invoked == 3
-   && twoWireWriteByte_Parameters.invoked == 6
-   && twoWireEndTransmission_Parameters.invoked == 3
+      // One (1) attempt + three (3) retries = Four (4) total
+      twoWireBeginTransmission_Parameters.invoked == 4
+   && twoWireWriteByte_Parameters.invoked == 8
+   && twoWireEndTransmission_Parameters.invoked == 4
   )
   {
     result = 0;
@@ -297,9 +302,9 @@ int test_notei2c_arduino_receive_will_only_retry_i2c_transmission_thrice()
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireBeginTransmission_Parameters.invoked == " << twoWireBeginTransmission_Parameters.invoked << ", EXPECTED: " << 3 << std::endl;
-    std::cout << "\ttwoWireWriteByte_Parameters.invoked == " << twoWireWriteByte_Parameters.invoked << ", EXPECTED: " << 6 << std::endl;
-    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << twoWireEndTransmission_Parameters.invoked << ", EXPECTED: " << 3 << std::endl;
+    std::cout << "\ttwoWireBeginTransmission_Parameters.invoked == " << twoWireBeginTransmission_Parameters.invoked << ", EXPECTED: " << 4 << std::endl;
+    std::cout << "\ttwoWireWriteByte_Parameters.invoked == " << twoWireWriteByte_Parameters.invoked << ", EXPECTED: " << 8 << std::endl;
+    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << twoWireEndTransmission_Parameters.invoked << ", EXPECTED: " << 4 << std::endl;
     std::cout << "[";
   }
 
@@ -412,7 +417,7 @@ int test_notei2c_arduino_receive_does_not_request_or_read_i2c_when_trasmission_e
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {1,1,1};
+  twoWireEndTransmission_Parameters.results = {1,1,1,1};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -439,8 +444,8 @@ int test_notei2c_arduino_receive_does_not_request_or_read_i2c_when_trasmission_e
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << false << std::endl;
-    std::cout << "\ttwoWireRead_Parameters.invoked == " << !!twoWireRead_Parameters.invoked << ", EXPECTED: " << false << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << (!!twoWireRequestFrom_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << (!!twoWireRead_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
     std::cout << "[";
   }
 
@@ -486,8 +491,8 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << true << std::endl;
-    std::cout << "\ttwoWireRead_Parameters.invoked == " << !!twoWireRead_Parameters.invoked << ", EXPECTED: " << false << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << (!!twoWireRequestFrom_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << (!!twoWireRead_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
     std::cout << "[";
   }
 
@@ -511,7 +516,7 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_f
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
-  twoWireRead_Parameters.results = {AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
+  twoWireRead_Parameters.results = {AVAILABLE_SIZE, AVAILABLE_SIZE, AVAILABLE_SIZE, AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
   NoteI2c_Arduino notei2c(Wire);
 
   // Action
@@ -525,7 +530,7 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_f
   // Assert
   if (
       twoWireRequestFrom_Parameters.invoked
-   && (1 >= twoWireRead_Parameters.invoked)
+   && (4 >= twoWireRead_Parameters.invoked)
   )
   {
     result = 0;
@@ -534,8 +539,8 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_remaining_bytes_when_f
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << true << std::endl;
-    std::cout << "\ttwoWireRead_Parameters.invoked == " << twoWireRead_Parameters.invoked << ", EXPECTED: <= 1" << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << (!!twoWireRequestFrom_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << twoWireRead_Parameters.invoked << ", EXPECTED: <= 4" << std::endl;
     std::cout << "[";
   }
 
@@ -581,8 +586,8 @@ int test_notei2c_arduino_receive_will_not_attempt_to_read_when_i2c_port_request_
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << true << std::endl;
-    std::cout << "\ttwoWireRead_Parameters.invoked == " << !!twoWireRead_Parameters.invoked << ", EXPECTED: " << false << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << (!!twoWireRequestFrom_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << (!!twoWireRead_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
     std::cout << "[";
   }
 
@@ -605,7 +610,7 @@ int test_notei2c_arduino_receive_will_not_read_full_response_when_i2c_over_seria
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
-  twoWireRead_Parameters.results = {0, sizeof(response_buffer), 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
+  twoWireRead_Parameters.results = {0, sizeof(response_buffer), 0, sizeof(response_buffer), 0, sizeof(response_buffer), 0, sizeof(response_buffer), 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
   NoteI2c_Arduino notei2c(Wire);
 
   // Action
@@ -619,7 +624,7 @@ int test_notei2c_arduino_receive_will_not_read_full_response_when_i2c_over_seria
   // Assert
   if (
       twoWireRequestFrom_Parameters.invoked
-   && twoWireRead_Parameters.invoked == 2
+   && twoWireRead_Parameters.invoked == 8
   )
   {
     result = 0;
@@ -628,8 +633,8 @@ int test_notei2c_arduino_receive_will_not_read_full_response_when_i2c_over_seria
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << !!twoWireRequestFrom_Parameters.invoked << ", EXPECTED: " << true << std::endl;
-    std::cout << "\ttwoWireRead_Parameters.invoked == " << twoWireRead_Parameters.invoked << ", EXPECTED: " << 2 << std::endl;
+    std::cout << "\ttwoWireRequestFrom_Parameters.invoked == " << (!!twoWireRequestFrom_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
+    std::cout << "\ttwoWireRead_Parameters.invoked == " << twoWireRead_Parameters.invoked << ", EXPECTED: " << 8 << std::endl;
     std::cout << "[";
   }
 
@@ -698,7 +703,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {1,1,1};
+  twoWireEndTransmission_Parameters.results = {1,1,1,1};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -725,7 +730,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -746,7 +751,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {2,2,2};
+  twoWireEndTransmission_Parameters.results = {2,2,2,2};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -773,7 +778,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -794,7 +799,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {3,3,3};
+  twoWireEndTransmission_Parameters.results = {3,3,3,3};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -821,7 +826,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -842,7 +847,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {4,4,4};
+  twoWireEndTransmission_Parameters.results = {4,4,4,4};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -869,7 +874,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -890,7 +895,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {5,5,5};
+  twoWireEndTransmission_Parameters.results = {5,5,5,5};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -917,7 +922,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -938,7 +943,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmi
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
   twoWireEndTransmission_Parameters.reset();
-  twoWireEndTransmission_Parameters.results = {6,6,6};
+  twoWireEndTransmission_Parameters.results = {6,6,6,6};
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
@@ -965,7 +970,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmi
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -1011,7 +1016,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -1058,7 +1063,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -1083,7 +1088,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   twoWireRequestFrom_Parameters.reset();
   twoWireRequestFrom_Parameters.result = (REQUEST_SIZE + NoteI2c::REQUEST_HEADER_SIZE);
   twoWireRead_Parameters.reset();
-  twoWireRead_Parameters.results = {AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
+  twoWireRead_Parameters.results = {AVAILABLE_SIZE, AVAILABLE_SIZE, AVAILABLE_SIZE, AVAILABLE_SIZE, REQUEST_SIZE, 'T', 'e', 's', 't', ' ', 'P', 'a', 's', 's', 'e', 'd', '!', '\0'};
   NoteI2c_Arduino notei2c(Wire);
 
   // Action
@@ -1106,7 +1111,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -1153,7 +1158,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnotei2c.receive(EXPECTED_ADDRESS,response_buffer,REQUEST_SIZE,&bytes_remaining) == " << (ACTUAL_RESULT ? ACTUAL_RESULT : "nullptr") << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
@@ -1181,7 +1186,7 @@ int test_notei2c_arduino_reset_invokes_begin_method_on_constructor_twowire_param
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireBegin_Parameters.invoked == " << !!twoWireBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireBegin_Parameters.invoked == " << (!!twoWireBegin_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
     std::cout << "[";
   }
 
@@ -1240,7 +1245,7 @@ int test_notei2c_arduino_reset_does_not_invoke_end_method_on_constructor_twowire
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireEnd_Parameters.invoked == " << !!twoWireEnd_Parameters.invoked << ", EXPECTED: " << false << std::endl;
+    std::cout << "\ttwoWireEnd_Parameters.invoked == " << (!!twoWireEnd_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
     std::cout << "[";
   }
 
@@ -1271,7 +1276,7 @@ int test_notei2c_arduino_reset_invokes_end_method_on_constructor_twowire_paramet
   {
     result = static_cast<int>('i' + '2' + 'c');
     std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\ttwoWireEnd_Parameters.invoked == " << !!twoWireEnd_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireEnd_Parameters.invoked == " << (!!twoWireEnd_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
     std::cout << "[";
   }
 
@@ -1322,7 +1327,7 @@ int test_notei2c_arduino_transmit_translates_parameters_for_arduino_two_wire()
     std::cout << "\ttwoWireBeginTransmission_Parameters.address == 0x" << std::hex << static_cast<int>(twoWireBeginTransmission_Parameters.address) << ", EXPECTED: 0x" << EXPECTED_ADDRESS << std::dec << std::endl;
     std::cout << "\ttwoWireWriteByte_Parameters.write_buffer[0] == " << static_cast<int>(twoWireWriteByte_Parameters.write_buffer[0]) << ", EXPECTED: " << static_cast<int>(REQUEST_SIZE) << std::endl;
     std::cout << "\ttwoWireWriteBuffer_Parameters.buffer == \"" << twoWireWriteBuffer_Parameters.buffer << "\", EXPECTED: \"" << write_buffer << "\"" << std::endl;
-    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << !!twoWireEndTransmission_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+    std::cout << "\ttwoWireEndTransmission_Parameters.invoked == " << (!!twoWireEndTransmission_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
     std::cout << "[";
   }
 

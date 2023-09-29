@@ -6,6 +6,7 @@
 *.gcov
 vgcore.*
 *.tests
+failed_test_run
 
 .vscode/
 build/

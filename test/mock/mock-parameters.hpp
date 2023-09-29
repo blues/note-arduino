@@ -6,6 +6,9 @@
 
 #include "note-c/note.h"
 
+#define NoteDebugWithLevel(...)
+#define NoteDebugWithLevelLn(...)
+
 #ifdef NoteDeleteResponse
 #undef NoteDeleteResponse
 #endif

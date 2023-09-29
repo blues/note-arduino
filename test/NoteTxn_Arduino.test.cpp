@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-// Compile command: g++ -std=c++11 -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteTxn_Arduino.cpp NoteTxn_Arduino.test.cpp -I. -I../src -DNOTE_MOCK && ./a.out || echo "Tests Result: $?"
+// Compile command: g++ -std=c++11 -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteTxn_Arduino.cpp NoteTxn_Arduino.test.cpp -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteTxn_arduino.tests && ./noteTxn_arduino.tests || echo "Tests Result: $?"
 
 int test_make_note_txn_instantiates_notetxn_object()
 {

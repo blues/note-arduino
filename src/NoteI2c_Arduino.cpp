@@ -39,21 +39,23 @@ NoteI2c_Arduino::receive (
 )
 {
     const char *result = nullptr;
-    uint8_t transmission_error = 0;
 
-    // Request response data from Notecard
-    for (size_t i = 0 ; i < 3 ; ++i) {
+    const size_t retry_count = 3;
+    size_t i = 0;
+    do {
+        uint8_t transmission_error = 0;
+
+        // Request response data from Notecard
         _i2cPort.beginTransmission(static_cast<uint8_t>(device_address_));
         _i2cPort.write(static_cast<uint8_t>(0));
         _i2cPort.write(static_cast<uint8_t>(requested_byte_count_));
         transmission_error = _i2cPort.endTransmission();
 
-        // Break out of loop on success
-        if (!transmission_error) {
-            break;
-        }
-
         switch (transmission_error) {
+        case 0:
+            // I2C transmission was successful
+            result = nullptr;
+            break;
         case 1:
             result = ERRSTR("i2c: data too long to fit in transmit buffer {io}",i2cerr);
             break;
@@ -72,42 +74,49 @@ NoteI2c_Arduino::receive (
         default:
             result = ERRSTR("i2c: unknown error encounter during I2C transmission {io}",i2cerr);
         }
-    }
 
-    // Delay briefly ensuring that the Notecard can
-    // deliver the data in real-time to the I2C ISR
-    ::delay(2);
+        // Read and cache response from Notecard
+        if (!transmission_error) {
+            // Delay briefly ensuring that the Notecard can
+            // deliver the data in real-time to the I2C ISR
+            ::delay(2);
 
-    // Read and cache response from Notecard
-    if (!transmission_error) {
-        const int request_length = requested_byte_count_ + NoteI2c::REQUEST_HEADER_SIZE;
-        const int response_length = _i2cPort.requestFrom((int)device_address_, request_length);
-        if (!response_length) {
-            result = ERRSTR("serial-over-i2c: no response to read request {io}",i2cerr);
-        } else if (response_length != request_length) {
-            result = ERRSTR("serial-over-i2c: unexpected raw byte count {io}",i2cerr);
-        } else {
-            // Ensure available byte count is within expected range
-            static const size_t AVAILBLE_MAX = (NoteI2c::REQUEST_MAX_SIZE - NoteI2c::REQUEST_HEADER_SIZE);
-            uint32_t available = _i2cPort.read();
-            if (available > AVAILBLE_MAX) {
-                result = ERRSTR("serial-over-i2c: available byte count greater than max allowed {io}",i2cerr);
-            }
-            // Ensure protocol response length matches size request
-            else if (requested_byte_count_ != static_cast<uint8_t>(_i2cPort.read())) {
-                result = ERRSTR("serial-over-i2c: unexpected protocol byte count {io}",i2cerr);
-            }
-            // Update available with remaining bytes
-            else {
-                *available_ = available;
+            const int request_length = requested_byte_count_ + NoteI2c::REQUEST_HEADER_SIZE;
+            const int response_length = _i2cPort.requestFrom((int)device_address_, request_length);
+            if (!response_length) {
+                result = ERRSTR("serial-over-i2c: no response to read request {io}",i2cerr);
+            } else if (response_length != request_length) {
+                result = ERRSTR("serial-over-i2c: unexpected raw byte count {io}",i2cerr);
+            } else {
+                // Ensure available byte count is within expected range
+                static const size_t AVAILABLE_MAX = (NoteI2c::REQUEST_MAX_SIZE - NoteI2c::REQUEST_HEADER_SIZE);
+                uint32_t available = _i2cPort.read();
+                if (available > AVAILABLE_MAX) {
+                    result = ERRSTR("serial-over-i2c: available byte count greater than max allowed {io}",i2cerr);
+                } else if (requested_byte_count_ != static_cast<uint8_t>(_i2cPort.read())) {
+                    // Ensure protocol response length matches size request
+                    result = ERRSTR("serial-over-i2c: unexpected protocol byte count {io}",i2cerr);
+                } else {
+                    // Update available with remaining bytes
+                    *available_ = available;
 
-                for (size_t i = 0 ; i < requested_byte_count_ ; ++i) {
-                    //TODO: Perf test against indexed buffer writes
-                    *buffer_++ = _i2cPort.read();
+                    for (size_t i = 0 ; i < requested_byte_count_ ; ++i) {
+                        //TODO: Perf test against indexed buffer reads
+                        *buffer_++ = _i2cPort.read();
+                    }
+                    result = nullptr;
+                    break;
                 }
             }
         }
-    }
+
+        // Flash stalls have been observed on the Notecard ESP. Delaying
+        // between retries provides time for the Notecard to recover from
+        // the resource contention.
+        ::delay(1000);
+        NOTE_C_LOG_ERROR(result);
+        NOTE_C_LOG_WARN("serial-over-i2c: reattempting to read Notecard response");
+    } while (result && (i++ < retry_count));
 
     return result;
 }
