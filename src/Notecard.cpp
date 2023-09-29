@@ -44,6 +44,15 @@
 
 #include "NoteTime.h"
 
+// AUX serial throttling is based on the Arduino define `SERIAL_RX_BUFFER_SIZE`.
+// Unfortunately, some platforms do NOT specify the define. In this case, 64
+// bytes is selected as the default value, because it is a common buffer size
+// across several platforms.
+#ifndef SERIAL_RX_BUFFER_SIZE
+#define SERIAL_RX_BUFFER_SIZE 64
+#pragma message "\n\x1B[0;33mSERIAL_RX_BUFFER_SIZE has not been specified for this platform!\n\nThe value is used to set the default Notecard AUX Serial write speeds.\nA value (" NOTE_C_STRINGIZE(SERIAL_RX_BUFFER_SIZE) ") has been specified on your behalf. Use the 'card.aux.serial'\nrequest to tailor the AUX Serial speed to your board and/or application.\nhttps://dev.blues.io/api-reference/notecard-api/card-requests/#card-aux-serial\x1B[0;0m"
+#endif
+
 /***************************************************************************
  SINGLETON ABSTRACTION (REQUIRED BY NOTE-C)
  ***************************************************************************/
@@ -245,6 +254,15 @@ void Notecard::begin(NoteSerial * noteSerial_)
     if (noteSerial) {
         NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
                         noteSerialAvailable, noteSerialReceive);
+
+        // Set the default debug serial throttling
+        J *req = NoteNewRequest("card.aux.serial");
+        if (req != NULL)
+        {
+            JAddIntToObject(req, "max", SERIAL_RX_BUFFER_SIZE - 1);
+            JAddIntToObject(req, "ms", 1);
+            NoteRequestWithRetry(req, 15);
+        }
     } else {
         NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
     }

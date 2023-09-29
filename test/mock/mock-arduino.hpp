@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#define SERIAL_RX_BUFFER_SIZE 79
+
 enum PinMode {
     INPUT = 0x19,
     INPUT_PULLUP,
