@@ -168,16 +168,6 @@ void loop()
     notecard.logDebug("performing sensor measurement\n");
     lastStatusMs = millis();
 
-    // Count the simulated measurements that we send to the cloud, and stop the
-    // demo before long.
-    static unsigned eventCounter = 0;
-    if (++eventCounter > 25)
-    {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.");
-        delay(10000); // 10 seconds
-        return;
-    }
-
     // Read the notecard's current temperature and voltage, as simulated sensor
     // measurements
     double temperature = 0;
@@ -206,7 +196,6 @@ void loop()
         {
             JAddNumberToObject(body, "temp", temperature);
             JAddNumberToObject(body, "voltage", voltage);
-            JAddNumberToObject(body, "count", eventCounter);
         }
         notecard.sendRequest(req);
     }
