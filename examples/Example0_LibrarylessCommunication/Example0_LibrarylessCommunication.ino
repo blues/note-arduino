@@ -13,11 +13,8 @@
 // Core IoT Development Kit, you would connect the R2 pin to the Notecard's TX
 // pin, and the M5Stack's T2 pin to the Notecard's RX pin, and then would
 // use Serial2.
-//
-// Note that both of these definitions are optional; just prefix either line
-// with `//` to remove it.
-// - Remove txRxPinsSerial if you wired your Notecard using I2C SDA/SCL pins
-//   instead of serial RX/TX
+
+#include "Arduino.h"
 
 #if defined(ARDUINO_ARCH_AVR) && not defined(HAVE_HWSERIAL1)
 #define txRxPinsSerial Serial
