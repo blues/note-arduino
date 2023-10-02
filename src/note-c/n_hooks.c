@@ -394,12 +394,12 @@ void NoteSetFnDisabled()
 void NoteDebugIntln(const char *line, int n)
 {
     if (line != NULL) {
-        NoteDebug(line);
+        _Debug(line);
     }
     char str[16];
     JItoA(n, str);
-    NoteDebug(str);
-    NoteDebug(c_newline);
+    _Debug(str);
+    _Debug(c_newline);
 }
 
 //**************************************************************************/
@@ -410,8 +410,8 @@ void NoteDebugIntln(const char *line, int n)
 /**************************************************************************/
 void NoteDebugln(const char *line)
 {
-    NoteDebug(line);
-    NoteDebug(c_newline);
+    _Debug(line);
+    _Debug(c_newline);
 }
 
 //**************************************************************************/
@@ -446,7 +446,7 @@ void NoteDebugWithLevel(uint8_t level, const char *msg)
         return;
     }
 
-    NoteDebug(msg);
+    _Debug(msg);
 
 #endif // !NOTE_NODEBUG
 }
@@ -461,8 +461,8 @@ void NoteDebugWithLevel(uint8_t level, const char *msg)
 /**************************************************************************/
 void NoteDebugWithLevelLn(uint8_t level, const char *msg)
 {
-    NoteDebugWithLevel(level, msg);
-    NoteDebugWithLevel(level, c_newline);
+    _DebugWithLevel(level, msg);
+    _DebugWithLevel(level, c_newline);
 }
 
 //**************************************************************************/

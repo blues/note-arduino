@@ -79,7 +79,13 @@ extern "C" {
 #define CARD_RESET_DRAIN_MS 500
 /**************************************************************************/
 /*!
-    @brief  The number of times we will try to get in sync before giving up.
+    @brief  The number of times we will retry a request before giving up.
+*/
+/**************************************************************************/
+#define CARD_REQUEST_RETRIES_ALLOWED 5
+/**************************************************************************/
+/*!
+    @brief  The number of times we will retry getting in sync before giving up.
 */
 /**************************************************************************/
 #define CARD_RESET_SYNC_RETRIES 10
@@ -127,7 +133,7 @@ bool NoteIsDebugOutputActive(void);
 // Utilities
 void n_htoa32(uint32_t n, char *p);
 void n_htoa16(uint16_t n, unsigned char *p);
-uint64_t n_atoh(char *p, int maxlen);
+uint64_t n_atoh(char *p, int maxLen);
 
 // COBS Helpers
 uint32_t cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst);
@@ -210,9 +216,15 @@ extern const char *c_badbinerr;
 #ifdef NOTE_NODEBUG
 #define _Debug(x)
 #define _Debugln(x)
+#define _DebugIntln(x, y)
+#define _DebugWithLevel(x, y)
+#define _DebugWithLevelLn(x, y)
 #else
 #define _Debug(x) NoteDebug(x)
 #define _Debugln(x) NoteDebugln(x)
+#define _DebugIntln(x, y) NoteDebugIntln(x, y)
+#define _DebugWithLevel(x, y) NoteDebugWithLevel(x, y)
+#define _DebugWithLevelLn(x, y) NoteDebugWithLevelLn(x, y)
 #endif
 
 // End of C-callable functions

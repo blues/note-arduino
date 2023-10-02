@@ -127,12 +127,13 @@ SCENARIO("NoteTransaction")
         JDelete(resp);
     }
 
-    WHEN("A response is expected and the response has a {bad-bin} error") {
+    WHEN("The transaction is successful and the response has a {bad-bin} error") {
         J *req = NoteNewRequest("note.add");
         REQUIRE(req != NULL);
         NoteJSONTransaction_fake.custom_fake = [](char *, char **response, size_t) -> const char * {
-            *response = (char *)malloc(20);
-            strncpy(*response, "{\"err\":\"{bad-bin}\"}", 20);
+            const char rsp_str[] = "{\"err\":\"{bad-bin}\"}";
+            *response = (char *)malloc(sizeof(rsp_str));
+            strncpy(*response, rsp_str, sizeof(rsp_str));
             return nullptr;
         };
 
@@ -142,11 +143,40 @@ SCENARIO("NoteTransaction")
         // Here the error causes multiple invocations by retries
         REQUIRE(NoteJSONTransaction_fake.call_count >= 1);
 
-        // Ensure there's an error in the response.
-        REQUIRE(resp != NULL);
+        THEN("An error is returned") {
+            CHECK(resp != NULL);
+        }
 
         THEN("The transaction is not retried") {
             CHECK(NoteJSONTransaction_fake.call_count == 1);
+        }
+
+        JDelete(req);
+        JDelete(resp);
+    }
+
+    WHEN("The transaction is successful and the response contains invalid JSON") {
+        J *req = NoteNewRequest("note.add");
+        REQUIRE(req != NULL);
+        NoteJSONTransaction_fake.custom_fake = [](char *, char **response, size_t) -> const char * {
+            const char rsp_str[] = "{Looks like JSON, but won't parse}";
+            *response = (char *)malloc(sizeof(rsp_str));
+            strncpy(*response, rsp_str, sizeof(rsp_str));
+            return nullptr;
+        };
+
+        J *resp = NoteTransaction(req);
+
+        // Ensure the mock is called at least once
+        // Here the error causes multiple invocations by retries
+        REQUIRE(NoteJSONTransaction_fake.call_count >= 1);
+
+        THEN("An error is returned") {
+            CHECK(resp != NULL);
+        }
+
+        THEN("The transaction is retried") {
+            CHECK(NoteJSONTransaction_fake.call_count == (1 + CARD_REQUEST_RETRIES_ALLOWED));
         }
 
         JDelete(req);

@@ -2341,11 +2341,10 @@ bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
         J *body = JGetObject(rsp, "body");
         if (body != NULL) {
             if (maxLevel < 0 || JGetInt(body, "level") <= maxLevel) {
-                _Debug("sync: ");
+                _Debug("[SYNC] ");
                 _Debug(JGetString(body, "subsystem"));
                 _Debug(" ");
-                _Debug(JGetString(body, "text"));
-                _Debug("\n");
+                _Debugln(JGetString(body, "text"));
             }
         }
 

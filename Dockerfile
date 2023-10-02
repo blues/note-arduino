@@ -57,8 +57,10 @@ RUN ["dash", "-c", "\
      curl \
      g++ \
      gdb \
+     git \
      gzip \
      lcov \
+     nano \
      python-is-python3 \
      python3 \
      python3-pip \
