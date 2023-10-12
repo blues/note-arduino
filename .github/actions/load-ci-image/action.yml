@@ -6,7 +6,7 @@ runs:
       uses: docker/setup-buildx-action@v2
 
     - name: Download image artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: note_arduino_ci_image
         path: /tmp
