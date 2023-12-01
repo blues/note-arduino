@@ -47,7 +47,7 @@ For additional Notecard SDKs and Libraries, see:
 
 ## To learn more about Blues Wireless, the Notecard and Notehub, see:
 
-- [blues.com](https://blues.io)
+- [blues.com](https://blues.com)
 - [notehub.io][notehub]
 - [wireless.dev](https://wireless.dev)
 
