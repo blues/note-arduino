@@ -2,7 +2,7 @@
  * @file Notecard.h
  *
  * The note-arduino Arduino library for communicating with the
- * <a href="https://blues.io">Blues Wireless</a>
+ * <a href="https://blues.com">Blues Wireless</a>
  * Notecard via serial or I2C.
  *
  * This library allows you to control a Notecard by writing an Arduino sketch in
