@@ -3,7 +3,7 @@
 # note-arduino 
 
 The note-arduino Arduino library for communicating with the
-[Blues Wireless][blues] Notecard via serial or I²C. Includes example sketches in
+[Blues][blues] Notecard via serial or I²C. Includes example sketches in
 the [examples directory](examples).
 
 This library allows you to control a Notecard by writing an Arduino sketch in C
@@ -17,12 +17,12 @@ as a git subtree.
 
 1. Open the Arduino IDE and click **Tools > Manage Libraries...**.
 2. Search for "Blues" in the input box and click the "Install" button next
-   to the "Blues Wireless Notecard" result.
+   to the "Blues Notecard" result.
 
    ![](https://wireless.dev/images/guides/first-sensor/arduino/install-library.gif)
 
 3. Create a new sketch and select the Sketch > Include Library > Contributed
-Libraries > Blues Wireless Notecard menu option, to add the following include to
+Libraries > Blues Notecard menu option, to add the following include to
 your sketch:
 
    ```
@@ -261,9 +261,9 @@ For additional Notecard SDKs and Libraries, see:
 * [note-go][note-go] for Go
 * [note-python][note-python] for Python
 
-## To learn more about Blues Wireless, the Notecard and Notehub, see:
+## To learn more about Blues, the Notecard and Notehub, see:
 
-* [blues.com](https://blues.io)
+* [blues.com](https://blues.com)
 * [notehub.io][Notehub]
 * [wireless.dev](https://wireless.dev)
 
