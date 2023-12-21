@@ -1,0 +1,5 @@
+
+NOTECARD_SERIAL=<Arduino Serial Instance>
+
+// The value is presently not used, just the definition of the symbol
+NOTECARD_I2C=
