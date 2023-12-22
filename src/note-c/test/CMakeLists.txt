@@ -158,6 +158,8 @@ add_test(NoteBinaryStoreEncodedLength_test)
 add_test(NoteBinaryStoreReceive_test)
 add_test(NoteBinaryStoreReset_test)
 add_test(NoteBinaryStoreTransmit_test)
+add_test(JPrintUnformatted_test)
+add_test(Jtolower_test)
 
 if(NOTE_C_COVERAGE)
     find_program(LCOV lcov REQUIRED)

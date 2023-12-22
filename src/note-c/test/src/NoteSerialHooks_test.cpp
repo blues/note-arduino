@@ -38,8 +38,8 @@ void MyTxnStop()
 SCENARIO("NoteSerialHooks")
 {
     SECTION("Hooks not set") {
-        NoteTransactionStart(0);
-        NoteTransactionStop();
+        noteTransactionStart(0);
+        noteTransactionStop();
 
         CHECK(!txnStartCalled);
         CHECK(!txnStopCalled);
@@ -47,8 +47,8 @@ SCENARIO("NoteSerialHooks")
 
     SECTION("Hooks set") {
         NoteSetFnTransaction(MyTxnStart, MyTxnStop);
-        NoteTransactionStart(0);
-        NoteTransactionStop();
+        noteTransactionStart(0);
+        noteTransactionStop();
 
         CHECK(txnStartCalled);
         CHECK(txnStopCalled);

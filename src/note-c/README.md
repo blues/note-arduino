@@ -3,7 +3,7 @@
 # note-c
 
 The note-c C library for communicating with the
-[Blues][blues] Notecard via serial or I²C.
+[Blues Wireless][blues] Notecard via serial or I²C.
 
 This library allows you to control a Notecard by writing a C
 or C++ program. Your program may programmatically configure Notecard and send
@@ -45,9 +45,9 @@ For additional Notecard SDKs and Libraries, see:
 - [note-python][note-python] for Python
 - [note-go][note-go] for Go
 
-## To learn more about Blues, the Notecard and Notehub, see:
+## To learn more about Blues Wireless, the Notecard and Notehub, see:
 
-- [blues.com](https://blues.com)
+- [blues.com](https://blues.io)
 - [notehub.io][notehub]
 - [wireless.dev](https://wireless.dev)
 

@@ -69,7 +69,12 @@ extern "C"
 #define JIsReference 256
 #define JStringIsConst 512
 
-/* The J structure: */
+/*!
+ @brief The core JSON object type used by note-c.
+
+ When using note-c, treat this struct as opaque. You should never have to work
+ directly with its members.
+ */
 typedef struct J {
     /* next/prev allow you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
     struct J *next;
@@ -140,10 +145,35 @@ then using the N_CJSON_API_VISIBILITY flag to "export" the same symbols the way 
 #endif
 #endif
 
-/* Limits how deeply nested arrays/objects can be before J rejects to parse them.
- * This is to prevent stack overflows. */
+/*!
+  @brief The maximum nesting level for JSON objects before a parsing error.
+
+  Default value: `100`
+
+  For example, if you have a JSON object that contains multiple, nested
+  objects like this
+
+      {
+          "x":
+          {
+              "x:"
+              {
+                  .
+                  .
+                  .
+              }
+          }
+      }
+
+  And the nesting level exceeds `N_CJSON_NESTING_LIMIT`, then calling `JParse` on
+  a `J *` representing this object will return an error (NULL).
+
+  This exists to prevent the cJSON parser from causing a stack overflow. The
+  user may override this macro at build time (e.g.
+  -DN_CJSON_NESTING_LIMIT=200) to increase or reduce the limit.
+ */
 #ifndef N_CJSON_NESTING_LIMIT
-#define N_CJSON_NESTING_LIMIT 1000
+#define N_CJSON_NESTING_LIMIT 100
 #endif
 
 /* returns the version of J as a string */

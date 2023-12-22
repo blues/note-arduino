@@ -2,6 +2,7 @@
 Doxyfile.bak
 latex/
 html/
+__pycache__/
 
 # VS Code workspace files
 *.code-workspace

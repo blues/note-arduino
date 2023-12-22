@@ -17,8 +17,8 @@ EXCLUDE_FILES=(
     test/include/fff.h
 )
 
-if [[ `git status --porcelain --untracked=no` ]]; then
-    echo "Local changes detected. Please commit, stash, or discard any working tree changes prior to running this script."
+if [[ `git diff` ]]; then
+    echo "Local unstaged changes detected. Please stage, commit, stash, or discard any changes prior to running this script."
     exit 1
 fi
 
@@ -33,7 +33,7 @@ done
 
 # If there are new formatting changes after running astyle, exit with a non-zero
 # value.
-if [[ `git status --porcelain --untracked=no` ]]; then
+if [[ `git diff` ]]; then
     echo "New formatting changes left in working tree."
     exit 1
 else

@@ -129,7 +129,7 @@ __attribute__((weak)) J *NoteUserAgent()
 
     JAddStringToObject(ua, "agent", n_agent);
     JAddStringToObject(ua, "compiler", compiler);
-    JAddStringToObject(ua, "req_interface", NoteActiveInterface());
+    JAddStringToObject(ua, "req_interface", noteActiveInterface());
 
     // Add CPU Details
     if (n_cpu_cores != 0) {

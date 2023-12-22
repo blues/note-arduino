@@ -20,7 +20,7 @@
 
 DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(bool, i2cNoteReset)
-FAKE_VALUE_FUNC(const char *, i2cNoteTransaction, char *, char **, size_t)
+FAKE_VALUE_FUNC(const char *, i2cNoteTransaction, const char *, size_t, char **, size_t)
 
 namespace
 {
@@ -50,7 +50,7 @@ const char *I2CReceive(uint16_t, uint8_t*, uint16_t, uint32_t*)
 
 SCENARIO("NoteSetFnI2C")
 {
-    char req[] = "{ \"req\": \"note.add\" }";
+    char req[] = "{ \"req\": \"note.add\" }\n";
     char *resp = NULL;
     i2cNoteReset_fake.return_val = true;
     i2cNoteTransaction_fake.return_val = NULL;
@@ -59,21 +59,21 @@ SCENARIO("NoteSetFnI2C")
 
     NoteSetFnI2C(i2cAddr, i2cMax, I2CReset, I2CTransmit, I2CReceive);
 
-    CHECK(NoteI2CReset(i2cAddr));
+    CHECK(noteI2CReset(i2cAddr));
     CHECK(i2cResetCalled == 1);
 
-    CHECK(NoteI2CTransmit(i2cAddr, (uint8_t *)req, strlen(req)) == NULL);
+    CHECK(noteI2CTransmit(i2cAddr, (uint8_t *)req, strlen(req)) == NULL);
     CHECK(i2cTransmitCalled == 1);
 
-    CHECK(NoteI2CReceive(i2cAddr, NULL, 0, NULL) == NULL);
+    CHECK(noteI2CReceive(i2cAddr, NULL, 0, NULL) == NULL);
     CHECK(i2cReceiveCalled == 1);
 
-    CHECK(strcmp(NoteActiveInterface(), "i2c") == 0);
+    CHECK(strcmp(noteActiveInterface(), "i2c") == 0);
 
-    CHECK(NoteHardReset());
+    CHECK(noteHardReset());
     CHECK(i2cNoteReset_fake.call_count == 1);
 
-    CHECK(NoteJSONTransaction(req, &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) == NULL);
+    CHECK(noteJSONTransaction(req, strlen(req), &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) == NULL);
     CHECK(i2cNoteTransaction_fake.call_count == 1);
 
     CHECK(NoteI2CAddress() == i2cAddr);
@@ -90,21 +90,21 @@ SCENARIO("NoteSetFnI2C")
     NoteSetI2CAddress(0);
     NoteSetFnDisabled();
 
-    CHECK(NoteI2CReset(i2cAddr));
+    CHECK(noteI2CReset(i2cAddr));
     CHECK(i2cResetCalled == 1);
 
-    CHECK(NoteI2CTransmit(i2cAddr, (uint8_t *)req, strlen(req)) != NULL);
+    CHECK(noteI2CTransmit(i2cAddr, (uint8_t *)req, strlen(req)) != NULL);
     CHECK(i2cTransmitCalled == 1);
 
-    CHECK(NoteI2CReceive(i2cAddr, NULL, 0, NULL) != NULL);
+    CHECK(noteI2CReceive(i2cAddr, NULL, 0, NULL) != NULL);
     CHECK(i2cReceiveCalled == 1);
 
-    CHECK(strcmp(NoteActiveInterface(), "unknown") == 0);
+    CHECK(strcmp(noteActiveInterface(), "unknown") == 0);
 
-    CHECK(NoteHardReset());
+    CHECK(noteHardReset());
     CHECK(i2cNoteReset_fake.call_count == 1);
 
-    CHECK(NoteJSONTransaction(req, &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) != NULL);
+    CHECK(noteJSONTransaction(req, strlen(req), &resp, CARD_INTER_TRANSACTION_TIMEOUT_SEC) != NULL);
     CHECK(i2cNoteTransaction_fake.call_count == 1);
 
     CHECK(NoteI2CAddress() == NOTE_I2C_ADDR_DEFAULT);

@@ -24,10 +24,10 @@ FAKE_VALUE_FUNC(uint32_t, NoteBinaryCodecDecode, const uint8_t *, uint32_t, uint
                 uint32_t)
 FAKE_VALUE_FUNC(const char *, NoteBinaryStoreEncodedLength, uint32_t *)
 FAKE_VALUE_FUNC(J *, noteTransactionShouldLock, J *, bool)
-FAKE_VALUE_FUNC(const char *, NoteChunkedReceive, uint8_t *, uint32_t *, bool,
+FAKE_VALUE_FUNC(const char *, noteChunkedReceive, uint8_t *, uint32_t *, bool,
                 size_t, uint32_t *)
-FAKE_VOID_FUNC(NoteLockNote)
-FAKE_VOID_FUNC(NoteUnlockNote)
+FAKE_VOID_FUNC(noteLockNote)
+FAKE_VOID_FUNC(noteUnlockNote)
 
 // Most of these variables have to be global because they're accessed in
 // lambda functions used as fakes for various note-c functions. They can't be
@@ -127,22 +127,22 @@ SCENARIO("NoteBinaryStoreReceive")
         }
     }
 
-    GIVEN("NoteChunkedReceive returns an error") {
-        NoteChunkedReceive_fake.return_val = "some error";
+    GIVEN("noteChunkedReceive returns an error") {
+        noteChunkedReceive_fake.return_val = "some error";
 
         WHEN("NoteBinaryStoreReceive is called") {
             const char *err = NoteBinaryStoreReceive(buf, bufLen, decodedOffset, decodedLen);
 
-            REQUIRE(NoteChunkedReceive_fake.call_count > 0);
+            REQUIRE(noteChunkedReceive_fake.call_count > 0);
             THEN("An error is returned") {
                 CHECK(err != NULL);
             }
         }
     }
 
-    GIVEN("NoteChunkedReceive indicates there's unexpectedly more data "
+    GIVEN("noteChunkedReceive indicates there's unexpectedly more data "
           "available") {
-        NoteChunkedReceive_fake.custom_fake = [](uint8_t *, uint32_t *, bool,
+        noteChunkedReceive_fake.custom_fake = [](uint8_t *, uint32_t *, bool,
         size_t, uint32_t *available) -> const char* {
             *available = 1;
 
@@ -152,7 +152,7 @@ SCENARIO("NoteBinaryStoreReceive")
         WHEN("NoteBinaryStoreReceive is called") {
             const char *err = NoteBinaryStoreReceive(buf, bufLen, decodedOffset, decodedLen);
 
-            REQUIRE(NoteChunkedReceive_fake.call_count > 0);
+            REQUIRE(noteChunkedReceive_fake.call_count > 0);
             THEN("An error is returned") {
                 CHECK(err != NULL);
             }
@@ -163,7 +163,7 @@ SCENARIO("NoteBinaryStoreReceive")
         NoteBinaryCodecDecode_fake.custom_fake = [](const uint8_t *encData, uint32_t encDataLen, uint8_t *decBuf, uint32_t) -> uint32_t {
             return cobsDecode((uint8_t *)encData, encDataLen, '\n', decBuf);
         };
-        NoteChunkedReceive_fake.custom_fake = [](uint8_t *buffer, uint32_t *size,
+        noteChunkedReceive_fake.custom_fake = [](uint8_t *buffer, uint32_t *size,
         bool, size_t, uint32_t *available) -> const char* {
             uint32_t outLen = NoteBinaryCodecEncode((uint8_t *)rawMsg, rawMsgLen, buffer, *size);
 
@@ -186,7 +186,7 @@ SCENARIO("NoteBinaryStoreReceive")
             WHEN("NoteBinaryStoreReceive is called") {
                 const char *err = NoteBinaryStoreReceive(buf, bufLen, decodedOffset, decodedLen);
 
-                REQUIRE(NoteChunkedReceive_fake.call_count > 0);
+                REQUIRE(noteChunkedReceive_fake.call_count > 0);
                 REQUIRE(noteTransactionShouldLock_fake.call_count > 0);
                 THEN("An error is returned") {
                     CHECK(err != NULL);
@@ -203,7 +203,7 @@ SCENARIO("NoteBinaryStoreReceive")
             WHEN("NoteBinaryStoreReceive is called") {
                 const char *err = NoteBinaryStoreReceive(buf, bufLen, decodedOffset, decodedLen);
 
-                REQUIRE(NoteChunkedReceive_fake.call_count > 0);
+                REQUIRE(noteChunkedReceive_fake.call_count > 0);
                 REQUIRE(noteTransactionShouldLock_fake.call_count > 0);
                 THEN("An error is returned") {
                     CHECK(err != NULL);
@@ -216,7 +216,7 @@ SCENARIO("NoteBinaryStoreReceive")
                 uint32_t decodedLen = rawMsgLen;
                 const char *err = NoteBinaryStoreReceive(buf, bufLen, decodedOffset, decodedLen);
 
-                REQUIRE(NoteChunkedReceive_fake.call_count > 0);
+                REQUIRE(noteChunkedReceive_fake.call_count > 0);
                 THEN("No error is returned") {
                     CHECK(err == NULL);
                 }
@@ -229,15 +229,15 @@ SCENARIO("NoteBinaryStoreReceive")
         }
     }
 
-    CHECK(NoteLockNote_fake.call_count == NoteUnlockNote_fake.call_count);
+    CHECK(noteLockNote_fake.call_count == noteUnlockNote_fake.call_count);
 
     RESET_FAKE(noteTransactionShouldLock);
     RESET_FAKE(NoteBinaryCodecDecode);
     RESET_FAKE(NoteBinaryStoreEncodedLength);
-    RESET_FAKE(NoteChunkedReceive);
-    RESET_FAKE(NoteLockNote);
+    RESET_FAKE(noteChunkedReceive);
+    RESET_FAKE(noteLockNote);
     RESET_FAKE(NoteNewRequest);
-    RESET_FAKE(NoteUnlockNote);
+    RESET_FAKE(noteUnlockNote);
 }
 
 }

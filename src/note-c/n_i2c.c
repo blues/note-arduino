@@ -80,29 +80,26 @@ NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available,
 /*!
   @brief  Given a JSON string, perform an I2C transaction with the Notecard.
 
-  @param   request A c-string containing the JSON request object.
-  @param   response An out parameter c-string buffer that will contain the JSON
-            response from the Notercard.
+  @param   request A string containing the JSON request object, which MUST BE
+            terminated with a newline character.
+  @param   reqLen the string length of the JSON request.
+  @param   response [out] A c-string buffer that will contain the newline ('\n')
+            terminated JSON response from the Notercard. If NULL, no response
+            will be captured.
   @param   timeoutMs The maximum amount of time, in milliseconds, to wait
             for data to arrive. Passing zero (0) disables the timeout.
 
   @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *i2cNoteTransaction(char *request, char **response, size_t timeoutMs)
+const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs)
 {
     const char *err = NULL;
-    const size_t nullIndex = strlen(request);
-    const size_t requestLen = (strlen(request) + 1);
-
-    // Swap NULL terminator ('\0') with newline during transmission ('\n')
-    request[nullIndex] = '\n';
 
     // Lock over the entire transaction
     _LockI2C();
 
-    err = i2cChunkedTransmit((uint8_t *)request, requestLen, true);
-    request[nullIndex] = '\0';  // Restore the transmit buffer
+    err = i2cChunkedTransmit((uint8_t *)request, reqLen, true);
     if (err) {
         _UnlockI2C();
         return err;
@@ -211,7 +208,7 @@ const char *i2cNoteTransaction(char *request, char **response, size_t timeoutMs)
   @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
-bool i2cNoteReset()
+bool i2cNoteReset(void)
 {
     bool notecardReady = false;
 

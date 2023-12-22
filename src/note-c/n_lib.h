@@ -102,9 +102,9 @@ extern "C" {
 
 // Transactions
 J *noteTransactionShouldLock(J *req, bool lockNotecard);
-const char *i2cNoteTransaction(char *request, char **response, size_t timeoutMs);
+const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
 bool i2cNoteReset(void);
-const char *serialNoteTransaction(char *request, char **response, size_t timeoutMs);
+const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
 bool serialNoteReset(void);
 const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
 const char *i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
@@ -112,23 +112,23 @@ const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, si
 const char *serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 
 // Hooks
-void NoteLockNote(void);
-void NoteUnlockNote(void);
-bool NoteTransactionStart(uint32_t timeoutMs);
-void NoteTransactionStop(void);
-const char *NoteActiveInterface(void);
-bool NoteSerialReset(void);
-void NoteSerialTransmit(uint8_t *, size_t, bool);
-bool NoteSerialAvailable(void);
-char NoteSerialReceive(void);
-bool NoteI2CReset(uint16_t DevAddress);
-const char *NoteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-const char *NoteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
-bool NoteHardReset(void);
-const char *NoteJSONTransaction(char *request, char **response, size_t timeoutMs);
-const char *NoteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
-const char *NoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
-bool NoteIsDebugOutputActive(void);
+void noteLockNote(void);
+void noteUnlockNote(void);
+bool noteTransactionStart(uint32_t timeoutMs);
+void noteTransactionStop(void);
+const char *noteActiveInterface(void);
+bool noteSerialReset(void);
+void noteSerialTransmit(uint8_t *, size_t, bool);
+bool noteSerialAvailable(void);
+char noteSerialReceive(void);
+bool noteI2CReset(uint16_t DevAddress);
+const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+bool noteHardReset(void);
+const char *noteJSONTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
+const char *noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
+const char *noteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+bool noteIsDebugOutputActive(void);
 
 // Utilities
 void n_htoa32(uint32_t n, char *p);
@@ -190,21 +190,21 @@ extern const char *c_badbinerr;
 
 // Readability wrappers.  Anything starting with _ is simply calling the wrapper
 // function.
-#define _LockNote NoteLockNote
-#define _UnlockNote NoteUnlockNote
-#define _TransactionStart NoteTransactionStart
-#define _TransactionStop NoteTransactionStop
-#define _SerialReset NoteSerialReset
-#define _SerialTransmit NoteSerialTransmit
-#define _SerialAvailable NoteSerialAvailable
-#define _SerialReceive NoteSerialReceive
-#define _I2CReset NoteI2CReset
-#define _I2CTransmit NoteI2CTransmit
-#define _I2CReceive NoteI2CReceive
-#define _Reset NoteHardReset
-#define _Transaction NoteJSONTransaction
-#define _ChunkedReceive NoteChunkedReceive
-#define _ChunkedTransmit NoteChunkedTransmit
+#define _LockNote noteLockNote
+#define _UnlockNote noteUnlockNote
+#define _TransactionStart noteTransactionStart
+#define _TransactionStop noteTransactionStop
+#define _SerialReset noteSerialReset
+#define _SerialTransmit noteSerialTransmit
+#define _SerialAvailable noteSerialAvailable
+#define _SerialReceive noteSerialReceive
+#define _I2CReset noteI2CReset
+#define _I2CTransmit noteI2CTransmit
+#define _I2CReceive noteI2CReceive
+#define _Reset noteHardReset
+#define _Transaction noteJSONTransaction
+#define _ChunkedReceive noteChunkedReceive
+#define _ChunkedTransmit noteChunkedTransmit
 #define _Malloc NoteMalloc
 #define _Free NoteFree
 #define _GetMs NoteGetMs

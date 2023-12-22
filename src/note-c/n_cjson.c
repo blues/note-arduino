@@ -82,6 +82,12 @@
 
 #define PRINT_TAB_CHARS     4
 
+#ifdef NOTE_C_TEST
+#include "test_static.h"
+#else
+#define NOTE_C_STATIC static
+#endif
+
 typedef struct {
     const unsigned char *json;
     size_t position;
@@ -115,6 +121,17 @@ N_CJSON_PUBLIC(const char*) JVersion(void)
     return NOTE_C_STRINGIZE(N_CJSON_VERSION_MAJOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_MINOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_PATCH);
 }
 
+NOTE_C_STATIC char Jtolower(char c)
+{
+    if (c < 'A' || c > 'Z') {
+        return c;
+    }
+
+    // 32 is the distance between any ASCII uppercase letter and its lowercase
+    // counterpart.
+    return c + 32;
+}
+
 /* Case insensitive string comparison, doesn't consider two NULL pointers equal though */
 static int case_insensitive_strcmp(const unsigned char *string1, const unsigned char *string2)
 {
@@ -126,13 +143,13 @@ static int case_insensitive_strcmp(const unsigned char *string1, const unsigned 
         return 0;
     }
 
-    for(; tolower(*string1) == tolower(*string2); (void)string1++, string2++) {
+    for(; Jtolower(*string1) == Jtolower(*string2); (void)string1++, string2++) {
         if (*string1 == '\0') {
             return 0;
         }
     }
 
-    return tolower(*string1) - tolower(*string2);
+    return Jtolower(*string1) - Jtolower(*string2);
 }
 
 static unsigned char* Jstrdup(const unsigned char* string)
@@ -164,7 +181,7 @@ N_CJSON_PUBLIC(void) JFree(void *p)
 }
 
 /* Internal constructor. */
-static J *JNew_Item()
+static J *JNew_Item(void)
 {
     J* node = (J*)_Malloc(sizeof(J));
     if (node) {
@@ -174,7 +191,11 @@ static J *JNew_Item()
     return node;
 }
 
-/* Delete a J structure. */
+/*!
+ @brief Free a `J` object.
+
+ @param item A pointer to the object.
+ */
 N_CJSON_PUBLIC(void) JDelete(J *item)
 {
     J *next = NULL;
@@ -413,7 +434,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     /* This checks for NaN and Infinity */
     if ((d * 0) != 0) {
         char *nbuf = (char *) number_buffer;
-        strcpy(nbuf, "null");
+        strlcpy(nbuf, "null", JNTOA_MAX);
         length = strlen(nbuf);
     } else {
 #if !CJSON_NO_CLIB
@@ -953,7 +974,14 @@ fail:
     return NULL;
 }
 
-/* Default options for JParse */
+/*!
+ @brief Parse the passed in C-string as JSON and return a `J` object
+        representing it.
+
+ @param value The JSON object as a C-string.
+
+ @returns A `J` object or NULL on error (e.g. the string was invalid JSON).
+ */
 N_CJSON_PUBLIC(J *) JParse(const char *value)
 {
     return JParseWithOpts(value, 0, 0);
@@ -1149,7 +1177,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         if (output == NULL) {
             return false;
         }
-        strcpy((char*)output, c_null);
+        strlcpy((char*)output, c_null, c_null_len+1);
         return true;
 
     case JFalse:
@@ -1157,7 +1185,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         if (output == NULL) {
             return false;
         }
-        strcpy((char*)output, c_false);
+        strlcpy((char*)output, c_false, c_false_len+1);
         return true;
 
     case JTrue:
@@ -1165,7 +1193,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         if (output == NULL) {
             return false;
         }
-        strcpy((char*)output, c_true);
+        strlcpy((char*)output, c_true, c_true_len+1);
         return true;
 
     case JNumber:
@@ -1863,6 +1891,15 @@ N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name)
     return NULL;
 }
 
+/*!
+ @brief Add a boolean field to a `J` object.
+
+ @param object The object to add the field to.
+ @param name The name of the field.
+ @param boolean The value of the field.
+
+ @returns A pointer to the newly-added boolean field or NULL on error.
+ */
 N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, const Jbool boolean)
 {
     if (object == NULL) {
@@ -1878,6 +1915,15 @@ N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, c
     return NULL;
 }
 
+/*!
+ @brief Add a number field to a `J` object.
+
+ @param object The object to add the field to.
+ @param name The name of the field.
+ @param number The value of the field.
+
+ @returns A pointer to the newly-added number field or NULL on error.
+ */
 N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const JNUMBER number)
 {
     if (object == NULL) {
@@ -1893,6 +1939,15 @@ N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name,
     return NULL;
 }
 
+/*!
+ @brief Add a string field to a `J` object.
+
+ @param object The object to add the field to.
+ @param name The name of the field.
+ @param string The value of the field.
+
+ @returns A pointer to the newly-added string field or NULL on error.
+ */
 N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name, const char * const string)
 {
     if (object == NULL || string == NULL) {
@@ -1923,6 +1978,14 @@ N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, co
     return NULL;
 }
 
+/*!
+ @brief Add an object field to another `J` object.
+
+ @param object The object to add the field to.
+ @param name The name of the field.
+
+ @returns A pointer to the newly-added object field or NULL on error.
+ */
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name)
 {
     if (object == NULL) {
@@ -1938,6 +2001,14 @@ N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name)
     return NULL;
 }
 
+/*!
+ @brief Add an array field to a `J` object.
+
+ @param object The object to add the field to.
+ @param name The name of the field.
+
+ @returns A pointer to the newly-added array field or NULL on error.
+ */
 N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name)
 {
     if (object == NULL) {
@@ -2281,6 +2352,13 @@ N_CJSON_PUBLIC(J *) JCreateArray(void)
     return item;
 }
 
+/*!
+ @brief Create a new `J` object.
+
+ To free the object, use `JDelete`.
+
+ @returns A pointer to the newly-created object.
+ */
 N_CJSON_PUBLIC(J *) JCreateObject(void)
 {
     J *item = JNew_Item();

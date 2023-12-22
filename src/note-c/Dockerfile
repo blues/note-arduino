@@ -52,7 +52,12 @@ RUN ["dash", "-c", "\
      lcov \
      make \
      nano \
+     python3-pip \
+     python3-sphinx \
      valgrind \
+ && pip install --break-system-packages \
+     breathe \
+     sphinx-rtd-theme \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \

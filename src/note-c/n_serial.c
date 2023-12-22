@@ -19,24 +19,34 @@
 /*!
   @brief  Given a JSON string, perform a serial transaction with the Notecard.
 
-  @param   request A c-string containing the JSON request object.
-  @param   response An out parameter c-string buffer that will contain the JSON
-            response from the Notercard. If NULL, no response will be captured.
+  @param   request A string containing the JSON request object, which MUST BE
+            terminated with a newline character.
+  @param   reqLen the string length of the JSON request.
+  @param   response [out] A c-string buffer that will contain the newline ('\n')
+            terminated JSON response from the Notercard. If NULL, no response
+            will be captured.
   @param   timeoutMs The maximum amount of time, in milliseconds, to wait
             for data to arrive. Passing zero (0) disables the timeout.
 
-  @returns a c-string with an error, or `NULL` if no error ocurred.
+  @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *serialNoteTransaction(char *request, char **response, size_t timeoutMs)
+const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs)
 {
-    const char *err = serialChunkedTransmit((uint8_t *)request, strlen(request), true);
+    // Strip off the newline and optional carriage return characters. This
+    // allows for standardized output to be reapplied.
+    reqLen--;  // remove newline
+    if (request[reqLen - 1] == '\r') {
+        reqLen--; // remove carriage return if it exists
+    }
+
+    const char *err = serialChunkedTransmit((uint8_t *)request, reqLen, true);
     if (err) {
         NOTE_C_LOG_ERROR(err);
         return err;
     }
 
-    // Append newline to the transaction
+    // Append the carriage return and newline to the transaction.
     _SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
 
     // If no reply expected, we're done
@@ -46,8 +56,8 @@ const char *serialNoteTransaction(char *request, char **response, size_t timeout
 
     // Wait for something to become available, processing timeout errors
     // up-front because the json parse operation immediately following is
-    // subject to the serial port timeout. We'd like more flexibility in max
-    // timeout and ultimately in our error handling.
+    // subject to the serial port timeout. We'd like more flexibility in
+    // max timeout and ultimately in our error handling.
     for (const uint32_t startMs = _GetMs(); !_SerialAvailable(); ) {
         if (timeoutMs && (_GetMs() - startMs) >= timeoutMs) {
 #ifdef ERRDBG
@@ -130,7 +140,7 @@ const char *serialNoteTransaction(char *request, char **response, size_t timeout
     @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
-bool serialNoteReset()
+bool serialNoteReset(void)
 {
     NOTE_C_LOG_DEBUG("resetting Serial interface...");
 

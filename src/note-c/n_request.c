@@ -31,12 +31,15 @@ static uint16_t lastRequestSeqno = 0;
 #define	CRC_FIELD_NAME_OFFSET	1
 #define	CRC_FIELD_NAME_TEST		"\"crc\":\""
 NOTE_C_STATIC int32_t crc32(const void* data, size_t length);
-NOTE_C_STATIC char *crcAdd(char *json, uint16_t seqno);
+NOTE_C_STATIC char * crcAdd(char *json, uint16_t seqno);
 NOTE_C_STATIC bool crcError(char *json, uint16_t shouldBeSeqno);
+
 static bool notecardSupportsCrc = false;
 #endif
 
 /*!
+ @internal
+
  @brief Create a JSON object containing an error message.
 
  Create a dynamically allocated `J` object containing a single string field
@@ -46,7 +49,7 @@ static bool notecardSupportsCrc = false;
 
  @returns A `J` object with the "err" field populated.
  */
-static J *errDoc(const char *errmsg)
+NOTE_C_STATIC J * errDoc(const char *errmsg)
 {
     J *rspdoc = JCreateObject();
     if (rspdoc != NULL) {
@@ -67,7 +70,7 @@ static J *errDoc(const char *errmsg)
 /*!
  @brief Suppress showing transaction details.
  */
-void NoteSuspendTransactionDebug()
+void NoteSuspendTransactionDebug(void)
 {
     suppressShowTransactions++;
 }
@@ -75,7 +78,7 @@ void NoteSuspendTransactionDebug()
 /*!
  @brief Resume showing transaction details.
  */
-void NoteResumeTransactionDebug()
+void NoteResumeTransactionDebug(void)
 {
     suppressShowTransactions--;
 }
@@ -83,8 +86,8 @@ void NoteResumeTransactionDebug()
 /*!
  @brief Create a new JSON request.
 
- Creates a dynamically allocated `J` object with one field "req" whose value is
- the passed in request string.
+ Creates a dynamically allocated `J` object with one field `"req"` whose value
+ is the passed in request string.
 
  @param request The name of the request, for example `hub.set`.
 
@@ -102,13 +105,14 @@ J *NoteNewRequest(const char *request)
 /*!
  @brief Create a new JSON command.
 
- Create a dynamically allocated `J` object with one field "cmd" whose value is
+ Create a dynamically allocated `J` object with one field `"cmd"` whose value is
  the passed in request string. The difference between a command and a request is
  that the Notecard does not send a response to commands, only to requests.
 
  @param request The name of the command (e.g. `card.attn`).
 
  @returns A `J` object with the "cmd" field populated.
+
  */
 J *NoteNewCommand(const char *request)
 {
@@ -126,7 +130,7 @@ J *NoteNewCommand(const char *request)
  successful or not. The response from the Notecard, if any, is freed and not
  returned to the caller.
 
- @param req A `J` request object.
+ @param req Pointer to a `J` request object.
 
  @returns `true` if successful and `false` if an error occurs (e.g. out of
           memory or the response from the Notecard has an "err" field). If req
@@ -159,7 +163,7 @@ bool NoteRequest(J *req)
  successful or not. The response from the Notecard, if any, is freed and not
  returned to the caller.
 
- @param req A `J` request object.
+ @param req Pointer to a `J` request object.
  @param timeoutSeconds Time limit for retires, in seconds, if there is no
         response, or if the response contains an I/O error.
 
@@ -189,7 +193,7 @@ bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds)
  The passed in request object is always freed, regardless of if the request was
  successful or not.
 
- @param req A `J` request object.
+ @param req Pointer to a `J` request object.
 
  @returns A `J` object with the response or NULL if there was an error sending
           the request.
@@ -221,7 +225,7 @@ J *NoteRequestResponse(J *req)
  The passed in request object is always freed, regardless of if the request was
  successful or not.
 
- @param req A `J` request object.
+ @param req Pointer to a `J` request object.
  @param timeoutSeconds Time limit for retires, in seconds, if there is no
         response, or if the response contains an I/O error.
 
@@ -282,35 +286,76 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
 /*!
  @brief Send a request to the Notecard and return the response.
 
- Unlike NoteRequestResponse, this function expects the request to be a valid
- JSON C-string, rather than a `J` object. It also returns the response as a
- dynamically allocated JSON C-string. The caller is responsible for freeing this
- string.
+ Unlike `NoteRequestResponse`, this function expects the request to be a valid
+ JSON C-string, rather than a `J` object. This string MUST be newline-terminated.
+ The response is returned as a dynamically allocated JSON C-string. The response
+ string is verbatim what was sent by the Notecard, which IS newline-terminated.
+ The caller is responsible for freeing the response string. If the request was a
+ command (i.e. it uses "cmd" instead of "req"), this function returns NULL,
+ because the Notecard does not send a response to commands.
 
- @param reqJSON A valid JSON C-string containing the request.
+ @param reqJSON A valid newline-terminated JSON C-string containing the request.
 
- @returns A JSON C-string with the response or NULL if there was an error
-          sending the request.
- */
-char *NoteRequestResponseJSON(char *reqJSON)
+ @returns A newline-terminated JSON C-string with the response, or NULL
+          if there was no response or if there was an error.
+
+ @note When a "cmd" is sent, it is not possible to determine if an error occurred.
+*/
+char * NoteRequestResponseJSON(const char *reqJSON)
 {
-    // Parse the incoming JSON string
-    J *req = JParse(reqJSON);
-    if (req == NULL) {
+    size_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+    char *rspJSON = NULL;
+
+    if (reqJSON == NULL) {
         return NULL;
     }
 
-    // Perform the transaction and free the req
-    J *rsp = NoteRequestResponse(req);
-    if (rsp == NULL) {
+    // Make sure that we get access to the Notecard before transacting.
+    if (!_TransactionStart(transactionTimeoutMs)) {
         return NULL;
     }
 
-    // Convert response back to JSON and delete it
-    char *json = JPrintUnformatted(rsp);
-    NoteDeleteResponse(rsp);
+    _LockNote();
 
-    return json;
+    // Manually tokenize the string to search for multiple embedded commands (cannot use strtok)
+    for (;;) {
+        const char * const endPtr = strchr(reqJSON, '\n');
+
+        // If string is not newline-terminated, then do not process
+        if (endPtr == NULL) {
+            break;
+        }
+        const size_t reqLen = ((endPtr - reqJSON) + 1);
+
+        bool isCmd = false;
+        if (strstr(reqJSON, "\"cmd\":") != NULL) {
+            // Only call `JParse()` after verifying the provided request
+            // appears to contain a command (i.e. we find `"cmd":`).
+            J *jsonObj = JParse(reqJSON);
+            if (!jsonObj) {
+                // Invalid JSON.
+                return NULL;
+            }
+            isCmd = JIsPresent(jsonObj, "cmd");
+            JDelete(jsonObj);
+        }
+
+        if (isCmd) {
+            // If it's a command, the Notecard will not respond, so we pass NULL for
+            // the response parameter.
+            _Transaction(reqJSON, reqLen, NULL, transactionTimeoutMs);
+            reqJSON = (endPtr + 1);
+        } else {
+            _Transaction(reqJSON, reqLen, &rspJSON, transactionTimeoutMs);
+            break;
+        }
+    }
+
+    _UnlockNote();
+
+    _TransactionStop();
+
+    return rspJSON;
 }
 
 /*!
@@ -319,7 +364,7 @@ char *NoteRequestResponseJSON(char *reqJSON)
  This function doesn't free the passed in request object. The caller is
  responsible for freeing it.
 
- @param req A `J` request object.
+ @param req Pointer to a `J` request object.
 
  @returns A `J` object with the response or NULL if there was an error sending
           the request.
@@ -483,12 +528,19 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             NOTE_C_LOG_INFO(json);
         }
 
+        // Swap NULL-terminator for newline-terminator
+        const size_t jsonLen = strlen(json);
+        json[jsonLen] = '\n';
+
         // Perform the transaction
         if (noResponseExpected) {
-            errStr = _Transaction(json, NULL, transactionTimeoutMs);
+            errStr = _Transaction(json, (jsonLen + 1), NULL, transactionTimeoutMs);
             break;
         }
-        errStr = _Transaction(json, &responseJSON, transactionTimeoutMs);
+        errStr = _Transaction(json, (jsonLen + 1), &responseJSON, transactionTimeoutMs);
+
+        // Swap newline-terminator for NULL-terminator
+        json[jsonLen] = '\0';
 
 #ifndef NOTE_LOWMEM
         // If there's an I/O error on the transaction, retry
@@ -708,6 +760,12 @@ uint64_t n_atoh(char *p, int maxLen)
     return (n);
 }
 
+static uint32_t lut[16] = {
+    0x00000000, 0x1DB71064, 0x3B6E20C8, 0x26D930AC, 0x76DC4190, 0x6B6B51F4,
+    0x4DB26158, 0x5005713C, 0xEDB88320, 0xF00F9344, 0xD6D6A3E8, 0xCB61B38C,
+    0x9B64C2B0, 0x86D3D2D4, 0xA00AE278, 0xBDBDF21C
+};
+
 /*!
  @brief Compute the CRC32 of the passed in buffer.
 
@@ -719,11 +777,6 @@ uint64_t n_atoh(char *p, int maxLen)
 
  @returns The CRC32 of the buffer.
  */
-static uint32_t lut[16] = {
-    0x00000000, 0x1DB71064, 0x3B6E20C8, 0x26D930AC, 0x76DC4190, 0x6B6B51F4,
-    0x4DB26158, 0x5005713C, 0xEDB88320, 0xF00F9344, 0xD6D6A3E8, 0xCB61B38C,
-    0x9B64C2B0, 0x86D3D2D4, 0xA00AE278, 0xBDBDF21C
-};
 NOTE_C_STATIC int32_t crc32(const void* data, size_t length)
 {
     uint32_t previousCrc32 = 0;

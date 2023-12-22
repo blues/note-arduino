@@ -22,9 +22,9 @@ DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(J *, NoteNewRequest, const char *)
 FAKE_VALUE_FUNC(J *, NoteRequestResponse, J *)
 FAKE_VALUE_FUNC(J *, noteTransactionShouldLock, J *, bool)
-FAKE_VALUE_FUNC(const char *, NoteChunkedTransmit, uint8_t *, uint32_t, bool)
-FAKE_VOID_FUNC(NoteLockNote)
-FAKE_VOID_FUNC(NoteUnlockNote)
+FAKE_VALUE_FUNC(const char *, noteChunkedTransmit, uint8_t *, uint32_t, bool)
+FAKE_VOID_FUNC(noteLockNote)
+FAKE_VOID_FUNC(noteUnlockNote)
 
 uint8_t buf[32] = {0xDE, 0xAD, 0xBE, 0xEF};
 uint32_t dataLen = 4;
@@ -247,11 +247,11 @@ SCENARIO("NoteBinaryStoreTransmit")
             }
         }
 
-        AND_GIVEN("NoteChunkedTransmit fails") {
+        AND_GIVEN("noteChunkedTransmit fails") {
             noteTransactionShouldLock_fake.custom_fake = [](J *req, bool) -> J * {
                 return JCreateObject();
             };
-            NoteChunkedTransmit_fake.return_val = "some error";
+            noteChunkedTransmit_fake.return_val = "some error";
 
             WHEN("NoteBinaryStoreTransmit is called") {
                 const char *err = NoteBinaryStoreTransmit(buf, dataLen, bufLen, 0);
@@ -271,7 +271,7 @@ SCENARIO("NoteBinaryStoreTransmit")
             noteTransactionShouldLock_fake.custom_fake = [](J *req, bool) -> J * {
                 return JCreateObject();
             };
-            NoteChunkedTransmit_fake.return_val = NULL;
+            noteChunkedTransmit_fake.return_val = NULL;
 
             auto initial = [](J *req) -> J * {
                 JDelete(req);
@@ -392,14 +392,14 @@ SCENARIO("NoteBinaryStoreTransmit")
         }
     }
 
-    CHECK(NoteLockNote_fake.call_count == NoteUnlockNote_fake.call_count);
+    CHECK(noteLockNote_fake.call_count == noteUnlockNote_fake.call_count);
 
     RESET_FAKE(NoteNewRequest);
     RESET_FAKE(NoteRequestResponse);
     RESET_FAKE(noteTransactionShouldLock);
-    RESET_FAKE(NoteChunkedTransmit);
-    RESET_FAKE(NoteLockNote);
-    RESET_FAKE(NoteUnlockNote);
+    RESET_FAKE(noteChunkedTransmit);
+    RESET_FAKE(noteLockNote);
+    RESET_FAKE(noteUnlockNote);
 }
 
 }

@@ -19,7 +19,7 @@
 #include "n_lib.h"
 
 DEFINE_FFF_GLOBALS
-FAKE_VALUE_FUNC(bool, NoteIsDebugOutputActive)
+FAKE_VALUE_FUNC(bool, noteIsDebugOutputActive)
 FAKE_VALUE_FUNC(J *, NoteNewRequest, const char *)
 FAKE_VALUE_FUNC(bool, NoteRequest, J *)
 FAKE_VOID_FUNC(NoteDebug, const char *)
@@ -34,14 +34,14 @@ SCENARIO("NotePrint")
     const char msg[] = "Hello world!";
 
     SECTION("Debug") {
-        NoteIsDebugOutputActive_fake.return_val = true;
+        noteIsDebugOutputActive_fake.return_val = true;
 
         CHECK(NotePrint(msg));
         CHECK(NoteDebug_fake.call_count > 0);
     }
 
     SECTION("card.log") {
-        NoteIsDebugOutputActive_fake.return_val = false;
+        noteIsDebugOutputActive_fake.return_val = false;
 
         SECTION("NoteNewRequest fails") {
             NoteNewRequest_fake.return_val = NULL;
@@ -75,7 +75,7 @@ SCENARIO("NotePrint")
 
     }
 
-    RESET_FAKE(NoteIsDebugOutputActive);
+    RESET_FAKE(noteIsDebugOutputActive);
     RESET_FAKE(NoteNewRequest);
     RESET_FAKE(NoteRequest);
     RESET_FAKE(NoteDebug);

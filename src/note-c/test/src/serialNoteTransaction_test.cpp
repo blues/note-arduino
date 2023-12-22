@@ -20,10 +20,10 @@
 
 DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(void *, NoteMalloc, size_t)
-FAKE_VALUE_FUNC(bool, NoteSerialAvailable)
-FAKE_VALUE_FUNC(char, NoteSerialReceive)
+FAKE_VALUE_FUNC(bool, noteSerialAvailable)
+FAKE_VALUE_FUNC(char, noteSerialReceive)
 FAKE_VALUE_FUNC(long unsigned int, NoteGetMs)
-FAKE_VOID_FUNC(NoteSerialTransmit, uint8_t *, size_t, bool)
+FAKE_VOID_FUNC(noteSerialTransmit, uint8_t *, size_t, bool)
 FAKE_VALUE_FUNC(const char *, serialChunkedTransmit, uint8_t *, uint32_t, bool);
 FAKE_VALUE_FUNC(const char *, serialChunkedReceive, uint8_t *, uint32_t *, bool, size_t, uint32_t *)
 
@@ -34,7 +34,7 @@ char transmitBuf[CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN * 2];
 size_t transmitBufLen = 0;
 bool resetTransmitBufLen = false;
 
-void NoteSerialTransmitAppend(uint8_t *buf, size_t len, bool)
+void noteSerialTransmitAppend(uint8_t *buf, size_t len, bool)
 {
     if (resetTransmitBufLen) {
         transmitBufLen = 0;
@@ -55,7 +55,7 @@ void NoteSerialTransmitAppend(uint8_t *buf, size_t len, bool)
 
 const char *serialChunkedTransmitAppend(uint8_t *buf, uint32_t len, bool)
 {
-    NoteSerialTransmitAppend(buf, len, true);
+    noteSerialTransmitAppend(buf, len, true);
 
     return NULL;
 }
@@ -102,16 +102,15 @@ SCENARIO("serialNoteTransaction")
 {
     NoteSetFnDefault(NULL, free, NULL, NULL);
 
-    char req[] = "{\"req\": \"note.add\"}";
+    char req[] = "{\"req\": \"note.add\"}\n";
     const size_t timeoutMs = CARD_INTER_TRANSACTION_TIMEOUT_SEC;
 
     GIVEN("A valid JSON request C-string and a NULL response pointer") {
-        size_t reqLen = strlen(req);
-        NoteSerialTransmit_fake.custom_fake = NoteSerialTransmitAppend;
+        noteSerialTransmit_fake.custom_fake = noteSerialTransmitAppend;
         serialChunkedTransmit_fake.custom_fake = serialChunkedTransmitAppend;
 
         WHEN("serialNoteTransaction is called") {
-            const char *err = serialNoteTransaction(req, NULL, timeoutMs);
+            const char *err = serialNoteTransaction(req, strlen(req), NULL, timeoutMs);
 
             THEN("serialNoteTransaction returns NULL (no error)") {
                 CHECK(err == NULL);
@@ -119,12 +118,13 @@ SCENARIO("serialNoteTransaction")
 
             THEN("The request is given to the transmission function followed by"
                  " \\r\\n") {
-                CHECK(!memcmp(transmitBuf, req, reqLen - 2));
-                CHECK(!memcmp(transmitBuf + reqLen, c_newline, c_newline_len));
+                size_t rawReqLen = (strlen(req) - 1);
+                CHECK(!memcmp(transmitBuf, req, rawReqLen));
+                CHECK(!memcmp(transmitBuf + rawReqLen, c_newline, c_newline_len));
             }
 
-            THEN("NoteSerialReceive is not called") {
-                CHECK(NoteSerialReceive_fake.call_count == 0);
+            THEN("noteSerialReceive is not called") {
+                CHECK(noteSerialReceive_fake.call_count == 0);
             }
         }
 
@@ -133,7 +133,7 @@ SCENARIO("serialNoteTransaction")
             serialChunkedTransmit_fake.return_val = "some error";
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, NULL, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), NULL, timeoutMs);
 
                 THEN("serialNoteTransaction returns an error") {
                     CHECK(err != NULL);
@@ -147,10 +147,10 @@ SCENARIO("serialNoteTransaction")
 
         AND_GIVEN("Allocating a buffer to hold the response fails") {
             NoteMalloc_fake.return_val = NULL;
-            NoteSerialAvailable_fake.return_val = true;
+            noteSerialAvailable_fake.return_val = true;
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("NoteMalloc is called") {
                     REQUIRE(NoteMalloc_fake.call_count > 0);
@@ -160,9 +160,9 @@ SCENARIO("serialNoteTransaction")
                     CHECK(err != NULL);
                 }
 
-                THEN("NoteSerialReceive is not called (no bytes received from "
+                THEN("noteSerialReceive is not called (no bytes received from "
                      "the Notecard)") {
-                    CHECK(NoteSerialReceive_fake.call_count == 0);
+                    CHECK(noteSerialReceive_fake.call_count == 0);
                 }
 
                 THEN("The response pointer is unchanged") {
@@ -171,9 +171,9 @@ SCENARIO("serialNoteTransaction")
             }
         }
 
-        AND_GIVEN("NoteSerialAvailable never indicates bytes are available from"
+        AND_GIVEN("noteSerialAvailable never indicates bytes are available from"
                   " the Notecard") {
-            NoteSerialAvailable_fake.return_val = false;
+            noteSerialAvailable_fake.return_val = false;
             NoteMalloc_fake.custom_fake = malloc;
             long unsigned int getMsReturnVals[3];
 
@@ -191,11 +191,11 @@ SCENARIO("serialNoteTransaction")
                 SET_RETURN_SEQ(NoteGetMs, getMsReturnVals, 3);
 
                 WHEN("serialNoteTransaction is called") {
-                    const char* err = serialNoteTransaction(req, &rsp, timeoutMs);
+                    const char* err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
-                    THEN("NoteSerialReceive is not called (no bytes received "
+                    THEN("noteSerialReceive is not called (no bytes received "
                          "from the Notecard)") {
-                        CHECK(NoteSerialReceive_fake.call_count == 0);
+                        CHECK(noteSerialReceive_fake.call_count == 0);
                     }
 
                     THEN("serialNoteTransaction returns an error") {
@@ -214,12 +214,12 @@ SCENARIO("serialNoteTransaction")
         }
 
         AND_GIVEN("serialChunkedReceive returns an error") {
-            NoteSerialAvailable_fake.return_val = true;
+            noteSerialAvailable_fake.return_val = true;
             NoteMalloc_fake.custom_fake = malloc;
             serialChunkedReceive_fake.return_val = "some error";
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("serialNoteTransaction returns an error") {
                     CHECK(err != NULL);
@@ -232,12 +232,12 @@ SCENARIO("serialNoteTransaction")
         }
 
         AND_GIVEN("serialChunkedReceive indicates there's nothing to receive") {
-            NoteSerialAvailable_fake.return_val = true;
+            noteSerialAvailable_fake.return_val = true;
             NoteMalloc_fake.custom_fake = malloc;
             serialChunkedReceive_fake.custom_fake = serialChunkedReceiveNothing;
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("serialNoteTransaction returns NULL (no error)") {
                     CHECK(err == NULL);
@@ -257,13 +257,13 @@ SCENARIO("serialNoteTransaction")
 
         AND_GIVEN("The response is small enough for one call to "
                   "serialChunkedReceive") {
-            NoteSerialAvailable_fake.return_val = true;
+            noteSerialAvailable_fake.return_val = true;
             NoteMalloc_fake.custom_fake = malloc;
             serialChunkedReceive_fake.custom_fake =
                 serialChunkedReceiveOneAndDone;
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("serialNoteTransaction returns NULL (no error)") {
                     CHECK(err == NULL);
@@ -288,7 +288,7 @@ SCENARIO("serialNoteTransaction")
 
         AND_GIVEN("The response is too big for one call to "
                   "serialChunkedReceive") {
-            NoteSerialAvailable_fake.return_val = true;
+            noteSerialAvailable_fake.return_val = true;
             NoteMalloc_fake.custom_fake = malloc;
             serialChunkedReceive_fake.custom_fake =
                 serialChunkedReceiveMultiple;
@@ -297,7 +297,7 @@ SCENARIO("serialNoteTransaction")
                 SERIAL_CHUNKED_RECEIVE_MULTIPLE_SIZE;
 
             WHEN("serialNoteTransaction is called") {
-                const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("serialNoteTransaction returns NULL (no error)") {
                     CHECK(err == NULL);
@@ -328,7 +328,7 @@ SCENARIO("serialNoteTransaction")
                 SET_CUSTOM_FAKE_SEQ(NoteMalloc, mallocFns, 2);
 
                 WHEN("serialNoteTransaction is called") {
-                    const char *err = serialNoteTransaction(req, &rsp, timeoutMs);
+                    const char *err = serialNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                     THEN("serialNoteTransaction returns an error") {
                         CHECK(err != NULL);
@@ -343,9 +343,9 @@ SCENARIO("serialNoteTransaction")
     }
 
     RESET_FAKE(NoteMalloc);
-    RESET_FAKE(NoteSerialAvailable);
-    RESET_FAKE(NoteSerialTransmit);
-    RESET_FAKE(NoteSerialReceive);
+    RESET_FAKE(noteSerialAvailable);
+    RESET_FAKE(noteSerialTransmit);
+    RESET_FAKE(noteSerialReceive);
     RESET_FAKE(NoteGetMs);
     RESET_FAKE(serialChunkedTransmit);
     RESET_FAKE(serialChunkedReceive);

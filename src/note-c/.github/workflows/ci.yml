@@ -60,7 +60,7 @@ jobs:
           name: note_c_ci_image
           path: /tmp/note_c_ci_image.tar
 
-  run_doxygen:
+  build_docs:
     runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: [build_ci_docker_image]
@@ -75,9 +75,28 @@ jobs:
         if: ${{ needs.build_ci_docker_image.result == 'success' }}
         uses: ./.github/actions/load-ci-image
 
-      - name: Run doxygen
+      - name: Build docs
         run: |
-          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/run_doxygen.sh ghcr.io/blues/note_c_ci:latest
+          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/build_docs.sh ghcr.io/blues/note_c_ci:latest
+
+  check_libc_dependencies:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build_ci_docker_image]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Load CI Docker image
+        # Only load the Docker image artifact if build_ci_docker_image actually
+        # ran (e.g. it wasn't skipped and was successful).
+        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        uses: ./.github/actions/load-ci-image
+
+      - name: Check note-c's libc dependencies
+        run: |
+          docker run --rm --volume $(pwd):/note-c/ --workdir /note-c/ --entrypoint ./scripts/check_libc_dependencies.sh ghcr.io/blues/note_c_ci:latest
 
   run_unit_tests:
     runs-on: ubuntu-latest

@@ -63,7 +63,8 @@ char * JNtoA(JNUMBER f, char * buf, int precision)
     }
     fmtflt(buf, &len, JNTOA_MAX, f, -1, precision, flags, &overflow);
     if (overflow) {
-        strcpy(buf, "*");
+        len = 0;
+        buf[len++] = '0';
     }
     buf[len] = '\0';
     return buf;

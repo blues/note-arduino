@@ -18,6 +18,7 @@ void delayIO(void);
 const char * i2cNoteQueryLength(uint32_t * available, size_t timeoutMs);
 void setTime(JTIME seconds);
 bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
+char Jtolower(char c);
 
 #ifdef __cplusplus
 }

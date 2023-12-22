@@ -1,38 +1,16 @@
 /*!
- * @file note.h
- *
- * @mainpage C/C++ Library for the Notecard
- *
- * @section intro_sec Introduction
- *
- * The note-c C/C++ library for communicating with the
- * <a href="https://blues.com">Blues</a>
- * Notecard via serial or I2C.
- *
- * This library allows you to control a Notecard by writing a C or C++
- * program,. Your sketch may programmatically configure Notecard and send Notes
- * to <a href="https://notehub.io">Notehub.io</a>.
- *
- * @section dependencies Dependencies
- *
- * This library bundles the <a href="https://github.com/DaveGamble/cJSON">cJSON
- * JSON parser library</a>.
- *
- * In addition, this library requires a physical
- * connection to a Notecard over I2C or Serial to be functional.
- *
- * @section author Author
- *
- * Written by Ray Ozzie and Blues Inc. team.
- *
- * @section license License
- *
- * Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
- * governed by licenses granted by the copyright holder including that found in
- * the
- * <a href="https://github.com/blues/note-c/blob/master/LICENSE">LICENSE</a>
- * file.
- *
+ @file note.h
+
+ Written by Ray Ozzie and Blues Inc. team.
+
+ Copyright (c) 2019 Blues Inc. MIT License. Use of this source code is
+ governed by licenses granted by the copyright holder including that found in
+ the
+ <a href="https://github.com/blues/note-c/blob/master/LICENSE">LICENSE</a>
+ file.
+
+ This library bundles the <a href="https://github.com/DaveGamble/cJSON">cJSON
+ JSON parser library</a>.
  */
 
 #pragma once
@@ -42,6 +20,10 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+#define NOTE_C_VERSION_MAJOR 2
+#define NOTE_C_VERSION_MINOR 1
+#define NOTE_C_VERSION_PATCH 1
 
 // Determine our basic floating data type.  In most cases "double" is the right answer, however for
 // very small microcontrollers we must use single-precision.
@@ -85,20 +67,130 @@ extern "C" {
 // cJSON wrappers
 #include "n_cjson.h"
 
-// Card callback functions
+// Notecard hook functions
+
+/*!
+ @typedef mutexFn
+
+ @brief The type for the various mutex (i.e. lock/unlock) hooks.
+ */
 typedef void (*mutexFn) (void);
+/*!
+ @typedef mallocFn
+
+ @brief The type for the memory allocation hook.
+
+ @param size The number of bytes to allocate.
+
+ @returns A pointer to the newly allocated memory or NULL on failure.
+ */
 typedef void * (*mallocFn) (size_t size);
-typedef void (*freeFn) (void *);
+/*!
+ @typedef freeFn
+
+ @brief The type for the memory freeing hook.
+
+ @param mem Pointer to the memory to free.
+ */
+typedef void (*freeFn) (void * mem);
+/*!
+ @typedef delayMsFn
+
+ @brief The type for the millisecond delay hook.
+
+ @param ms The number of milliseconds to delay for.
+ */
 typedef void (*delayMsFn) (uint32_t ms);
+/*!
+ @typedef getMsFn
+
+ @brief The type for the millisecond counter hook.
+
+ @returns The value of the millisecond counter.
+ */
 typedef uint32_t (*getMsFn) (void);
 typedef size_t (*debugOutputFn) (const char *text);
+
+/*!
+ @typedef serialResetFn
+
+ @brief The type for the serial reset hook.
+
+ This hook is used to reset the serial peripheral used to communicate with the
+ Notecard.
+
+ @returns `true` on success and `false` on failure.
+ */
 typedef bool (*serialResetFn) (void);
-typedef void (*serialTransmitFn) (uint8_t *data, size_t len, bool flush);
+/*!
+ @typedef serialTransmitFn
+
+ @brief The type for the serial transmit hook.
+
+ @param txBuf A buffer of bytes to transmit to the Notecard.
+ @param txBufSize The size, in bytes, of `txBuf`.
+ @param flush If true, flush the serial peripheral's transmit buffer.
+ */
+typedef void (*serialTransmitFn) (uint8_t *txBuf, size_t txBufSize, bool flush);
+/*!
+ @typedef serialAvailableFn
+
+ @brief The type for the serial available hook.
+
+ @return `true` if there's data to read and `false` otherwise.
+ */
 typedef bool (*serialAvailableFn) (void);
+
+/*!
+ @typedef serialReceiveFn
+
+ @brief The type for the serial receive hook.
+
+ @return The received byte.
+ */
 typedef char (*serialReceiveFn) (void);
-typedef bool (*i2cResetFn) (uint16_t DevAddress);
-typedef const char * (*i2cTransmitFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
-typedef const char * (*i2cReceiveFn) (uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
+/*!
+ @typedef i2cResetFn
+
+ @brief The type for the I2C reset hook.
+
+ This hook is used to reset the I2C peripheral used to communicate with the
+ Notecard.
+
+ @param address The I2C address of the Notecard.
+ */
+typedef bool (*i2cResetFn) (uint16_t address);
+/*!
+ @typedef i2cTransmitFn
+
+ @brief The type for the I2C transmit hook.
+
+ This hook is used to send a buffer of bytes to the Notecard.
+
+ @param address The I2C address of the Notecard to transmit the data to.
+ @param txBuf A buffer of bytes to transmit to the Notecard.
+ @param txBufSize The size, in bytes, of `txBuf`.
+
+ @returns NULL on success and an error string on failure.
+ */
+typedef const char * (*i2cTransmitFn) (uint16_t address, uint8_t* txBuf,
+                                       uint16_t txBufSize);
+/*!
+ @typedef i2cReceiveFn
+
+ @brief The type for the I2C receive hook.
+
+ This hook is used to receive a buffer of bytes from the Notecard.
+
+ @param address The I2C address of the Notecard sending the data to receive.
+ @param rxBuf A buffer to hold the data received from the Notecard.
+ @param rxBufSize The size, in bytes, of rxBuf.
+ @param available The number of bytes remaining to be received, if any.
+
+ @returns NULL on success and an error string on failure.
+ */
+typedef const char * (*i2cReceiveFn) (uint16_t address, uint8_t* rxBuf,
+                                      uint16_t rxBufSize, uint32_t *available);
 typedef bool (*txnStartFn) (uint32_t timeoutMs);
 typedef void (*txnStopFn) (void);
 
@@ -112,7 +204,7 @@ J *NoteNewRequest(const char *request);
 J *NoteNewCommand(const char *request);
 J *NoteRequestResponse(J *req);
 J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds);
-char *NoteRequestResponseJSON(char *reqJSON);
+char * NoteRequestResponseJSON(const char *reqJSON);
 void NoteSuspendTransactionDebug(void);
 void NoteResumeTransactionDebug(void);
 #define SYNCSTATUS_LEVEL_MAJOR         0
@@ -123,21 +215,39 @@ void NoteResumeTransactionDebug(void);
 bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel);
 bool NoteRequest(J *req);
 bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds);
+/*!
+ @brief Check if the Notecard response contains an error.
+
+ @param rsp The response to check.
+
+ @returns `true` if there's an error and `false` if there's not.
+ */
 #define NoteResponseError(rsp) (!JIsNullString(rsp, "err"))
 #define NoteResponseErrorContains(rsp, errstr) (JContainsString(rsp, "err", errstr))
+/*!
+ @brief Free a response from the Notecard.
+
+ @param rsp The response to free.
+ */
 #define NoteDeleteResponse(rsp) JDelete(rsp)
 J *NoteTransaction(J *req);
 bool NoteErrorContains(const char *errstr, const char *errtype);
 void NoteErrorClean(char *errbuf);
 void NoteSetFnDebugOutput(debugOutputFn fn);
 void NoteSetFnTransaction(txnStartFn startFn, txnStopFn stopFn);
-void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn, mutexFn unlockNotefn);
+void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn,
+                    mutexFn unlockNotefn);
 void NoteSetFnI2CMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn);
-void NoteSetFnNoteMutex(mutexFn lockNotefn, mutexFn unlockNotefn);
-void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
-void NoteSetFn(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn);
-void NoteSetFnSerial(serialResetFn resetfn, serialTransmitFn writefn, serialAvailableFn availfn, serialReceiveFn readfn);
-void NoteSetFnI2C(uint32_t i2caddr, uint32_t i2cmax, i2cResetFn resetfn, i2cTransmitFn transmitfn, i2cReceiveFn receivefn);
+void NoteSetFnNoteMutex(mutexFn lockFn, mutexFn unlockFn);
+void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn,
+                      getMsFn millisfn);
+void NoteSetFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook,
+               getMsFn getMsHook);
+void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
+                     serialAvailableFn availFn, serialReceiveFn receiveFn);
+void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
+                  i2cResetFn resetFn, i2cTransmitFn transmitFn,
+                  i2cReceiveFn receiveFn);
 void NoteSetFnDisabled(void);
 void NoteSetI2CAddress(uint32_t i2caddress);
 
@@ -145,6 +255,10 @@ void NoteSetI2CAddress(uint32_t i2caddress);
 // protocol whose "byte count" must fit into a single byte and which must not
 // include a 2-byte header field.  This is why the maximum that can be
 // transmitted by note-c in a single I2C I/O is 255 - 2 = 253 bytes.
+
+/*!
+ @brief The default I2C address of the Notecard.
+ */
 #define NOTE_I2C_ADDR_DEFAULT	0x17
 
 // Serial-to-i2c protocol header size in bytes
@@ -170,6 +284,10 @@ void NoteSetI2CAddress(uint32_t i2caddress);
 #define NOTE_I2C_MAX_DEFAULT NOTE_I2C_MAX_MAX
 #else
 // default to what's known to be safe for all Arduino implementations
+/*!
+ @brief The maximum number of bytes to request from or transmit to the Notecard
+        in a single chunk.
+ */
 #define NOTE_I2C_MAX_DEFAULT	30
 #endif
 

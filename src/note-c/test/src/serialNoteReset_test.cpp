@@ -19,10 +19,10 @@
 #include "n_lib.h"
 
 DEFINE_FFF_GLOBALS
-FAKE_VALUE_FUNC(bool, NoteSerialReset)
-FAKE_VOID_FUNC(NoteSerialTransmit, uint8_t *, size_t, bool)
-FAKE_VALUE_FUNC(bool, NoteSerialAvailable)
-FAKE_VALUE_FUNC(char, NoteSerialReceive)
+FAKE_VALUE_FUNC(bool, noteSerialReset)
+FAKE_VOID_FUNC(noteSerialTransmit, uint8_t *, size_t, bool)
+FAKE_VALUE_FUNC(bool, noteSerialAvailable)
+FAKE_VALUE_FUNC(char, noteSerialReceive)
 FAKE_VALUE_FUNC(long unsigned int, NoteGetMs)
 
 namespace
@@ -51,68 +51,68 @@ long unsigned int NoteGetMsMock()
 
 SCENARIO("serialNoteReset")
 {
-    SECTION("NoteSerialReset fails") {
-        NoteSerialReset_fake.return_val = false;
+    SECTION("noteSerialReset fails") {
+        noteSerialReset_fake.return_val = false;
 
         CHECK(!serialNoteReset());
-        CHECK(NoteSerialReset_fake.call_count == 1);
-        CHECK(NoteSerialTransmit_fake.call_count == 0);
+        CHECK(noteSerialReset_fake.call_count == 1);
+        CHECK(noteSerialTransmit_fake.call_count == 0);
     }
 
     SECTION("Serial never available") {
-        NoteSerialReset_fake.return_val = true;
-        NoteSerialAvailable_fake.return_val = false;
+        noteSerialReset_fake.return_val = true;
+        noteSerialAvailable_fake.return_val = false;
         NoteGetMs_fake.custom_fake = NoteGetMsMock;
 
         CHECK(!serialNoteReset());
         // serialNoteReset has retry logic, so we expect retries.
-        CHECK(NoteSerialTransmit_fake.call_count > 1);
-        CHECK(NoteSerialReceive_fake.call_count == 0);
+        CHECK(noteSerialTransmit_fake.call_count > 1);
+        CHECK(noteSerialReceive_fake.call_count == 0);
     }
 
     SECTION("Character received") {
         NoteGetMs_fake.custom_fake = NoteGetMsMock;
         bool serialAvailRetVals[] = {true, false};
-        SET_RETURN_SEQ(NoteSerialAvailable, serialAvailRetVals, 2);
+        SET_RETURN_SEQ(noteSerialAvailable, serialAvailRetVals, 2);
 
         SECTION("Non-control character received") {
-            NoteSerialReceive_fake.return_val = 'a';
+            noteSerialReceive_fake.return_val = 'a';
 
             SECTION("Retry") {
-                NoteSerialReset_fake.return_val = true;
+                noteSerialReset_fake.return_val = true;
 
                 CHECK(!serialNoteReset());
                 // Expect retries.
-                CHECK(NoteSerialTransmit_fake.call_count > 1);
+                CHECK(noteSerialTransmit_fake.call_count > 1);
             }
 
-            SECTION("NoteSerialReset fails before retry possible") {
+            SECTION("noteSerialReset fails before retry possible") {
                 bool noteSerialResetRetVals[] = {true, false};
-                SET_RETURN_SEQ(NoteSerialReset, noteSerialResetRetVals, 2);
+                SET_RETURN_SEQ(noteSerialReset, noteSerialResetRetVals, 2);
 
                 CHECK(!serialNoteReset());
                 // No retries.
-                CHECK(NoteSerialTransmit_fake.call_count == 1);
+                CHECK(noteSerialTransmit_fake.call_count == 1);
             }
         }
 
         SECTION("Only control character received") {
-            NoteSerialReset_fake.return_val = true;
-            NoteSerialReceive_fake.return_val = '\n';
+            noteSerialReset_fake.return_val = true;
+            noteSerialReceive_fake.return_val = '\n';
 
             CHECK(serialNoteReset());
             // There should be no retrying.
-            CHECK(NoteSerialTransmit_fake.call_count == 1);
+            CHECK(noteSerialTransmit_fake.call_count == 1);
         }
 
-        CHECK(NoteSerialReceive_fake.call_count > 0);
+        CHECK(noteSerialReceive_fake.call_count > 0);
     }
 
     SECTION("NoteGetMs overflow") {
-        NoteSerialReset_fake.return_val = true;
-        NoteSerialReceive_fake.return_val = '\n';
+        noteSerialReset_fake.return_val = true;
+        noteSerialReceive_fake.return_val = '\n';
         bool serialAvailRetVals[] = {true, false};
-        SET_RETURN_SEQ(NoteSerialAvailable, serialAvailRetVals, 2);
+        SET_RETURN_SEQ(noteSerialAvailable, serialAvailRetVals, 2);
         long unsigned int getMsReturnVals[] = {
             UINT32_MAX - 500,
             UINT32_MAX - 400,
@@ -123,10 +123,10 @@ SCENARIO("serialNoteReset")
         CHECK(serialNoteReset());
     }
 
-    RESET_FAKE(NoteSerialReset);
-    RESET_FAKE(NoteSerialTransmit);
-    RESET_FAKE(NoteSerialAvailable);
-    RESET_FAKE(NoteSerialReceive);
+    RESET_FAKE(noteSerialReset);
+    RESET_FAKE(noteSerialTransmit);
+    RESET_FAKE(noteSerialAvailable);
+    RESET_FAKE(noteSerialReceive);
     RESET_FAKE(NoteGetMs);
 }
 

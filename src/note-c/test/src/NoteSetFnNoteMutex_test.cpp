@@ -37,19 +37,19 @@ SCENARIO("NoteSetFnNoteMutex")
 {
     NoteSetFnNoteMutex(LockNote, UnlockNote);
 
-    NoteLockNote();
+    noteLockNote();
     CHECK(lockNoteCalled == 1);
 
-    NoteUnlockNote();
+    noteUnlockNote();
     CHECK(unlockNoteCalled == 1);
 
     // Unset the callbacks and ensure they aren't called again.
     NoteSetFnNoteMutex(NULL, NULL);
 
-    NoteLockNote();
+    noteLockNote();
     CHECK(lockNoteCalled == 1);
 
-    NoteUnlockNote();
+    noteUnlockNote();
     CHECK(unlockNoteCalled == 1);
 }
 

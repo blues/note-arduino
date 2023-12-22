@@ -82,7 +82,7 @@ static const char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 // Forwards
 NOTE_C_STATIC void setTime(JTIME seconds);
 NOTE_C_STATIC bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
-NOTE_C_STATIC int ytodays(int year);
+NOTE_C_STATIC int yToDays(int year);
 
 static const char NOTE_C_BINARY_EOP = '\n';
 
@@ -406,9 +406,9 @@ const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
 
     // Ensure transaction was successful
     if (err) {
-        // Reset when a problem is detected, otherwise `note-c`
-        // will attempt to allocate memory to receive the response.
-        _Reset();
+        // Queue a reset when a problem is detected, otherwise `note-c` will
+        // attempt to allocate memory to receive the response.
+        NoteResetRequired();
         return ERRSTR(err, c_err);
     }
 
@@ -416,9 +416,9 @@ const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
     if (available) {
         const char *err = ERRSTR("unexpected data available", c_err);
         NOTE_C_LOG_ERROR(err);
-        // Reset when a problem is detected, otherwise `note-c`
-        // will attempt to allocate memory to receive the response.
-        _Reset();
+        // Queue a reset when a problem is detected, otherwise `note-c` will
+        // attempt to allocate memory to receive the response.
+        NoteResetRequired();
         return err;
     }
 
@@ -434,9 +434,9 @@ const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
     if (decodedLen != decLen) {
         const char *err = ERRSTR("length mismatch after decoding", c_err);
         NOTE_C_LOG_ERROR(err);
-        // Reset when a problem is detected, otherwise `note-c`
-        // will attempt to allocate memory to receive the response.
-        _Reset();
+        // Queue a reset when a problem is detected, otherwise `note-c` will
+        // attempt to allocate memory to receive the response.
+        NoteResetRequired();
         return err;
     }
 
@@ -715,7 +715,7 @@ const char * NoteBinaryStoreTransmit(uint8_t *unencodedData, uint32_t unencodedL
   @returns  A boolean indicating whether the current time is valid.
 */
 /**************************************************************************/
-bool NoteTimeValid()
+bool NoteTimeValid(void)
 {
     timeTimer = 0;
     return NoteTimeValidST();
@@ -727,7 +727,7 @@ bool NoteTimeValid()
   @returns  A boolean indicating whether the current time is valid.
 */
 /**************************************************************************/
-bool NoteTimeValidST()
+bool NoteTimeValidST(void)
 {
     NoteTimeST();
     return (timeBaseSec != 0);
@@ -739,7 +739,7 @@ bool NoteTimeValidST()
   @returns  The current time.
 */
 /**************************************************************************/
-JTIME NoteTime()
+JTIME NoteTime(void)
 {
     timeTimer = 0;
     return NoteTimeST();
@@ -823,7 +823,7 @@ bool NotePrint(const char *text)
 {
     bool success = false;
 
-    if (NoteIsDebugOutputActive()) {
+    if (noteIsDebugOutputActive()) {
         NoteDebug(text);
         return true;
     }
@@ -843,7 +843,7 @@ bool NotePrint(const char *text)
   @returns  The current time, or the time since boot.
 */
 /**************************************************************************/
-JTIME NoteTimeST()
+JTIME NoteTimeST(void)
 {
 
     // Handle timer tick wrap by resetting the base
@@ -1042,7 +1042,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay,
     if (retWeekday != NULL) {
         *retWeekday = (char *) daynames[(days + 1) % 7];
     }
-    for (year = days / 365; days < (i = ytodays(year) + 365L * year); ) {
+    for (year = days / 365; days < (i = yToDays(year) + 365L * year); ) {
         --year;
     }
     days -= i;
@@ -1091,7 +1091,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay,
 }
 
 // Figure out how many days at start of the year
-NOTE_C_STATIC int ytodays(int year)
+NOTE_C_STATIC int yToDays(int year)
 {
     int days = 0;
     if (0 < year) {
@@ -1306,7 +1306,7 @@ bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_
   @returns boolean. `true` if connected.
 */
 /**************************************************************************/
-bool NoteIsConnected()
+bool NoteIsConnected(void)
 {
     connectivityTimer = 0;
     return NoteIsConnectedST();
@@ -1318,7 +1318,7 @@ bool NoteIsConnected()
   @returns boolean. `true` if connected.
 */
 /**************************************************************************/
-bool NoteIsConnectedST()
+bool NoteIsConnectedST(void)
 {
     if (timerExpiredSecs(&connectivityTimer, suppressionTimerSecs)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
@@ -1454,7 +1454,7 @@ bool NoteSetLocation(JNUMBER lat, JNUMBER lon)
   @returns boolean. `true` if the location information was cleared.
 */
 /**************************************************************************/
-bool NoteClearLocation()
+bool NoteClearLocation(void)
 {
     bool success = false;
     J *req = NoteNewRequest("card.location.mode");
@@ -2371,7 +2371,7 @@ typedef struct objHeader_s {
   @returns The number of bytes of memory available on the Notecard.
 */
 /**************************************************************************/
-uint32_t NoteMemAvailable()
+uint32_t NoteMemAvailable(void)
 {
 
     // Allocate progressively smaller and smaller chunks

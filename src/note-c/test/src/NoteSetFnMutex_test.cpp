@@ -55,10 +55,10 @@ SCENARIO("NoteSetFnMutex")
     NoteUnlockI2C();
     CHECK(unlockI2CCalled == 1);
 
-    NoteLockNote();
+    noteLockNote();
     CHECK(lockNoteCalled == 1);
 
-    NoteUnlockNote();
+    noteUnlockNote();
     CHECK(unlockNoteCalled == 1);
 
     // Unset the callbacks and ensure they aren't called again.
@@ -70,10 +70,10 @@ SCENARIO("NoteSetFnMutex")
     NoteUnlockI2C();
     CHECK(unlockI2CCalled == 1);
 
-    NoteLockNote();
+    noteLockNote();
     CHECK(lockNoteCalled == 1);
 
-    NoteUnlockNote();
+    noteUnlockNote();
     CHECK(unlockNoteCalled == 1);
 }
 

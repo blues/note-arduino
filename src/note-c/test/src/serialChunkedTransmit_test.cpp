@@ -20,19 +20,19 @@
 #include "n_lib.h"
 
 DEFINE_FFF_GLOBALS
-FAKE_VOID_FUNC(NoteSerialTransmit, uint8_t *, size_t, bool)
+FAKE_VOID_FUNC(noteSerialTransmit, uint8_t *, size_t, bool)
 FAKE_VOID_FUNC(NoteDelayMs, uint32_t)
 
 namespace
 {
 
-// This buffer will hold the bytes passed to NoteSerialTransmit. We can then
+// This buffer will hold the bytes passed to noteSerialTransmit. We can then
 // check that the bytes passed to serialChunkedTransmit are passed to
-// NoteSerialTransmit without alteration.
+// noteSerialTransmit without alteration.
 uint8_t accumulatedBuf[CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN * 2];
 size_t accumulatedIdx = 0;
 
-void NoteSerialTransmitAccumulate(uint8_t *buf, size_t size, bool)
+void noteSerialTransmitAccumulate(uint8_t *buf, size_t size, bool)
 {
     memcpy(accumulatedBuf + accumulatedIdx, buf, size);
     accumulatedIdx += size;
@@ -55,7 +55,7 @@ SCENARIO("serialChunkedTransmit")
     }
 
     GIVEN("A buffer with size less than the maximum serial segment length") {
-        NoteSerialTransmit_fake.custom_fake = NoteSerialTransmitAccumulate;
+        noteSerialTransmit_fake.custom_fake = noteSerialTransmitAccumulate;
         uint8_t buf[CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN - 1];
         size_t size = sizeof(buf);
         memset(buf, 1, size);
@@ -67,20 +67,20 @@ SCENARIO("serialChunkedTransmit")
                 CHECK(err == NULL);
             }
 
-            THEN("The buffer is passed verbatim to NoteSerialTransmit") {
+            THEN("The buffer is passed verbatim to noteSerialTransmit") {
                 CHECK(memcmp(buf, accumulatedBuf, size) == 0);
             }
 
-            THEN("NoteSerialTransmit is only called once, since the buffer fits"
+            THEN("noteSerialTransmit is only called once, since the buffer fits"
                  " in a single segment") {
-                CHECK(NoteSerialTransmit_fake.call_count == 1);
+                CHECK(noteSerialTransmit_fake.call_count == 1);
             }
         }
     }
 
     // TODO: Come up with a way to reduce duplication here.
     GIVEN("A buffer with size equal to the maximum serial segment length") {
-        NoteSerialTransmit_fake.custom_fake = NoteSerialTransmitAccumulate;
+        noteSerialTransmit_fake.custom_fake = noteSerialTransmitAccumulate;
         uint8_t buf[CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN];
         size_t size = sizeof(buf);
         memset(buf, 1, size);
@@ -92,19 +92,19 @@ SCENARIO("serialChunkedTransmit")
                 CHECK(err == NULL);
             }
 
-            THEN("The buffer is passed verbatim to NoteSerialTransmit") {
+            THEN("The buffer is passed verbatim to noteSerialTransmit") {
                 CHECK(memcmp(buf, accumulatedBuf, size) == 0);
             }
 
-            THEN("NoteSerialTransmit is only called once, since the buffer fits"
+            THEN("noteSerialTransmit is only called once, since the buffer fits"
                  " in a single segment") {
-                CHECK(NoteSerialTransmit_fake.call_count == 1);
+                CHECK(noteSerialTransmit_fake.call_count == 1);
             }
         }
     }
 
     GIVEN("A buffer with size greater than the maximum serial segment length") {
-        NoteSerialTransmit_fake.custom_fake = NoteSerialTransmitAccumulate;
+        noteSerialTransmit_fake.custom_fake = noteSerialTransmitAccumulate;
         uint8_t buf[CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN + 10];
         size_t size = sizeof(buf);
         memset(buf, 1, size);
@@ -116,13 +116,13 @@ SCENARIO("serialChunkedTransmit")
                 CHECK(err == NULL);
             }
 
-            THEN("The buffer is passed verbatim to NoteSerialTransmit") {
+            THEN("The buffer is passed verbatim to noteSerialTransmit") {
                 CHECK(memcmp(buf, accumulatedBuf, size) == 0);
             }
 
-            THEN("NoteSerialTransmit is called more than once, since the buffer"
+            THEN("noteSerialTransmit is called more than once, since the buffer"
                  " doesn't fit in a single segment") {
-                CHECK(NoteSerialTransmit_fake.call_count > 1);
+                CHECK(noteSerialTransmit_fake.call_count > 1);
             }
         }
 
@@ -147,7 +147,7 @@ SCENARIO("serialChunkedTransmit")
         }
     }
 
-    RESET_FAKE(NoteSerialTransmit);
+    RESET_FAKE(noteSerialTransmit);
     RESET_FAKE(NoteDelayMs);
 }
 

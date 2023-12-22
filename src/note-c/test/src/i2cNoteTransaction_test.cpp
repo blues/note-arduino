@@ -35,7 +35,7 @@ SCENARIO("i2cNoteTransaction")
 {
     NoteSetFnDefault(NULL, free, NULL, NULL);
 
-    char req[] = "{\"req\": \"note.add\"}";
+    char req[] = "{\"req\": \"note.add\"}\n";
     char originalReq[sizeof(req)];
     strlcpy(originalReq, req, sizeof(req));
     char *rsp = NULL;
@@ -47,7 +47,7 @@ SCENARIO("i2cNoteTransaction")
         i2cChunkedTransmit_fake.return_val = "some error";
 
         WHEN("i2cNoteTransaction is called") {
-            err = i2cNoteTransaction(req, &rsp, timeoutMs);
+            err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
             THEN("An error is returned") {
                 REQUIRE(i2cChunkedTransmit_fake.call_count > 0);
@@ -59,7 +59,7 @@ SCENARIO("i2cNoteTransaction")
     GIVEN("The response parameter is NULL so no Notecard response is "
           "expected") {
         WHEN("i2cNoteTransaction is called") {
-            err = i2cNoteTransaction(req, NULL, timeoutMs);
+            err = i2cNoteTransaction(req, strlen(req), NULL, timeoutMs);
 
             THEN("No error is returned") {
                 CHECK(err == NULL);
@@ -71,7 +71,7 @@ SCENARIO("i2cNoteTransaction")
         i2cNoteQueryLength_fake.return_val = "some error";
 
         WHEN("i2cNoteTransaction is called") {
-            err = i2cNoteTransaction(req, &rsp, timeoutMs);
+            err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
             THEN("An error is returned") {
                 REQUIRE(i2cNoteQueryLength_fake.call_count > 0);
@@ -94,7 +94,7 @@ SCENARIO("i2cNoteTransaction")
             NoteMalloc_fake.return_val = NULL;
 
             WHEN("i2cNoteTransaction is called") {
-                err = i2cNoteTransaction(req, &rsp, timeoutMs);
+                err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("An error is returned") {
                     REQUIRE(NoteMalloc_fake.call_count > 0);
@@ -107,7 +107,7 @@ SCENARIO("i2cNoteTransaction")
             i2cChunkedReceive_fake.return_val = "some error";
 
             WHEN("i2cNoteTransaction is called") {
-                err = i2cNoteTransaction(req, &rsp, timeoutMs);
+                err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 THEN("An error is returned") {
                     REQUIRE(i2cChunkedReceive_fake.call_count > 0);
@@ -131,7 +131,7 @@ SCENARIO("i2cNoteTransaction")
             };
 
             WHEN("i2cNoteTransaction is called") {
-                err = i2cNoteTransaction(req, &rsp, timeoutMs);
+                err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 // If i2cChunkedReceive is called more than once, the response
                 // took more than one chunk, and this test is no longer testing
@@ -190,7 +190,7 @@ SCENARIO("i2cNoteTransaction")
             SET_CUSTOM_FAKE_SEQ(i2cChunkedReceive, recvFakeSequence, 2);
 
             WHEN("i2cNoteTransaction is called") {
-                err = i2cNoteTransaction(req, &rsp, timeoutMs);
+                err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                 // Ensure that i2cChunkedReceive was actually called more than
                 // once. If it isn't, then something has gone awry and this test
@@ -234,7 +234,7 @@ SCENARIO("i2cNoteTransaction")
                 SET_CUSTOM_FAKE_SEQ(NoteMalloc, mallocFakeSequence, 2);
 
                 WHEN("i2cNoteTransaction is called") {
-                    err = i2cNoteTransaction(req, &rsp, timeoutMs);
+                    err = i2cNoteTransaction(req, strlen(req), &rsp, timeoutMs);
 
                     THEN("An error is returned") {
                         CHECK(err != NULL);
