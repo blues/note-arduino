@@ -42,8 +42,14 @@ void setup()
     const size_t usb_timeout_ms = 3000;
     for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
         ;
+
+    // For low-memory platforms, don't turn on internal Notecard logs.
+#ifndef NOTE_C_LOW_MEM
     notecard.setDebugOutputStream(usbSerial);
-#endif
+#else
+#pragma message("INFO: Notecard debug logs disabled. (non-fatal)")
+#endif // !NOTE_C_LOW_MEM
+#endif // usbSerial
 
     // Initialize the physical I/O channel to the Notecard
 #ifdef txRxPinsSerial
@@ -74,7 +80,7 @@ void loop()
     static unsigned event_counter = 0;
     if (++event_counter > 5)
     {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.\n");
+        usbSerial.println("[APP] Demo cycle complete. Program stopped. Press RESET to restart.");
         delay(10000); // 10 seconds
         return;
     }
@@ -89,7 +95,9 @@ void loop()
         uint32_t data_len = strlen(data);
         const uint32_t notecard_binary_area_offset = 0;
         NoteBinaryStoreTransmit(reinterpret_cast<uint8_t *>(data), data_len, sizeof(data), notecard_binary_area_offset);
-        notecard.logDebugf("\n[INFO] Transmitted %d bytes.\n", data_len);
+        usbSerial.print("\n[APP] Transmitted ");
+        usbSerial.print(data_len);
+        usbSerial.println(" bytes.");
 
         // Log for the sake of curiosity (not necessary for operation)
         // NOTE: NoteBinaryMaxEncodedLength() is imprecise. It will most
@@ -97,15 +105,16 @@ void loop()
         //       However, in this contrived example there is no difference,
         //       so it works for the purposes of displaying the encoded data --
         //       which would never be done in practice.
-        notecard.logDebug("\n*** Encoded Binary Transmission ***\n");
+        usbSerial.println("\n[APP] *** Encoded Binary Transmission ***");
         uint32_t tx_len = NoteBinaryCodecMaxEncodedLength(data_len);
         for (size_t i = 0 ; i < tx_len ; ++i) {
-            notecard.logDebugf("%02x ", data[i]);
+            usbSerial.print(data[i], HEX);
+            usbSerial.print(" ");
             if ((i + 1) % 16 == 0) {
-                notecard.logDebug("\n");
+                usbSerial.println();
             }
         }
-        notecard.logDebug("\n*** Encoded Binary Transmission ***\n\n");
+        usbSerial.println("\n[APP] *** Encoded Binary Transmission ***\n");
 
         /////////////////////////////////////////////////
         // Receive data from the Notecard binary data store
@@ -125,14 +134,16 @@ void loop()
 
         // Receive the data
         NoteBinaryStoreReceive(reinterpret_cast<uint8_t *>(rx_buffer), rx_buffer_len, 0, data_len);
-        notecard.logDebugf("\n[INFO] Received %d bytes.\n", data_len);
+        usbSerial.print("\n[APP] Received ");
+        usbSerial.print(data_len);
+        usbSerial.println(" bytes.");
 
         // Display received buffer
-        notecard.logDebug("\n*** Decoded Data ***\n");
+        usbSerial.println("\n[APP] *** Decoded Data ***");
         for (size_t i = 0 ; i < data_len ; ++i) {
-            notecard.logDebugf("%c", rx_buffer[i]);
+            usbSerial.print(rx_buffer[i]);
         }
-        notecard.logDebug("\n*** Decoded Data ***\n\n");
+        usbSerial.println("\n[APP] *** Decoded Data ***\n");
 
         // Free the receive buffer
         free(rx_buffer);

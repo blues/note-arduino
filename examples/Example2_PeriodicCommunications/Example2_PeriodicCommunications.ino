@@ -88,8 +88,14 @@ void setup()
     const size_t usb_timeout_ms = 3000;
     for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
         ;
+
+    // For low-memory platforms, don't turn on internal Notecard logs.
+#ifndef NOTE_C_LOW_MEM
     notecard.setDebugOutputStream(usbSerial);
-#endif
+#else
+#pragma message("INFO: Notecard debug logs disabled. (non-fatal)")
+#endif // !NOTE_C_LOW_MEM
+#endif // usbSerial
 
     // Initialize the physical I/O channel to the Notecard
 #ifdef txRxPinsSerial
@@ -151,7 +157,7 @@ void loop()
         if (millis() > lastStatusMs + 10000)
         {
             lastStatusMs = millis();
-            notecard.logDebug("press button to simulate a sensor measurement\n");
+            usbSerial.println("[APP] press button to simulate a sensor measurement");
         }
         delay(25);
         digitalWrite(ledPin, LOW);
@@ -165,7 +171,7 @@ void loop()
     }
 
     // The button was pressed, so we should begin a transaction
-    notecard.logDebug("performing sensor measurement\n");
+    usbSerial.println("[APP] performing sensor measurement");
     lastStatusMs = millis();
 
     // Read the notecard's current temperature and voltage, as simulated sensor
