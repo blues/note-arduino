@@ -1,6 +1,6 @@
 #include "mock-parameters.hpp"
 
-JAddNumberToObject_Parameters jAddNumberToObject_Parameters;
+JAddIntToObject_Parameters jAddIntToObject_Parameters;
 NoteDebug_Parameters noteDebug_Parameters;
 NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
@@ -21,24 +21,24 @@ NoteSetFnTransaction_Parameters noteSetFnTransaction_Parameters;
 NoteSetUserAgent_Parameters noteSetUserAgent_Parameters;
 
 J *
-JAddNumberToObject (
+JAddIntToObject (
     J * const object_,
     const char * const name_,
-    const JNUMBER number_
+    const JINTEGER number_
 ) {
     // Record invocation(s)
-    ++jAddNumberToObject_Parameters.invoked;
+    ++jAddIntToObject_Parameters.invoked;
 
     // Stash parameter(s)
-    jAddNumberToObject_Parameters.object.push_back(object_);
-    jAddNumberToObject_Parameters.name.push_back(name_);
-    jAddNumberToObject_Parameters.number.push_back(number_);
+    jAddIntToObject_Parameters.object.push_back(object_);
+    jAddIntToObject_Parameters.name.push_back(name_);
+    jAddIntToObject_Parameters.number.push_back(number_);
 
     // Return user-supplied result
-    if (jAddNumberToObject_Parameters.result.size() < jAddNumberToObject_Parameters.invoked) {
-        return jAddNumberToObject_Parameters.default_result;
+    if (jAddIntToObject_Parameters.result.size() < jAddIntToObject_Parameters.invoked) {
+        return jAddIntToObject_Parameters.default_result;
     } else {
-        return jAddNumberToObject_Parameters.result[(jAddNumberToObject_Parameters.invoked - 1)];
+        return jAddIntToObject_Parameters.result[(jAddIntToObject_Parameters.invoked - 1)];
     }
 }
 

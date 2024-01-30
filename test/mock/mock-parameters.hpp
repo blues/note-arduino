@@ -23,8 +23,8 @@ void MockNoteDeleteResponse(J*);
 bool MockNoteResponseError(J*);
 #define NoteResponseError(x) MockNoteResponseError(x)
 
-struct JAddNumberToObject_Parameters {
-    JAddNumberToObject_Parameters(
+struct JAddIntToObject_Parameters {
+    JAddIntToObject_Parameters(
         void
     ) :
         invoked(0),
@@ -44,7 +44,7 @@ struct JAddNumberToObject_Parameters {
     size_t invoked;
     std::vector<J *> object;
     std::vector<std::string> name;
-    std::vector<JNUMBER> number;
+    std::vector<JINTEGER> number;
     std::vector<J *> result;
     J *default_result;
 };
@@ -453,7 +453,7 @@ struct NoteSetUserAgent_Parameters {
     std::string agent_cache;
 };
 
-extern JAddNumberToObject_Parameters jAddNumberToObject_Parameters;
+extern JAddIntToObject_Parameters jAddIntToObject_Parameters;
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
