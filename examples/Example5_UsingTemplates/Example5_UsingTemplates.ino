@@ -76,8 +76,14 @@ void setup()
     const size_t usb_timeout_ms = 3000;
     for (const size_t start_ms = millis(); !usbSerial && (millis() - start_ms) < usb_timeout_ms;)
         ;
+
+    // For low-memory platforms, don't turn on internal Notecard logs.
+#ifndef NOTE_C_LOW_MEM
     notecard.setDebugOutputStream(usbSerial);
-#endif
+#else
+#pragma message("INFO: Notecard debug logs disabled. (non-fatal)")
+#endif // !NOTE_C_LOW_MEM
+#endif // usbSerial
 
     // Initialize the physical I/O channel to the Notecard
 #ifdef txRxPinsSerial
@@ -155,7 +161,7 @@ void loop()
     static unsigned eventCounter = 0;
     if (++eventCounter > 25)
     {
-        notecard.logDebug("Demo cycle complete. Program stopped. Press RESET to restart.\n");
+        usbSerial.println("[APP] Demo cycle complete. Program stopped. Press RESET to restart.");
         delay(10000); // 10 seconds
         return;
     }
