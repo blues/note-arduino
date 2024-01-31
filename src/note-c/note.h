@@ -23,38 +23,54 @@
 
 #define NOTE_C_VERSION_MAJOR 2
 #define NOTE_C_VERSION_MINOR 1
-#define NOTE_C_VERSION_PATCH 1
+#define NOTE_C_VERSION_PATCH 2
 
-// Determine our basic floating data type.  In most cases "double" is the right answer, however for
-// very small microcontrollers we must use single-precision.
+// If double and float are the same size, then we must be on a small MCU. Turn
+// on NOTE_C_LOW_MEM to conserve memory.
 #if defined(FLT_MAX_EXP) && defined(DBL_MAX_EXP)
 #if (FLT_MAX_EXP == DBL_MAX_EXP)
-#define NOTE_FLOAT
+#define NOTE_C_LOW_MEM
 #endif
 #elif defined(__FLT_MAX_EXP__) && defined(__DBL_MAX_EXP__)
 #if (__FLT_MAX_EXP__ == __DBL_MAX_EXP__)
-#define NOTE_FLOAT
+#define NOTE_C_LOW_MEM
 #endif
 #else
 #error What are floating point exponent length symbols for this compiler?
 #endif
 
-// If using a short float, we must be on a VERY small MCU.  In this case, define additional
-// symbols that will save quite a bit of memory in the runtime image.
-#ifdef NOTE_FLOAT
-#define JNUMBER float
+// NOTE_LOWMEM is the old name of NOTE_C_LOW_MEM. If NOTE_LOWMEM is defined,
+// we define NOTE_C_LOW_MEM as well, for backwards compatibility. NOTE_FLOAT is
+// also no longer used internally, but used to be defined when NOTE_LOWMEM was
+// defined. It's also preserved here for backwards compatibility.
+#ifdef NOTE_LOWMEM
+#define NOTE_C_LOW_MEM
+#define NOTE_FLOAT
+#endif
+
+#ifdef NOTE_C_LOW_MEM
 #define ERRSTR(x,y) (y)
-#define NOTE_LOWMEM
 #else
-#define JNUMBER double
 #define ERRSTR(x,y) (x)
 #define ERRDBG
 #endif
 
+#ifdef NOTE_C_TEST_SINGLE_PRECISION
+typedef float JNUMBER;
+#else
+typedef double JNUMBER;
+#endif
+
+typedef int64_t JINTEGER;
+#define JINTEGER_MIN INT64_MIN
+#define JINTEGER_MAX INT64_MAX
+
+typedef uint64_t JUINTEGER;
+
 // UNIX Epoch time (also known as POSIX time) is the  number of seconds that have elapsed since
 // 00:00:00 Thursday, 1 January 1970, Coordinated Universal Time (UTC).  In this project, it always
 // originates from the Notecard, which synchronizes the time from both the cell network and GPS.
-typedef unsigned long int JTIME;
+typedef JUINTEGER JTIME;
 
 // C-callable functions
 #ifdef __cplusplus
@@ -355,7 +371,7 @@ void NoteDebugWithLevelLn(uint8_t level, const char *msg);
 
 void *NoteMalloc(size_t size);
 void NoteFree(void *);
-long unsigned int NoteGetMs(void);
+uint32_t NoteGetMs(void);
 void NoteDelayMs(uint32_t ms);
 void NoteLockI2C(void);
 void NoteUnlockI2C(void);
@@ -378,12 +394,12 @@ char *JGetString(J *rsp, const char *field);
 JNUMBER JGetNumber(J *rsp, const char *field);
 J *JGetArray(J *rsp, const char *field);
 J *JGetObject(J *rsp, const char *field);
-long int JGetInt(J *rsp, const char *field);
+JINTEGER JGetInt(J *rsp, const char *field);
 bool JGetBool(J *rsp, const char *field);
 JNUMBER JNumberValue(J *item);
 char *JStringValue(J *item);
 bool JBoolValue(J *item);
-long int JIntValue(J *item);
+JINTEGER JIntValue(J *item);
 bool JIsNullString(J *rsp, const char *field);
 bool JIsExactString(J *rsp, const char *field, const char *teststr);
 bool JContainsString(J *rsp, const char *field, const char *substr);
@@ -418,8 +434,8 @@ int JBaseItemType(int type);
 #define JNTOA_MAX       (44)
 char * JNtoA(JNUMBER f, char * buf, int precision);
 JNUMBER JAtoN(const char *string, char **endPtr);
-void JItoA(long int n, char *s);
-long int JAtoI(const char *s);
+void JItoA(JINTEGER n, char *s);
+JINTEGER JAtoI(const char *s);
 int JB64EncodeLen(int len);
 int JB64Encode(char * coded_dst, const char *plain_src,int len_plain_src);
 int JB64DecodeLen(const char * coded_src);
@@ -468,12 +484,12 @@ bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneO
 bool NoteLocationValid(char *errbuf, uint32_t errbuflen);
 bool NoteLocationValidST(char *errbuf, uint32_t errbuflen);
 void NoteTurboIO(bool enable);
-long int NoteGetEnvInt(const char *variable, long int defaultVal);
+JINTEGER NoteGetEnvInt(const char *variable, JINTEGER defaultVal);
 JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal);
 bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen);
 bool NoteSetEnvDefault(const char *variable, char *buf);
 bool NoteSetEnvDefaultNumber(const char *variable, JNUMBER defaultVal);
-bool NoteSetEnvDefaultInt(const char *variable, long int defaultVal);
+bool NoteSetEnvDefaultInt(const char *variable, JINTEGER defaultVal);
 bool NoteIsConnected(void);
 bool NoteIsConnectedST(void);
 bool NoteGetNetStatus(char *statusBuf, int statusBufLen);

@@ -11,7 +11,7 @@
  *
  */
 
-#ifndef NOTE_LOWMEM
+#ifndef NOTE_C_LOW_MEM
 
 #include "n_lib.h"
 

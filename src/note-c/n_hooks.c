@@ -174,8 +174,8 @@ i2cReceiveFn hookI2CReceive = NULL;
 
 // Internal hooks
 typedef bool (*nNoteResetFn) (void);
-typedef const char * (*nTransactionFn) (const char *, size_t, char **, size_t);
-typedef const char * (*nReceiveFn) (uint8_t *, uint32_t *, bool, size_t, uint32_t *);
+typedef const char * (*nTransactionFn) (const char *, size_t, char **, uint32_t);
+typedef const char * (*nReceiveFn) (uint8_t *, uint32_t *, bool, uint32_t, uint32_t *);
 typedef const char * (*nTransmitFn) (uint8_t *, uint32_t, bool);
 static nNoteResetFn notecardReset = NULL;
 static nTransactionFn notecardTransaction = NULL;
@@ -470,7 +470,7 @@ void NoteDebugWithLevelLn(uint8_t level, const char *msg)
   @returns  The current milliseconds value.
 */
 /**************************************************************************/
-long unsigned int NoteGetMs(void)
+uint32_t NoteGetMs(void)
 {
     if (hookGetMs == NULL) {
         return 0;
@@ -491,7 +491,7 @@ void NoteDelayMs(uint32_t ms)
     }
 }
 
-#if NOTE_SHOW_MALLOC || !defined(NOTE_LOWMEM)
+#if NOTE_SHOW_MALLOC || !defined(NOTE_C_LOW_MEM)
 //**************************************************************************/
 /*!
   @brief  Convert number to a hex string
@@ -857,7 +857,7 @@ bool noteHardReset(void)
   or the hook has not been set.
 */
 /**************************************************************************/
-const char *noteJSONTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs)
+const char *noteJSONTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
     if (notecardTransaction == NULL || hookActiveInterface == interfaceNone) {
         return "i2c or serial interface must be selected";
@@ -884,7 +884,7 @@ const char *noteJSONTransaction(const char *request, size_t reqLen, char **respo
 */
 /**************************************************************************/
 const char *noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay,
-                               size_t timeoutMs, uint32_t *available)
+                               uint32_t timeoutMs, uint32_t *available)
 {
     if (notecardChunkedReceive == NULL || hookActiveInterface == interfaceNone) {
         return "i2c or serial interface must be selected";

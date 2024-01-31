@@ -14,7 +14,7 @@ it as a git subtree.
 
 ## Documentation
 
-The documentation for this library can be found [here](https://blues.github.io/note-c/html/index.html).
+The documentation for this library can be found [here](https://blues.github.io/note-c/index.html).
 
 ## CMake
 

@@ -63,9 +63,6 @@
 
 // For Note, disable dependencies
 #undef ENABLE_LOCALES
-#ifndef CJSON_NO_CLIB
-#define CJSON_NO_CLIB      1       // Use tiny but non-robust versions of conversions
-#endif
 
 #include "n_lib.h"
 
@@ -171,10 +168,29 @@ static unsigned char* Jstrdup(const unsigned char* string)
     return copy;
 }
 
+/*!
+ @brief Dynamically allocate a block of memory of the given size.
+
+ This is simply a wrapper around the memory allocation function provided by the
+ user via `NoteSetFn`.
+
+ @param size The number of bytes to allocate.
+
+ @returns A pointer to the first byte of the allocated memory or NULL on error.
+ */
 N_CJSON_PUBLIC(void *) JMalloc(size_t size)
 {
     return _Malloc(size);
 }
+
+/*!
+ @brief Free a block of dynamically allocated memory.
+
+ This is simply a wrapper around the memory free function provided by the user
+ via `NoteSetFn`.
+
+ @param p A pointer to the block of memory to free.
+ */
 N_CJSON_PUBLIC(void) JFree(void *p)
 {
     _Free(p);
@@ -287,25 +303,19 @@ static Jbool parse_number(J * const item, parse_buffer * const input_buffer)
 loop_end:
     number_c_string[i] = '\0';
 
-    /* some platforms may not have locale support */
-#if !CJSON_NO_CLIB
-    number = strtod((const char*)number_c_string, (char**)&after_end);
-#else
     number = JAtoN((const char*)number_c_string, (char**)&after_end);
-#endif
     if (number_c_string == after_end) {
         return false; /* parse_error */
     }
-
     item->valuenumber = number;
 
-    /* use saturation in case of overflow */
-    if (number >= LONG_MAX) {
-        item->valueint = LONG_MAX;
-    } else if (number <= LONG_MIN) {
-        item->valueint = LONG_MIN;
+    // Saturate valueint in the case of overflow.
+    if (number >= JINTEGER_MAX) {
+        item->valueint = JINTEGER_MAX;
+    } else if (number <= JINTEGER_MIN) {
+        item->valueint = JINTEGER_MIN;
     } else {
-        item->valueint = (long int)number;
+        item->valueint = JAtoI((const char*)number_c_string);
     }
 
     item->type = JNumber;
@@ -320,12 +330,14 @@ N_CJSON_PUBLIC(JNUMBER) JSetNumberHelper(J *object, JNUMBER number)
     if (object == NULL) {
         return number;
     }
-    if (number >= LONG_MAX) {
-        object->valueint = LONG_MAX;
-    } else if (number <= LONG_MIN) {
-        object->valueint = LONG_MIN;
+
+    // Saturate valueint in the case of overflow.
+    if (number >= JINTEGER_MAX) {
+        object->valueint = JINTEGER_MAX;
+    } else if (number <= JINTEGER_MIN) {
+        object->valueint = JINTEGER_MIN;
     } else {
-        object->valueint = (long int)number;
+        object->valueint = (JINTEGER)number;
     }
 
     return object->valuenumber = number;
@@ -421,7 +433,8 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     }
 
     unsigned char *output_pointer = NULL;
-    JNUMBER d = item->valuenumber;
+    JNUMBER vnum = item->valuenumber;
+    JINTEGER vint = item->valueint;
     int length = 0;
     size_t i = 0;
     unsigned char number_buffer[JNTOA_MAX]; /* temporary buffer to print the number into */
@@ -432,34 +445,20 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     }
 
     /* This checks for NaN and Infinity */
-    if ((d * 0) != 0) {
+    if ((vnum * 0) != 0) {
         char *nbuf = (char *) number_buffer;
         strlcpy(nbuf, "null", JNTOA_MAX);
         length = strlen(nbuf);
     } else {
-#if !CJSON_NO_CLIB
-        JNUMBER test;
-        /* Try 15 decimal places of precision to avoid nonsignificant nonzero digits */
-        length = sprintf((char*)number_buffer, "%1.15g", d);
-
-        /* Check whether the original double can be recovered */
-        if ((sscanf((char*)number_buffer, "%lg", &test) != 1) || ((JNUMBER)test != d)) {
-            /* If not, print with 17 decimal places of precision */
-            length = sprintf((char*)number_buffer, "%1.17g", d);
-        }
-        if (strchr((char*)number_buffer, '.') != NULL) {
-            while (length > 1 && number_buffer[length-1] == '0') {
-                number_buffer[--length] = '\0';
-            }
-            if (length > 1 && number_buffer[length-1] == '.') {
-                number_buffer[--length] = '\0';
-            }
-        }
-#else
         char *nbuf = (char *) number_buffer;
-        JNtoA(d, nbuf, -1);
+
+        if (vnum != (JNUMBER)vint) {
+            JNtoA(vnum, nbuf, -1);
+        } else {
+            JItoA(vint, nbuf);
+        }
+
         length = strlen(nbuf);
-#endif
     }
 
     /* conversion failed or buffer overrun occured */
@@ -1046,6 +1045,17 @@ N_CJSON_PUBLIC(char *) JPrint(const J *item)
     return (char*)print(item, true, false);
 }
 
+/*!
+ @brief Get the unformatted string representation of a `J` object.
+
+ The string returned by this function is dynamically allocated and MUST be freed
+ by the caller with `JFree`. Unformatted means that the minimum JSON string
+ is produced, without any additional whitespace.
+
+ @param item The JSON object to get the unformatted string representation of.
+
+ @returns The string or NULL on error.
+ */
 N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
 {
     if (item == NULL) {
@@ -1939,6 +1949,21 @@ N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name,
     return NULL;
 }
 
+N_CJSON_PUBLIC(J*) JAddIntToObject(J * const object, const char * const name, const JINTEGER integer)
+{
+    if (object == NULL) {
+        return NULL;
+    }
+
+    J *integer_item = JCreateInteger(integer);
+    if (add_item_to_object(object, name, integer_item, false)) {
+        return integer_item;
+    }
+
+    JDelete(integer_item);
+    return NULL;
+}
+
 /*!
  @brief Add a string field to a `J` object.
 
@@ -2257,14 +2282,26 @@ N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num)
     if(item) {
         item->type = JNumber;
         item->valuenumber = num;
-        /* use saturation in case of overflow */
-        if (num >= LONG_MAX) {
-            item->valueint = LONG_MAX;
-        } else if (num <= LONG_MIN) {
-            item->valueint = LONG_MIN;
+
+        // Saturate valueint in the case of overflow.
+        if (num >= JINTEGER_MAX) {
+            item->valueint = JINTEGER_MAX;
+        } else if (num <= JINTEGER_MIN) {
+            item->valueint = JINTEGER_MIN;
         } else {
-            item->valueint = (long int)num;
+            item->valueint = (JINTEGER)num;
         }
+    }
+    return item;
+}
+
+N_CJSON_PUBLIC(J *) JCreateInteger(JINTEGER integer)
+{
+    J *item = JNew_Item();
+    if(item) {
+        item->type = JNumber;
+        item->valuenumber = (JNUMBER)integer;
+        item->valueint = integer;
     }
     return item;
 }

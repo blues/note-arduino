@@ -1381,7 +1381,7 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_to_throttle_aux_s
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  jAddNumberToObject_Parameters.reset();
+  jAddIntToObject_Parameters.reset();
   noteNewRequest_Parameters.reset();
   noteRequestWithRetry_Parameters.reset();
   noteSetFnDefault_Parameters.reset();
@@ -1421,7 +1421,7 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_15_second_re
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  jAddNumberToObject_Parameters.reset();
+  jAddIntToObject_Parameters.reset();
   noteNewRequest_Parameters.reset();
   noteRequestWithRetry_Parameters.reset();
   noteSetFnDefault_Parameters.reset();
@@ -1461,7 +1461,7 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_paramete
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  jAddNumberToObject_Parameters.reset();
+  jAddIntToObject_Parameters.reset();
   noteNewRequest_Parameters.reset();
   noteRequestWithRetry_Parameters.reset();
   noteSetFnDefault_Parameters.reset();
@@ -1476,8 +1476,8 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_paramete
    // Assert
   ///////////
 
-  if ("max" == jAddNumberToObject_Parameters.name[0]
-   && (SERIAL_RX_BUFFER_SIZE - 1) == jAddNumberToObject_Parameters.number[0]
+  if ("max" == jAddIntToObject_Parameters.name[0]
+   && (SERIAL_RX_BUFFER_SIZE - 1) == jAddIntToObject_Parameters.number[0]
   ) {
     result = 0;
   }
@@ -1485,8 +1485,8 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_paramete
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tjAddNumberToObject_Parameters.name == \"" << std::dec << jAddNumberToObject_Parameters.name[0] << "\", EXPECTED: \"max\"" << std::endl;
-    std::cout << "\tjAddNumberToObject_Parameters.number == " << std::dec << jAddNumberToObject_Parameters.number[0] << ", EXPECTED: " << (SERIAL_RX_BUFFER_SIZE - 1) << std::endl;
+    std::cout << "\tjAddIntToObject_Parameters.name == \"" << std::dec << jAddIntToObject_Parameters.name[0] << "\", EXPECTED: \"max\"" << std::endl;
+    std::cout << "\tjAddIntToObject_Parameters.number == " << std::dec << jAddIntToObject_Parameters.number[0] << ", EXPECTED: " << (SERIAL_RX_BUFFER_SIZE - 1) << std::endl;
     std::cout << "[";
   }
 
@@ -1503,7 +1503,7 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  jAddNumberToObject_Parameters.reset();
+  jAddIntToObject_Parameters.reset();
   noteNewRequest_Parameters.reset();
   noteRequestWithRetry_Parameters.reset();
   noteSetFnDefault_Parameters.reset();
@@ -1518,8 +1518,8 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter
    // Assert
   ///////////
 
-  if ("ms" == jAddNumberToObject_Parameters.name[1]
-   && 1 == jAddNumberToObject_Parameters.number[1]
+  if ("ms" == jAddIntToObject_Parameters.name[1]
+   && 1 == jAddIntToObject_Parameters.number[1]
   ) {
     result = 0;
   }
@@ -1527,8 +1527,8 @@ int test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tjAddNumberToObject_Parameters.name == \"" << std::dec << jAddNumberToObject_Parameters.name[1] << "\", EXPECTED: \"ms\"" << std::endl;
-    std::cout << "\tjAddNumberToObject_Parameters.number == " << std::dec << jAddNumberToObject_Parameters.number[1] << ", EXPECTED: 1" << std::endl;
+    std::cout << "\tjAddIntToObject_Parameters.name == \"" << std::dec << jAddIntToObject_Parameters.name[1] << "\", EXPECTED: \"ms\"" << std::endl;
+    std::cout << "\tjAddIntToObject_Parameters.number == " << std::dec << jAddIntToObject_Parameters.number[1] << ", EXPECTED: 1" << std::endl;
     std::cout << "[";
   }
 
@@ -1544,7 +1544,7 @@ int test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_inte
   ////////////
 
   Notecard notecard;
-  jAddNumberToObject_Parameters.reset();
+  jAddIntToObject_Parameters.reset();
   noteNewRequest_Parameters.reset();
   noteRequestWithRetry_Parameters.reset();
   noteSetFnDefault_Parameters.reset();

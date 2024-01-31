@@ -1207,7 +1207,7 @@ bool NoteSetEnvDefault(const char *variable, char *buf)
   @returns boolean indicating if variable was set.
 */
 /**************************************************************************/
-bool NoteSetEnvDefaultInt(const char *variable, long int defaultVal)
+bool NoteSetEnvDefaultInt(const char *variable, JINTEGER defaultVal)
 {
     char buf[32];
     JItoA(defaultVal, buf);
@@ -1253,7 +1253,7 @@ JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal)
   @returns environment variable value.
 */
 /**************************************************************************/
-long int NoteGetEnvInt(const char *variable, long int defaultVal)
+JINTEGER NoteGetEnvInt(const char *variable, JINTEGER defaultVal)
 {
     char buf[32], buf2[32];
     JItoA(defaultVal, buf2);

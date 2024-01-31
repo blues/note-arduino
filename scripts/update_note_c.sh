@@ -40,6 +40,7 @@ NOTE_C_UNNEEDED_DIRS=(
     "$NOTE_C_DIR/docs"
     "$NOTE_C_DIR/scripts"
     "$NOTE_C_DIR/test"
+    "$NOTE_C_DIR/.github"
 )
 for DIR in "${NOTE_C_UNNEEDED_DIRS[@]}"; do
     rm -rf "$DIR"

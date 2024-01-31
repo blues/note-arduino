@@ -23,7 +23,7 @@
 
 // Forwards
 NOTE_C_STATIC void delayIO(void);
-NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available, size_t timeoutMs);
+NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available, uint32_t timeoutMs);
 
 /**************************************************************************/
 /*!
@@ -50,11 +50,11 @@ NOTE_C_STATIC void delayIO(void)
 */
 /**************************************************************************/
 NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available,
-        size_t timeoutMs)
+        uint32_t timeoutMs)
 {
     uint8_t dummy_buffer = 0;
 
-    for (const size_t startMs = _GetMs() ; !(*available) ; _DelayMs(50)) {
+    for (const uint32_t startMs = _GetMs() ; !(*available) ; _DelayMs(50)) {
         // Send a dummy I2C transaction to prime the Notecard
         const char *err = _I2CReceive(_I2CAddress(), &dummy_buffer, 0, available);
         if (err) {
@@ -92,7 +92,7 @@ NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available,
   @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs)
+const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
     const char *err = NULL;
 
@@ -256,7 +256,7 @@ bool i2cNoteReset(void)
         bool nonControlCharFound = false;
 
         // Read I2C data for at least `CARD_RESET_DRAIN_MS` continuously
-        for (size_t startMs = _GetMs() ; (_GetMs() - startMs) < CARD_RESET_DRAIN_MS ;) {
+        for (uint32_t startMs = _GetMs() ; (_GetMs() - startMs) < CARD_RESET_DRAIN_MS ;) {
 
             // Read the next chunk of available data
             uint32_t available = 0;
@@ -302,7 +302,6 @@ bool i2cNoteReset(void)
         // then the Notecard has been successfully reset.
         if (!somethingFound || nonControlCharFound) {
             notecardReady = false;
-#ifdef ERRDBG
             if (somethingFound) {
                 NOTE_C_LOG_WARN(ERRSTR("unrecognized data from notecard", c_iobad));
             } else {
@@ -315,7 +314,6 @@ bool i2cNoteReset(void)
                 }
                 delayIO();
             }
-#endif
         } else {
             notecardReady = true;
             break;
@@ -350,13 +348,13 @@ bool i2cNoteReset(void)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available)
+const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
 {
     // Load buffer with chunked I2C values
     size_t received = 0;
     uint16_t requested = 0;
     bool overflow = false;
-    size_t startMs = _GetMs();
+    uint32_t startMs = _GetMs();
 
     // Request all available bytes, up to the maximum request size
     requested = (*available > 0xFFFF) ? 0xFFFF : *available;

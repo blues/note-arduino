@@ -179,7 +179,7 @@ JNUMBER JGetNumber(J *rsp, const char *field)
     @returns The number, or 0, if NULL.
 */
 /**************************************************************************/
-long int JIntValue(J *item)
+JINTEGER JIntValue(J *item)
 {
     if (item == NULL) {
         return 0;
@@ -195,7 +195,7 @@ long int JIntValue(J *item)
     @returns The int found, or 0, if not present.
 */
 /**************************************************************************/
-long int JGetInt(J *rsp, const char *field)
+JINTEGER JGetInt(J *rsp, const char *field)
 {
     if (rsp == NULL) {
         return 0;
@@ -428,18 +428,24 @@ const char *JGetItemName(const J * item)
     @note The buffer must be large enough because no bounds checking is done.
 */
 /**************************************************************************/
-void JItoA(long int n, char *s)
+void JItoA(JINTEGER n, char *s)
 {
     char c;
-    long int i, j, sign;
-    if ((sign = n) < 0) {
-        n = -n;
+    // Conversion to unsigned is required to handle the case where n is
+    // JINTEGER_MIN. In that case, applying the unary minus operator to the
+    // signed version of n overflows and the behavior is undefined. By changing
+    // n to be unsigned, the unary minus operator behaves differently, and there
+    // is no overflow. See https://stackoverflow.com/q/8026694.
+    JUINTEGER unsignedN = n;
+    long int i, j;
+    if (n < 0) {
+        unsignedN = -unsignedN;
     }
     i = 0;
     do {
-        s[i++] = n % 10 + '0';
-    } while ((n /= 10) > 0);
-    if (sign < 0) {
+        s[i++] = unsignedN % 10 + '0';
+    } while ((unsignedN /= 10) > 0);
+    if (n < 0) {
         s[i++] = '-';
     }
     s[i] = '\0';
@@ -457,9 +463,9 @@ void JItoA(long int n, char *s)
     @returns An integer, or 0 if invalid
 */
 /**************************************************************************/
-long int JAtoI(const char *string)
+JINTEGER JAtoI(const char *string)
 {
-    long int result = 0;
+    JINTEGER result = 0;
     unsigned int digit;
     int sign;
     while (*string == ' ') {
@@ -585,11 +591,7 @@ int JGetItemType(J *item)
         }
         int vlen = strlen(v);
         char *endstr;
-#if !CJSON_NO_CLIB
-        JNUMBER value = strtod(v, &endstr);
-#else
         JNUMBER value = JAtoN(v, &endstr);
-#endif
         if (endstr[0] == 0) {
             if (value == 0) {
                 return JTYPE_STRING_ZERO;

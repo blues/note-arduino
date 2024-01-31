@@ -25,7 +25,7 @@ static int suppressShowTransactions = 0;
 static bool resetRequired = true;
 
 // CRC data
-#ifndef NOTE_LOWMEM
+#ifndef NOTE_C_LOW_MEM
 static uint16_t lastRequestSeqno = 0;
 #define CRC_FIELD_LENGTH		22	// ,"crc":"SSSS:CCCCCCCC"
 #define	CRC_FIELD_NAME_OFFSET	1
@@ -303,7 +303,7 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
 */
 char * NoteRequestResponseJSON(const char *reqJSON)
 {
-    size_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+    uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
     char *rspJSON = NULL;
 
     if (reqJSON == NULL) {
@@ -450,8 +450,8 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
     // where we can find out that the cmd failed.  Note that a Seqno is included
     // as part of the CRC data so that two identical requests occurring within the
     // modulus of seqno never are mistaken as being the same request being retried.
-#ifndef NOTE_LOWMEM
     uint8_t lastRequestRetries = 0;
+#ifndef NOTE_C_LOW_MEM
     bool lastRequestCrcAdded = false;
     if (!noResponseExpected) {
         char *newJson = crcAdd(json, lastRequestSeqno);
@@ -461,7 +461,7 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             lastRequestCrcAdded = true;
         }
     }
-#endif // !NOTE_LOWMEM
+#endif // !NOTE_C_LOW_MEM
 
     // When note.add or web.* requests are used to transfer binary data, the
     // time to complete the transaction can vary depending on the size of
@@ -476,7 +476,7 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
     //   - If the request is a `web.*`, follow the same logic, but instead
     //     of using the standard timeout, use the Notecard timeout of 90
     //     seconds for all `web.*` transactions.
-    size_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+    uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
 
     // Interrogate the request
     if (JContainsString(req, (reqType ? "req" : "cmd"), "note.add")) {
@@ -509,7 +509,6 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
     char *responseJSON = NULL;
     J *rsp = NULL;
     while (true) {
-#ifndef NOTE_LOWMEM
         // If no retry possibility, break out
         if (lastRequestRetries > CARD_REQUEST_RETRIES_ALLOWED) {
             break;
@@ -517,7 +516,6 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             // free on retry
             JDelete(rsp);
         }
-#endif // !NOTE_LOWMEM
 
         // reset variables
         rsp = NULL;
@@ -542,7 +540,6 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
         // Swap newline-terminator for NULL-terminator
         json[jsonLen] = '\0';
 
-#ifndef NOTE_LOWMEM
         // If there's an I/O error on the transaction, retry
         if (errStr != NULL) {
             JFree(responseJSON);
@@ -553,6 +550,7 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             continue;
         }
 
+#ifndef NOTE_C_LOW_MEM
         // If we sent a CRC in the request, examine the response JSON to see if
         // it has a CRC error.  Note that the CRC is stripped from the
         // responseJSON as a side-effect of this method.
@@ -564,6 +562,7 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             _DelayMs(500);
             continue;
         }
+#endif // !NOTE_C_LOW_MEM
 
         // See if the response JSON can't be unmarshaled, or if it contains an {io} error
         rsp = JParse(responseJSON);
@@ -577,7 +576,7 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
             if (responseJSON == NULL) {
                 NOTE_C_LOG_ERROR(ERRSTR("response expected, but response is NULL.", c_ioerr));
             } else {
-#ifndef NOTE_LOWMEM
+#ifndef NOTE_C_LOW_MEM
                 _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "[ERROR] ");
                 _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "invalid JSON: ");
                 _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, responseJSON);
@@ -603,14 +602,13 @@ J *noteTransactionShouldLock(J *req, bool lockNotecard)
                 continue;
             }
         }
-#endif // !NOTE_LOWMEM
 
         // Transaction completed
         break;
     }
 
     // Bump the request sequence number now that we've processed this request, success or error
-#ifndef NOTE_LOWMEM
+#ifndef NOTE_C_LOW_MEM
     lastRequestSeqno++;
 #endif
 
@@ -725,7 +723,7 @@ void NoteErrorClean(char *begin)
     }
 }
 
-#ifndef NOTE_LOWMEM
+#ifndef NOTE_C_LOW_MEM
 
 /*!
  @brief Convert a hex string to a 64-bit unsigned integer.
@@ -889,4 +887,4 @@ NOTE_C_STATIC bool crcError(char *json, uint16_t shouldBeSeqno)
     return (shouldBeSeqno != actualSeqno || shouldBeCrc32 != actualCrc32);
 }
 
-#endif // !NOTE_LOWMEM
+#endif // !NOTE_C_LOW_MEM

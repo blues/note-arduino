@@ -94,21 +94,25 @@ extern "C" {
     @brief  Memory allocation chunk size.
 */
 /**************************************************************************/
-#ifdef NOTE_LOWMEM
+#ifdef NOTE_C_LOW_MEM
 #define ALLOC_CHUNK 64
 #else
 #define ALLOC_CHUNK 128
 #endif
 
+#ifdef NOTE_C_LOW_MEM
+#define NOTE_DISABLE_USER_AGENT
+#endif
+
 // Transactions
 J *noteTransactionShouldLock(J *req, bool lockNotecard);
-const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
+const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs);
 bool i2cNoteReset(void);
-const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
+const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs);
 bool serialNoteReset(void);
-const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
+const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
-const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
+const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 
 // Hooks
@@ -125,8 +129,8 @@ bool noteI2CReset(uint16_t DevAddress);
 const char *noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
 const char *noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 bool noteHardReset(void);
-const char *noteJSONTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs);
-const char *noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available);
+const char *noteJSONTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs);
+const char *noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *noteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 bool noteIsDebugOutputActive(void);
 

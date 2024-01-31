@@ -31,7 +31,7 @@
   @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, size_t timeoutMs)
+const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
     // Strip off the newline and optional carriage return characters. This
     // allows for standardized output to be reapplied.
@@ -167,7 +167,7 @@ bool serialNoteReset(void)
         bool nonControlCharFound = false;
 
         // Read Serial data for at least CARD_RESET_DRAIN_MS continously
-        for (size_t startMs = _GetMs() ; (_GetMs() - startMs) < CARD_RESET_DRAIN_MS ;) {
+        for (uint32_t startMs = _GetMs() ; (_GetMs() - startMs) < CARD_RESET_DRAIN_MS ;) {
             // Determine if Serial data is available
             while (_SerialAvailable()) {
                 somethingFound = true;
@@ -225,11 +225,11 @@ bool serialNoteReset(void)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, size_t timeoutMs, uint32_t *available)
+const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
 {
     size_t received = 0;
     bool overflow = (received >= *size);
-    size_t startMs = _GetMs();
+    uint32_t startMs = _GetMs();
     for (bool eop = false ; !overflow && !eop ;) {
         while (!_SerialAvailable()) {
             if (timeoutMs && (_GetMs() - startMs >= timeoutMs)) {

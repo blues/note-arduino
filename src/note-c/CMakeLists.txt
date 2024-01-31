@@ -19,6 +19,8 @@ option(NOTE_C_COVERAGE "Compile for test NOTE_C_COVERAGE reporting." OFF)
 option(NOTE_C_MEM_CHECK "Run tests with Valgrind." OFF)
 option(NOTE_C_BUILD_DOCS "Build docs." OFF)
 option(NOTE_C_NO_LIBC "Build the library without linking against libc, generating errors for any undefined symbols." OFF)
+option(NOTE_C_LOW_MEM "Build the library tailored for low memory usage." OFF)
+option(NOTE_C_TEST_SINGLE_PRECISION "Use single precision for JSON floating point numbers." OFF)
 
 set(NOTE_C_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(note_c SHARED)
@@ -40,7 +42,6 @@ target_sources(
         ${NOTE_C_SRC_DIR}/n_request.c
         ${NOTE_C_SRC_DIR}/n_serial.c
         ${NOTE_C_SRC_DIR}/n_str.c
-        ${NOTE_C_SRC_DIR}/n_ua.c
 )
 target_compile_options(
     note_c
@@ -57,6 +58,23 @@ target_include_directories(
     PUBLIC ${NOTE_C_SRC_DIR}
 )
 
+if(NOTE_C_LOW_MEM)
+    target_compile_definitions(
+        note_c
+        PUBLIC
+            NOTE_C_LOW_MEM
+    )
+else()
+    # This file is empty if NOTE_C_LOW_MEM is defined, which leads to a warning
+    # about an empty translation unit, so we only add it to the build if
+    # NOTE_C_LOW_MEM is false.
+    target_sources(
+        note_c
+        PRIVATE
+            ${NOTE_C_SRC_DIR}/n_ua.c
+    )
+endif()
+
 if(NOTE_C_NO_LIBC)
     target_link_options(
         note_c
@@ -64,6 +82,14 @@ if(NOTE_C_NO_LIBC)
             -nostdlib
             -nodefaultlibs
             LINKER:--no-undefined
+    )
+endif()
+
+if(NOTE_C_TEST_SINGLE_PRECISION)
+    target_compile_definitions(
+        note_c
+        PUBLIC
+            NOTE_C_TEST_SINGLE_PRECISION
     )
 endif()
 
@@ -82,11 +108,13 @@ if(NOTE_C_BUILD_TESTS)
 
     target_compile_definitions(
         note_c
-        PUBLIC NOTE_C_TEST
+        PUBLIC
+            NOTE_C_TEST
     )
     target_include_directories(
         note_c
-        PRIVATE ${CMAKE_CURRENT_LIST_DIR}/test/include
+        PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/test/include
     )
 
     add_subdirectory(test)

@@ -81,7 +81,7 @@ fmtflt(char *str, size_t *len, size_t size, JNUMBER fvalue, int width,
     const char *infnan = NULL;
     char iconvert[JNTOA_MAX];
     char fconvert[JNTOA_MAX];
-    char econvert[4];	/* "e-12" (without nul-termination). */
+    char econvert[6];   /* "e-1024" (without nul-termination). */
     char esign = 0;
     char sign = 0;
     int leadfraczeros = 0;
@@ -258,12 +258,17 @@ again:
         }
 
         /*
-         * Convert the exponent.  The sizeof(econvert) is 4.  So, the
-         * econvert buffer can hold e.g. "e+99" and "e-99".  We don't
-         * support an exponent which contains more than two digits.
-         * Therefore, the following stores are safe.
+         * Convert the exponent.  The sizeof(econvert) is 6.  So, the
+         * econvert buffer can hold e.g. "e+1024" and "e-1024".
          */
-        epos = convert(exponent, econvert, 2, 10, 0);
+        size_t digits = 2;
+        if (exponent > 99 || exponent < -99) {
+            digits++;
+        }
+        if (exponent > 999 || exponent < -999) {
+            digits++;
+        }
+        epos = convert(exponent, econvert, digits, 10, 0);
         /*
          * C99 says: "The exponent always contains at least two digits,
          * and only as many more digits as necessary to represent the
@@ -424,16 +429,16 @@ static int getexponent(JNUMBER value)
     int exponent = 0;
 
     /*
-     * We check for 99 > exponent > -99 in order to work around possible
+     * We check for 1023 >= exponent >= -1022 in order to work around possible
      * endless loops which could happen (at least) in the second loop (at
      * least) if we're called with an infinite value.  However, we checked
      * for infinity before calling this function using our ISINF() macro, so
      * this might be somewhat paranoid.
      */
-    while (tmp < 1.0 && tmp > 0.0 && --exponent > -99) {
+    while (tmp < 1.0 && tmp > 0.0 && --exponent >= -1022) {
         tmp *= 10;
     }
-    while (tmp >= 10.0 && ++exponent < 99) {
+    while (tmp >= 10.0 && ++exponent <= 1023) {
         tmp /= 10;
     }
 

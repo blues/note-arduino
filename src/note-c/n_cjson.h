@@ -88,7 +88,7 @@ typedef struct J {
     /* The item's string, if type==JString  and type == JRaw */
     char *valuestring;
     /* writing to valueint is DEPRECATED, use JSetNumberValue instead */
-    long int valueint;
+    JINTEGER valueint;
     /* The item's number, if type==JNumber */
     JNUMBER valuenumber;
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
@@ -236,6 +236,7 @@ N_CJSON_PUBLIC(J *) JCreateTrue(void);
 N_CJSON_PUBLIC(J *) JCreateFalse(void);
 N_CJSON_PUBLIC(J *) JCreateBool(Jbool boolean);
 N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num);
+N_CJSON_PUBLIC(J *) JCreateInteger(JINTEGER integer);
 N_CJSON_PUBLIC(J *) JCreateString(const char *string);
 /* raw json */
 N_CJSON_PUBLIC(J *) JCreateRaw(const char *raw);
@@ -302,7 +303,7 @@ N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name);
 N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, const Jbool boolean);
 N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name, const JNUMBER number);
-#define JAddIntToObject(object, name, integer) JAddNumberToObject(object, name, (JNUMBER)(integer))
+N_CJSON_PUBLIC(J*) JAddIntToObject(J * const object, const char * const name, const JINTEGER integer);
 N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name, const char * const string);
 N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, const char * const raw);
 N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name);

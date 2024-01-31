@@ -85,7 +85,7 @@ char **endPtr;              /* If non-NULL, store terminating character's
                                  * address here. */
 {
     int sign, expSign = FALSE;
-    JNUMBER fraction, dblExp;
+    JNUMBER fraction;
     register const char *p;
     register int c;
     int exp = 0;                /* Exponent read from "EX" field. */
@@ -231,7 +231,6 @@ char **endPtr;              /* If non-NULL, store terminating character's
     if (exp > MAX_EXPONENT) {
         exp = MAX_EXPONENT;
     }
-    dblExp = 1.0;
     int d;
     for (d = 0; exp != 0; exp >>= 1, d += 1) {
         /* Table giving binary powers of 10.  Entry */
@@ -257,7 +256,7 @@ char **endPtr;              /* If non-NULL, store terminating character's
         case 5:
             p10 = 1.0e32;
             break;
-#ifndef NOTE_FLOAT
+#ifndef NOTE_C_LOW_MEM
         case 6:
             p10 = 1.0e64;
             break;
@@ -273,13 +272,12 @@ char **endPtr;              /* If non-NULL, store terminating character's
             break;
         }
         if (exp & 01) {
-            dblExp *= p10;
+            if (expSign) {
+                fraction /= p10;
+            } else {
+                fraction *= p10;
+            }
         }
-    }
-    if (expSign) {
-        fraction /= dblExp;
-    } else {
-        fraction *= dblExp;
     }
 
 done:
