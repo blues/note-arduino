@@ -1,6 +1,6 @@
 #include "NoteI2c_Arduino.hpp"
 
-#if defined(NOTE_LOWMEM)
+#if defined(NOTE_C_LOW_MEM)
 static const char *i2cerr = "i2c {io}";
 #endif
 
