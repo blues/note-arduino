@@ -45,6 +45,15 @@
 #include "mock/mock-parameters.hpp"
 #endif
 
+#if defined(__GNUC__) | defined(__clang__)
+    #define NOTE_ARDUINO_DEPRECATED __attribute__((__deprecated__))
+#elif defined(_MSC_VER)
+    #define NOTE_ARDUINO_DEPRECATED __declspec(deprecated)
+#else
+    #define NOTE_ARDUINO_DEPRECATED
+    #define NOTE_ARDUINO_NO_DEPRECATED_ATTR
+#endif // __GNUC__ || __clang__
+
 /**************************************************************************/
 /*!
     @brief  Class that stores state and functions for interacting with the
@@ -83,8 +92,8 @@ public:
     }
     bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
     void deleteResponse(J *rsp);
-    void logDebug(const char *message);
-    void logDebugf(const char *format, ...);
+    NOTE_ARDUINO_DEPRECATED void logDebug(const char *message);
+    NOTE_ARDUINO_DEPRECATED void logDebugf(const char *format, ...);
     J *newCommand(const char *request);
     J *newRequest(const char *request);
     J *requestAndResponse(J *req);

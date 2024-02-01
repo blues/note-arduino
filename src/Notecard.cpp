@@ -309,31 +309,44 @@ void Notecard::deleteResponse(J *rsp)
 
 /**************************************************************************/
 /*!
+    @deprecated NoteDebug, which this function wraps, should be treated as an
+    internal Notecard logging function, used only by the library itself
+    (note-arduino and note-c) and not its users.
     @brief  Write a message to the serial debug stream.
     @param    message
               A string to log to the serial debug stream.
 */
 /**************************************************************************/
-void Notecard::logDebug(const char *message)
+NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message)
 {
+#ifdef NOTE_ARDUINO_NO_DEPRECATED_ATTR
+    NOTE_C_LOG_WARN("logDebug is deprecated.")
+#endif
     NoteDebug(message);
 }
 
 /**************************************************************************/
 /*!
+    @deprecated NoteDebug, which this function wraps, should be treated as an
+    internal Notecard logging function, used only by the library itself
+    (note-arduino and note-c) and not its users.
     @brief  Write a formatted message to the serial debug stream.
     @param    format
               A format string to log to the serial debug stream.
     @param    ... one or more values to interpolate into the format string.
 */
 /**************************************************************************/
-void Notecard::logDebugf(const char *format, ...)
+NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...)
 {
     char message[256];
     va_list args;
     va_start(args, format);
     vsnprintf(message, sizeof(message), format, args);
     va_end(args);
+
+#ifdef NOTE_ARDUINO_NO_DEPRECATED_ATTR
+    NOTE_C_LOG_WARN("logDebugf is deprecated.")
+#endif
     NoteDebug(message);
 }
 
