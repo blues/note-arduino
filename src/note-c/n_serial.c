@@ -60,9 +60,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
     // max timeout and ultimately in our error handling.
     for (const uint32_t startMs = _GetMs(); !_SerialAvailable(); ) {
         if (timeoutMs && (_GetMs() - startMs) >= timeoutMs) {
-#ifdef ERRDBG
-            NOTE_C_LOG_ERROR(ERRSTR("reply to request didn't arrive from module in time", c_iotimeout));
-#endif
+            NOTE_C_LOG_DEBUG(ERRSTR("reply to request didn't arrive from module in time", c_iotimeout));
             return ERRSTR("transaction timeout {io}", c_iotimeout);
         }
         if (!cardTurboIO) {
@@ -78,9 +76,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
     uint8_t *jsonbuf = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
     if (jsonbuf == NULL) {
         const char *err = ERRSTR("transaction: jsonbuf malloc failed", c_mem);
-#ifdef ERRDBG
         NOTE_C_LOG_ERROR(err);
-#endif
         return err;
     }
 
@@ -93,9 +89,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
         const char *err = serialChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
         if (err) {
             _Free(jsonbuf);
-#ifdef ERRDBG
             NOTE_C_LOG_ERROR(ERRSTR("error occured during receive", c_iobad));
-#endif
             return err;
         }
         jsonbufLen += jsonbufAvailLen;
@@ -111,9 +105,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
             uint8_t *jsonbufNew = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
             if (jsonbufNew == NULL) {
                 const char *err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
-#ifdef ERRDBG
                 NOTE_C_LOG_ERROR(err);
-#endif
                 _Free(jsonbuf);
                 return err;
             }
@@ -190,11 +182,7 @@ bool serialNoteReset(void)
             break;
         }
 
-#ifdef ERRDBG
         NOTE_C_LOG_ERROR(somethingFound ? ERRSTR("unrecognized data from notecard", c_iobad) : ERRSTR("notecard not responding", c_iobad));
-#else
-        NOTE_C_LOG_ERROR(ERRSTR("notecard not responding", c_iobad));
-#endif
 
         _DelayMs(CARD_RESET_DRAIN_MS);
         if (!_SerialReset()) {
@@ -234,11 +222,9 @@ const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, ui
         while (!_SerialAvailable()) {
             if (timeoutMs && (_GetMs() - startMs >= timeoutMs)) {
                 *size = received;
-#ifdef ERRDBG
                 if (received) {
                     NOTE_C_LOG_ERROR(ERRSTR("received only partial reply before timeout", c_iobad));
                 }
-#endif
                 return ERRSTR("timeout: transaction incomplete {io}",c_iotimeout);
             }
             // Yield while awaiting the first byte (lazy). After the first byte,

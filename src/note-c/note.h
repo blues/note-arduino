@@ -52,7 +52,6 @@
 #define ERRSTR(x,y) (y)
 #else
 #define ERRSTR(x,y) (x)
-#define ERRDBG
 #endif
 
 #ifdef NOTE_C_TEST_SINGLE_PRECISION
