@@ -1,0 +1,221 @@
+name: Note Binary CI
+
+on:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '45 4 * * 1'  # 4.45am every Monday
+
+permissions:
+  checks: write
+
+jobs:
+  md5srv-test:
+     uses: ./.github/workflows/md5srv-tests.yml
+
+  notecard-binary-test:
+    # needs: md5srv-test
+    runs-on: [self-hosted, swan, notecard, stlink, notecard-serial, md5srv, notehub-client]
+    defaults:
+      run:
+        shell: bash
+    env:
+        NOTEHUB: "notehub.io"
+        NOTEHUB_API: "api.notefile.net"
+        NOTEHUB_ROUTE_TIMEOUT: 180
+        PIO_PROJECT_DIR: ./test/hitl/card.binary
+        NOTEHUB_PROXY_ROUTE_ALIAS: card.binary.${{github.run_id}}
+        NOTEHUB_PROXY_ROUTE_LABEL: card.binary.proxy.${{github.run_id}}
+        NOTEHUB_HTTP_ROUTE_LABEL: card.binary.http.${{github.run_id}}
+
+        # Troubleshooting helpers
+        # DELETE_NOTEHUB_ROUTES set to false to see the created routes on notehub
+        DELETE_NOTEHUB_ROUTES: true
+        # CREATE_NOTEHUB_ROUTES set to false to use the already created routes on notehub
+        CREATE_NOTEHUB_ROUTES: true
+        # FLASH_TEST_FIRMWARE set to false to skip flashing firmware to the Host (Swan).
+        # Be sure to press reset on Swan before running the workflow unless you deliberately want to skip running the tests.
+        FLASH_TEST_FIRMWARE: true
+        # START_MD5SRV set to false to skip starting the MD5 server. There should be one
+        # already running locally with MD5SRV_PORT/ADDRESS/TOKEN set correspondingly.
+        START_MD5SRV: true
+        # START_TUNNELMOLE: set to false to skip starting tunnel mole.
+        START_TUNNELMOLE: true
+        # When neither tunneling solution is used (because they're already instantiated outside of the workflow)
+        # be sure to set MD5SRV_URL in the environment
+    steps:
+      - name: Checkout note-c repo
+        uses: actions/checkout@v3
+
+      - name: Generate MD5 Server Token
+        run: |
+          [ -n "$MD5SRV_TOKEN" ] || echo "MD5SRV_TOKEN=`uuidgen`" >> $GITHUB_ENV
+          # propagate the environment variable so that it's available in the `env` context
+          echo "MD5SRV_PORT=$MD5SRV_PORT" >> $GITHUB_ENV
+
+      - name: Check env vars
+        run: |
+          . scripts/check_runner_config.sh
+          echo NOTEHUB_PROXY_ROUTE_ALIAS=$NOTEHUB_PROXY_ROUTE_ALIAS
+
+      - name: Install PlatformIO dependencies
+        if: env.FLASH_TEST_FIRMWARE!='false'
+        run: |
+          python3 -m venv venv    # python venv is also used by the md5server, so this comes first.
+          source venv/bin/activate
+          pip install platformio
+          cd $PIO_PROJECT_DIR
+          pio pkg install -l "Blues Wireless Notecard" -e debug
+          # Remove the bundled note-c and put the local working copy there
+          NOTE_C_DEP="$GITHUB_WORKSPACE/$PIO_PROJECT_DIR/.pio/libdeps/debug/Blues Wireless Notecard/src/note-c"
+          rm -rf "$NOTE_C_DEP"
+          mkdir "$NOTE_C_DEP"
+          # copy only files in note-c
+          find "$GITHUB_WORKSPACE" -maxdepth 1 -type f -exec cp "{}" "${NOTE_C_DEP}" \;
+
+      - name: Start MD5 server
+        run: |
+          mkdir md5srv-files
+          ./scripts/run_md5srv.sh
+
+      - name: Build and upload test firmware
+        if: env.FLASH_TEST_FIRMWARE!='false'
+        run: |
+          source venv/bin/activate
+          export PLATFORMIO_BUILD_FLAGS="'-D NOTEHUB_PROXY_ROUTE_ALIAS=\"$NOTEHUB_PROXY_ROUTE_ALIAS\"' '-D PRODUCT_UID=\"$NOTEHUB_PRODUCT_UID\"'"
+          echo "build flags $PLATFORMIO_BUILD_FLAGS"
+          timeout 10 ./scripts/wait_for_file.sh "$STLINK_PROGRAMMER_PORT"
+          platformio test -e debug --without-testing --upload-port "$STLINK_PROGRAMMER_PORT" --project-dir "$PIO_PROJECT_DIR"
+          timeout 10 ./scripts/wait_for_file.sh "$SWAN_SERIAL"
+
+      - name: Start tunnelmole
+        if: env.START_TUNNELMOLE!='false'
+        run: |
+          rm -f tmole.log
+          ./scripts/run_tunnelmole.sh
+
+      - name: Check MD5 server is available
+        run: |
+          # the request will return a 401 from md5srv, but that's expected without the access token
+          # Curl still returns success because it could contact the server
+          code=`curl -s -o /dev/null -w "%{http_code}" $MD5SRV_URL`
+          if [ "$code" -ge "500" ]; then
+            echo "5xx error ($code) from tunnel."
+            exit 1
+          else
+            echo "MD5 server is available."
+          fi
+
+      - name: Create Notehub accesss token
+        if: env.CREATE_NOTEHUB_ROUTES!='false'
+        run: |
+          curl -f -X POST \
+            -L 'https://${{env.NOTEHUB}}/oauth2/token' \
+            -H 'content-type: application/x-www-form-urlencoded' \
+            -d grant_type=client_credentials \
+            -d client_id=$NOTEHUB_CLIENT_ID \
+            -d client_secret=$NOTEHUB_CLIENT_SECRET | \
+            { token=$(jq -r .access_token); echo "NOTEHUB_ACCESS_TOKEN=$token" >> $GITHUB_ENV; }
+
+      - name: Create Notehub HTTP route
+        if: env.CREATE_NOTEHUB_ROUTES!='false'
+        run: |
+          # ?note=1 instructs the MD5 server to process the content as an event, extracting the path
+          # from the event body.
+          route_req=`jq -n --arg TOKEN "$MD5SRV_TOKEN" --arg LABEL "$NOTEHUB_HTTP_ROUTE_LABEL" --arg URL "$MD5SRV_URL/?note=1" --argjson TIMEOUT $NOTEHUB_ROUTE_TIMEOUT \
+            '{ "label":$LABEL, "type":"http", "http":{ "timeout":$TIMEOUT, "filter": { "type":"include", "files": ["cardbinary.qo"] }, "url":$URL, "http_headers": { "X-Access-Token":$TOKEN } } }'`
+          echo "Notehub HTTP route request: $route_req"
+          route=`echo "$route_req" | curl -s -f -X POST -L "https://$NOTEHUB_API/v1/projects/${NOTEHUB_PROJECT_UID}/routes" \
+                  -H "Authorization: Bearer $NOTEHUB_ACCESS_TOKEN" -d @-`
+          echo "Notehub HTTP route: $route"
+          route_uid=`echo $route | jq -r .uid`
+          if [ -n "$route_uid" ]; then
+            echo "NOTEHUB_HTTP_ROUTE_UID=$route_uid" >> $GITHUB_ENV
+          else
+            echo "Failed to create or parse Notehub HTTP route."
+            exit 1
+          fi
+
+      - name: Create Notehub proxy route
+        run: |
+          ALIAS="$NOTEHUB_PROXY_ROUTE_ALIAS"
+          route=`jq -n --arg TOKEN "$MD5SRV_TOKEN" --arg LABEL "$NOTEHUB_PROXY_ROUTE_LABEL" --arg URL "$MD5SRV_URL" --arg ALIAS "$ALIAS" --argjson TIMEOUT $NOTEHUB_ROUTE_TIMEOUT \
+            '{ "label":$LABEL, "type":"proxy", "proxy":{ "timeout":$TIMEOUT, "url":$URL, "alias":$ALIAS, "http_headers": { "X-Access-Token":$TOKEN } } }' \
+            | curl -s -f -X POST -L "https://api.notefile.net/v1/projects/${NOTEHUB_PROJECT_UID}/routes" \
+                  -H "Authorization: Bearer $NOTEHUB_ACCESS_TOKEN" -d @-`
+          echo "Notehub proxy route: $route"
+          route_uid=`echo "$route" | jq -r .uid`
+          if [ -n $route_uid ]; then
+            echo "NOTEHUB_PROXY_ROUTE_UID=$route_uid" >> $GITHUB_ENV
+            echo "NOTEHUB_PROXY_ROUTE_ALIAS=$ALIAS" >> $GITHUB_ENV
+          else
+            echo "Failed to create or parse Notehub proxy route."
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          cd $PIO_PROJECT_DIR
+          platformio test -v -e debug \
+             --without-building --without-uploading \
+             --test-port "$SWAN_SERIAL" \
+             --json-output-path test.json \
+             --junit-output-path test.xml
+
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: env.GITHUB_TOKEN && (success() || failure()) # always run even if the previous step fails
+        with:
+          report_paths: '**/test/hitl/card.binary/test*.xml'
+          check_name: Notecard Binary HIL Tests
+          require_tests: true
+
+      - name: Cleanup Notehub proxy route
+        if: always()
+        run: |
+          if [ "$DELETE_NOTEHUB_ROUTES" == "true" && -n "$NOTEHUB_PROXY_ROUTE_UID" ]; then
+            echo "Deleting Notehub proxy route."
+            curl -f -s -X DELETE \
+              -L "https://api.notefile.net/v1/projects/$NOTEHUB_PROJECT_UID/routes/$NOTEHUB_PROXY_ROUTE_UID" \
+              -H "Authorization: Bearer $NOTEHUB_ACCESS_TOKEN"
+          fi
+
+      - name: Cleanup Notehub HTTP route
+        if: always()
+        run: |
+          if [ "$DELETE_NOTEHUB_ROUTES" == "true" ] && [ -n "$NOTEHUB_HTTP_ROUTE_UID" ]; then
+            echo "Deleting Notehub HTTP route."
+            curl -f -s -X DELETE \
+              -L "https://$NOTEHUB_API/v1/projects/$NOTEHUB_PROJECT_UID/routes/$NOTEHUB_HTTP_ROUTE_UID" \
+              -H "Authorization: Bearer $NOTEHUB_ACCESS_TOKEN"
+          fi
+
+
+      - name: Cleanup tunnelmole
+        if: always()
+        run: |
+          if [ -n "$TMOLE_PID" ]; then
+            echo "Stopping tunnelmole."
+            kill $TMOLE_PID
+          else
+            echo "Tunnelmole not running (TMOLE_PID is empty)."
+          fi
+
+      - name: Cleanup MD5 server
+        if: always()
+        run: |
+          if [ -d md5srv-files ]; then
+            echo "Deleting md5srv-files directory."
+            rm -rf md5srv-files
+          fi
+          if [ -n "$MD5SRV_PID" ]; then
+            echo "Stopping MD5 server."
+            kill $MD5SRV_PID
+          else
+            echo "MD5 server not running (MD5SRV_PID is empty)."
+          fi
