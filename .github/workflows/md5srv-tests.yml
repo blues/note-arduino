@@ -1,0 +1,42 @@
+name: MD5 Server Tests
+
+on:
+  workflow_dispatch:
+  workflow_call:  # reusable workflow
+
+jobs:
+  test-md5srv: # job id
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+        TERM: xterm-256color
+        MD5SRV_TIMEOUT: 5
+        MD5SRV_DIR: ./test/hitl/scripts
+        BATS_VERSION: 1.10.0
+        BATS_LIB_PATH: /usr/lib
+        # /usr/local/lib on OSX
+    steps:
+      - name: Setup Bats and bats libs
+        uses: brokenpip3/setup-bats-libs@1.0.0
+        with:
+            bats-install: true
+            file-install: false
+            detik-install: false
+      - name: Setup BATS_LIB_PATH
+        run: |
+          if [ -e /usr/local/lib/bats-support ]; then
+            echo "BATS_LIB_PATH=/usr/local/lib" >> $GITHUB_ENV
+          fi
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Tests
+        run: |
+            cd ${{env.MD5SRV_DIR}}
+            $HOME/.local/bin/bats -p --print-output-on-failure .
+      - name: Rerun Tests
+        if: failure()
+        run: |
+          cd ${{env.MD5SRV_DIR}}
+          $HOME/.local/bin/bats -p --print-output-on-failure -x .
