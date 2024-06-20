@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#define _NOTE_C_STRINGIZE(x) #x
+#define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
+
 #define SERIAL_RX_BUFFER_SIZE 79
 
 enum PinMode {

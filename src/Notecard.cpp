@@ -188,7 +188,7 @@ void noteTransactionStop (void) {
 /**************************************************************************/
 void Notecard::platformInit (bool assignCallbacks) const
 {
-    NoteSetUserAgent((char *)"note-arduino");
+    NoteSetUserAgent((char *) ("note-arduino " NOTE_ARDUINO_VERSION));
     if (assignCallbacks) {
         NoteSetFnDefault(malloc, free, noteDelay, noteMillis);
     } else {

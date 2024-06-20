@@ -21,7 +21,7 @@ int test_notecard_begin_i2c_sets_user_agent_to_note_arduino()
    // Arrange
   ////////////
 
-  const char * const EXPECTED_USER_AGENT = "note-arduino";
+  static const char * const EXPECTED_USER_AGENT = "note-arduino " NOTE_ARDUINO_VERSION;
   Notecard notecard;
   NoteI2c_Mock mockI2c;
 
@@ -57,7 +57,7 @@ int test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interface_has_n
    // Arrange
   ////////////
 
-  static const char * const EXPECTED_USER_AGENT = "note-arduino";
+  static const char * const EXPECTED_USER_AGENT = "note-arduino " NOTE_ARDUINO_VERSION;
   Notecard notecard;
   noteSetUserAgent_Parameters.reset();
 
@@ -774,7 +774,7 @@ int test_notecard_begin_serial_sets_user_agent_to_note_arduino()
    // Arrange
   ////////////
 
-  static const char * const EXPECTED_USER_AGENT = "note-arduino";
+  static const char * const EXPECTED_USER_AGENT = "note-arduino " NOTE_ARDUINO_VERSION;
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   noteSetUserAgent_Parameters.reset();
@@ -809,7 +809,7 @@ int test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_ha
    // Arrange
   ////////////
 
-  static const char * const EXPECTED_USER_AGENT = "note-arduino";
+  static const char * const EXPECTED_USER_AGENT = "note-arduino " NOTE_ARDUINO_VERSION;
   Notecard notecard;
   noteSetUserAgent_Parameters.reset();
 

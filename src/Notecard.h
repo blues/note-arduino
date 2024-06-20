@@ -45,6 +45,12 @@
 #include "mock/mock-parameters.hpp"
 #endif
 
+#define NOTE_ARDUINO_VERSION_MAJOR 1
+#define NOTE_ARDUINO_VERSION_MINOR 6
+#define NOTE_ARDUINO_VERSION_PATCH 0
+
+#define NOTE_ARDUINO_VERSION NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_PATCH)
+
 #if defined(__GNUC__) | defined(__clang__)
     #define NOTE_ARDUINO_DEPRECATED __attribute__((__deprecated__))
 #elif defined(_MSC_VER)
