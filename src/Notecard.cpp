@@ -186,7 +186,7 @@ void noteTransactionStop (void) {
               The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
-void Notecard::platformInit (bool assignCallbacks)
+void Notecard::platformInit (bool assignCallbacks) const
 {
     NoteSetUserAgent((char *)"note-arduino");
     if (assignCallbacks) {
@@ -225,7 +225,7 @@ Notecard::~Notecard (void)
               appropriately for the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
+void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_) const
 {
     noteI2c = noteI2c_;
     platformInit(noteI2c);
@@ -247,7 +247,7 @@ void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
               communicating with the Notecard from the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteSerial * noteSerial_)
+void Notecard::begin(NoteSerial * noteSerial_) const
 {
     noteSerial = noteSerial_;
     platformInit(noteSerial);
@@ -273,7 +273,7 @@ void Notecard::begin(NoteSerial * noteSerial_)
     @brief  Clear the debug output source.
 */
 /**************************************************************************/
-void Notecard::clearDebugOutputStream(void)
+void Notecard::clearDebugOutputStream(void) const
 {
     setDebugOutputStream(nullptr);
 }
@@ -290,7 +290,7 @@ void Notecard::clearDebugOutputStream(void)
     @return `True` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/
-bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) const
 {
     return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
 }
@@ -302,7 +302,7 @@ bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
               A `J` JSON response object.
 */
 /**************************************************************************/
-void Notecard::deleteResponse(J *rsp)
+void Notecard::deleteResponse(J *rsp) const
 {
     NoteDeleteResponse(rsp);
 }
@@ -317,7 +317,7 @@ void Notecard::deleteResponse(J *rsp)
               A string to log to the serial debug stream.
 */
 /**************************************************************************/
-NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message)
+NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message) const
 {
 #ifdef NOTE_ARDUINO_NO_DEPRECATED_ATTR
     NOTE_C_LOG_WARN("logDebug is deprecated.")
@@ -336,7 +336,7 @@ NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message)
     @param    ... one or more values to interpolate into the format string.
 */
 /**************************************************************************/
-NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...)
+NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...) const
 {
     char message[256];
     va_list args;
@@ -360,7 +360,7 @@ NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...)
     @return A `J` JSON Object populated with the request name.
 */
 /**************************************************************************/
-J *Notecard::newCommand(const char *request)
+J *Notecard::newCommand(const char *request) const
 {
     return NoteNewCommand(request);
 }
@@ -375,7 +375,7 @@ J *Notecard::newCommand(const char *request)
     @return A `J` JSON Object populated with the request name.
 */
 /**************************************************************************/
-J *Notecard::newRequest(const char *request)
+J *Notecard::newRequest(const char *request) const
 {
     return NoteNewRequest(request);
 }
@@ -390,7 +390,7 @@ J *Notecard::newRequest(const char *request)
     @return `J` JSON Object with the response from the Notecard.
 */
 /**************************************************************************/
-J *Notecard::requestAndResponse(J *req)
+J *Notecard::requestAndResponse(J *req) const
 {
     return NoteRequestResponse(req);
 }
@@ -406,7 +406,7 @@ J *Notecard::requestAndResponse(J *req)
     @return `J` JSON Object with the response from the Notecard.
 */
 /**************************************************************************/
-J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds)
+J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds) const
 {
     return NoteRequestResponseWithRetry(req, timeoutSeconds);
 }
@@ -419,7 +419,7 @@ J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds)
     @return `true` if the response object contains an error.
 */
 /**************************************************************************/
-bool Notecard::responseError(J *rsp)
+bool Notecard::responseError(J *rsp) const
 {
     return NoteResponseError(rsp);
 }
@@ -435,7 +435,7 @@ bool Notecard::responseError(J *rsp)
             `False` if there was an error.
 */
 /**************************************************************************/
-bool Notecard::sendRequest(J *req)
+bool Notecard::sendRequest(J *req) const
 {
     return NoteRequest(req);
 }
@@ -452,7 +452,7 @@ bool Notecard::sendRequest(J *req)
             `False` if the message couldn't be sent.
 */
 /**************************************************************************/
-bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds)
+bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds) const
 {
     return NoteRequestWithRetry(req, timeoutSeconds);
 }
@@ -469,7 +469,7 @@ bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds)
               debug output.
 */
 /**************************************************************************/
-void Notecard::setDebugOutputStream(NoteLog * noteLog_)
+void Notecard::setDebugOutputStream(NoteLog * noteLog_) const
 {
     noteLog = noteLog_;
     if (noteLog) {
@@ -492,7 +492,7 @@ void Notecard::setDebugOutputStream(NoteLog * noteLog_)
               I2C bus taken during the call to `lockI2cFn()`.
 */
 /**************************************************************************/
-void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) {
+void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) const {
     NoteSetFnI2CMutex(lockI2cFn_, unlockI2cFn_);
 }
 
@@ -509,7 +509,7 @@ void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) {
               Notecard transaction taken during the call to `lockNoteFn()`.
 */
 /**************************************************************************/
-void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
+void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) const {
     NoteSetFnNoteMutex(lockNoteFn_, unlockNoteFn_);
 }
 
@@ -528,7 +528,7 @@ void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
               A platform specific tuple of digital I/O pins.
 */
 /**************************************************************************/
-void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
+void Notecard::setTransactionPins(NoteTxn * noteTxn_) const {
     noteTxn = noteTxn_;  // Set global interface
     if (noteTxn_) {
         NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
