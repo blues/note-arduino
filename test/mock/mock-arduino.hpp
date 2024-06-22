@@ -158,6 +158,7 @@ struct StreamPrint_Parameters {
 struct HardwareSerial : public Stream {
     unsigned int available (void);
     void begin(unsigned int baud);
+    void end(void);
     void flush(void);
     char read (void);
     size_t write(uint8_t * buffer, size_t size);
@@ -185,7 +186,8 @@ struct HardwareSerialBegin_Parameters {
     HardwareSerialBegin_Parameters(
         void
     ) :
-        baud(0)
+        baud(0),
+        invoked(0)
     { }
     void
     reset (
@@ -194,8 +196,23 @@ struct HardwareSerialBegin_Parameters {
         invoked = 0;
         baud = 0;
     }
-    size_t invoked;
     unsigned int baud;
+    size_t invoked;
+};
+
+struct HardwareSerialEnd_Parameters {
+    HardwareSerialEnd_Parameters(
+        void
+    ) :
+        invoked(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+    }
+    size_t invoked;
 };
 
 struct HardwareSerialFlush_Parameters {
@@ -425,6 +442,7 @@ extern PinMode_Parameters pinMode_Parameters;
 extern HardwareSerial Serial;
 extern HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 extern HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
+extern HardwareSerialEnd_Parameters hardwareSerialEnd_Parameters;
 extern HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 extern HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 extern HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;

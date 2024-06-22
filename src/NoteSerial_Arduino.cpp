@@ -50,6 +50,7 @@ NoteSerial_Arduino::reset (
     void
 )
 {
+    _notecardSerial.end();
     _notecardSerial.begin(_notecardSerialSpeed);
 
     return true;
