@@ -120,6 +120,66 @@ int test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method()
   return result;
 }
 
+#if not defined(WIRE_HAS_END)
+
+int test_notei2c_arduino_deconstructor_does_not_invoke_twowire_end_method()
+{
+  int result;
+
+  // Arrange
+  NoteI2c_Arduino * notei2c = new NoteI2c_Arduino(Wire);
+  twoWireEnd_Parameters.reset();
+
+  // Action
+  delete notei2c;
+
+  // Assert
+  if (!twoWireEnd_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\ttwoWireEnd_Parameters.invoked == " << (!!twoWireEnd_Parameters.invoked ? "true" : "false") << ", EXPECTED: false" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+#else // defined(WIRE_HAS_END)
+
+int test_notei2c_arduino_deconstructor_invokes_twowire_end_method()
+{
+  int result;
+
+  // Arrange
+  NoteI2c_Arduino * notei2c = new NoteI2c_Arduino(Wire);
+  twoWireEnd_Parameters.reset();
+
+  // Action
+  delete notei2c;
+
+  // Assert
+  if (twoWireEnd_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('i' + '2' + 'c');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\ttwoWireEnd_Parameters.invoked == " << (!!twoWireEnd_Parameters.invoked ? "true" : "false") << ", EXPECTED: true" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+#endif // not defined(WIRE_HAS_END)
+
 int test_notei2c_arduino_receive_requests_response_data_from_notecard()
 {
   int result;
@@ -1640,6 +1700,11 @@ int main(void)
       {test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_all_calls, "test_make_note_i2c_enforces_singleton_by_returning_same_notei2c_object_for_all_calls"},
       {test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_i2c_deletes_singleton_when_nullptr_is_passed_as_parameter"},
       {test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method, "test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method"},
+#if not defined(WIRE_HAS_END)
+      {test_notei2c_arduino_deconstructor_does_not_invoke_twowire_end_method, "test_notei2c_arduino_deconstructor_does_not_invoke_twowire_end_method"},
+#else // defined(WIRE_HAS_END)
+      {test_notei2c_arduino_deconstructor_invokes_twowire_end_method, "test_notei2c_arduino_deconstructor_invokes_twowire_end_method"},
+#endif // not defined(WIRE_HAS_END)
       {test_notei2c_arduino_receive_requests_response_data_from_notecard, "test_notei2c_arduino_receive_requests_response_data_from_notecard"},
       {test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure, "test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure"},
       {test_notei2c_arduino_receive_will_not_retry_transmission_on_i2c_success, "test_notei2c_arduino_receive_will_not_retry_transmission_on_i2c_success"},

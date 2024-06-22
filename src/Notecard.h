@@ -98,6 +98,7 @@ public:
     }
     bool debugSyncStatus (int pollFrequencyMs, int maxLevel) const;
     void deleteResponse(J *rsp) const;
+    void end(void) const;
     NOTE_ARDUINO_DEPRECATED void logDebug(const char *message) const;
     NOTE_ARDUINO_DEPRECATED void logDebugf(const char *format, ...) const;
     J *newCommand(const char *request) const;

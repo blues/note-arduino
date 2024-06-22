@@ -25,6 +25,7 @@ class NoteSerial_Arduino final : public NoteSerial
 {
 public:
     NoteSerial_Arduino(HardwareSerial & hw_serial_, size_t baud_rate_);
+    ~NoteSerial_Arduino(void);
     size_t available(void) override;
     char receive(void) override;
     bool reset(void) override;

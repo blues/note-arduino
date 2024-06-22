@@ -151,6 +151,33 @@ int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_pa
     return result;
 }
 
+int test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method()
+{
+    int result;
+
+    // Arrange
+    hardwareSerialEnd_Parameters.reset();
+    NoteSerial_Arduino * noteserial = new NoteSerial_Arduino(Serial, 9600);
+
+    // Action
+    delete noteserial;
+
+    // Assert
+    if (hardwareSerialEnd_Parameters.invoked)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialEnd_Parameters.invoked == " << !!hardwareSerialEnd_Parameters.invoked << ", EXPECTED: " << true << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
+
 int test_noteserial_arduino_available_invokes_hardware_serial_available()
 {
     int result;
@@ -553,6 +580,7 @@ int main(void)
         {test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter"},
         {test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method, "test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method"},
         {test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin, "test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin"},
+        {test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method, "test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method"},
         {test_noteserial_arduino_available_invokes_hardware_serial_available, "test_noteserial_arduino_available_invokes_hardware_serial_available"},
         {test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller, "test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller"},
         {test_noteserial_arduino_receive_invokes_hardware_serial_read, "test_noteserial_arduino_receive_invokes_hardware_serial_read"},

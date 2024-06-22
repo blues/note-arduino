@@ -1575,6 +1575,199 @@ int test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_inte
   return result;
 }
 
+int test_notecard_end_clears_all_i2c_interface_function_pointers()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteI2c_Mock mockI2c;
+  noteSetFnI2C_Parameters.reset();
+  notecard.begin(&mockI2c);
+
+   // Action
+  ///////////
+
+  notecard.end();
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnI2C_Parameters.resetfn
+   && !noteSetFnI2C_Parameters.transmitfn
+   && !noteSetFnI2C_Parameters.receivefn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnI2C_Parameters.resetfn    == 0x" << std::hex << !!noteSetFnI2C_Parameters.resetfn    << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnI2C_Parameters.transmitfn == 0x" << std::hex << !!noteSetFnI2C_Parameters.transmitfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnI2C_Parameters.receivefn  == 0x" << std::hex << !!noteSetFnI2C_Parameters.receivefn  << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_end_clears_all_serial_interface_function_pointers()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  noteSetFnDefault_Parameters.reset();
+  notecard.begin(&mockSerial);
+
+   // Action
+  ///////////
+
+  notecard.end();
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnSerial_Parameters.resetfn
+   && !noteSetFnSerial_Parameters.writefn
+   && !noteSetFnSerial_Parameters.availfn
+   && !noteSetFnSerial_Parameters.readfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.readfn  == 0x" << !!noteSetFnSerial_Parameters.readfn  << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.writefn == 0x" << !!noteSetFnSerial_Parameters.writefn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.availfn == 0x" << !!noteSetFnSerial_Parameters.availfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerial_Parameters.resetfn == 0x" << !!noteSetFnSerial_Parameters.resetfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_end_clears_all_platform_interface_function_pointers()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteI2c_Mock mockI2c;
+  noteSetFnDefault_Parameters.reset();
+  notecard.begin(&mockI2c);
+
+   // Action
+  ///////////
+
+  notecard.end();
+
+   // Assert
+  ///////////
+
+  if (!noteSetFnDefault_Parameters.mallocfn
+   && !noteSetFnDefault_Parameters.freefn
+   && !noteSetFnDefault_Parameters.delayfn
+   && !noteSetFnDefault_Parameters.millisfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.mallocfn == 0x" << std::hex << noteSetFnDefault_Parameters.mallocfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.freefn   == 0x" << std::hex << noteSetFnDefault_Parameters.freefn   << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.delayfn  == 0x" << std::hex << noteSetFnDefault_Parameters.delayfn  << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnDefault_Parameters.millisfn == 0x" << std::hex << noteSetFnDefault_Parameters.millisfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
+  make_note_i2c_Parameters.reset();
+  make_note_i2c_Parameters.i2c_parameters = &mockI2c;
+  notecard.begin(&mockI2c);
+
+   // Action
+  ////////////
+
+  notecard.end();
+
+   // Assert
+  ////////////
+
+  if (nullptr == make_note_i2c_Parameters.i2c_parameters)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tmake_note_i2c_Parameters.i2c_parameters == 0x" << std::hex << !!make_note_i2c_Parameters.i2c_parameters << ", EXPECTED: 0x0 (nullptr)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
+  make_note_serial_Parameters.reset();
+  make_note_serial_Parameters.serial_parameters = &mockSerial;
+  notecard.begin(&mockSerial);
+
+   // Action
+  ////////////
+
+  notecard.end();
+
+   // Assert
+  ////////////
+
+  if (nullptr == make_note_serial_Parameters.serial_parameters)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tmake_note_serial_Parameters.serial_parameters == 0x" << std::hex << !!make_note_serial_Parameters.serial_parameters << ", EXPECTED: 0x0 (nullptr)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer()
 {
   int result;
@@ -4843,6 +5036,11 @@ int main(void)
       {test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_parameter_set_to_arduino_serial_rx_buffer_size_constant_minus_one, "test_notecard_begin_serial_sends_a_card_aux_serial_request_with_max_parameter_set_to_arduino_serial_rx_buffer_size_constant_minus_one"},
       {test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter_set_to_one, "test_notecard_begin_serial_sends_a_card_aux_serial_request_with_ms_parameter_set_to_one"},
       {test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_does_not_send_a_card_aux_serial_request_when_interface_has_not_been_instantiated"},
+      {test_notecard_end_clears_all_i2c_interface_function_pointers, "test_notecard_end_clears_all_i2c_interface_function_pointers"},
+      {test_notecard_end_clears_all_serial_interface_function_pointers, "test_notecard_end_clears_all_serial_interface_function_pointers"},
+      {test_notecard_end_clears_all_platform_interface_function_pointers, "test_notecard_end_clears_all_platform_interface_function_pointers"},
+      {test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory, "test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory"},
+      {test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory, "test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory"},
       {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},

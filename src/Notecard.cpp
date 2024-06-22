@@ -309,6 +309,27 @@ void Notecard::deleteResponse(J *rsp) const
 
 /**************************************************************************/
 /*!
+    @brief  Deinitialize the Notecard object communication.
+            This function clears the Notecard object's communication
+            interfaces, and frees all associated memory.
+*/
+/**************************************************************************/
+void Notecard::end(void) const
+{
+    // Clear Communication Interfaces
+    NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
+    NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+
+    // Clear Platform Callbacks
+    platformInit(false);
+
+    // Delete Singletons
+    noteI2c = make_note_i2c(nullptr);
+    noteSerial = make_note_serial(nullptr);
+}
+
+/**************************************************************************/
+/*!
     @deprecated NoteDebug, which this function wraps, should be treated as an
     internal Notecard logging function, used only by the library itself
     (note-arduino and note-c) and not its users.

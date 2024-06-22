@@ -16,6 +16,7 @@ class NoteI2c_Arduino final : public NoteI2c
 {
 public:
     NoteI2c_Arduino(TwoWire & i2c_bus);
+    ~NoteI2c_Arduino(void);
     const char * receive(uint16_t device_address, uint8_t * buffer, uint16_t requested_byte_count, uint32_t * available) override;
     bool reset(uint16_t device_address) override;
     const char * transmit(uint16_t device_address, uint8_t * buffer, uint16_t size) override;
