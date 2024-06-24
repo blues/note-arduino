@@ -8,6 +8,7 @@ PinMode_Parameters pinMode_Parameters;
 
 HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
+HardwareSerialEnd_Parameters hardwareSerialEnd_Parameters;
 HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
@@ -120,6 +121,14 @@ HardwareSerial::begin (
 
     // Stash parameter(s)
     hardwareSerialBegin_Parameters.baud = baud;
+}
+
+void
+HardwareSerial::end (
+    void
+) {
+    // Record invocation(s)
+    ++hardwareSerialEnd_Parameters.invoked;
 }
 
 void

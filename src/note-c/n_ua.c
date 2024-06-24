@@ -16,7 +16,7 @@
 #include "n_lib.h"
 
 // Override-able statics
-static char *n_agent = (char *) "note-c";
+static char *n_agent = (char *) ("note-c" " " NOTE_C_VERSION);
 static int n_cpu_cores = 0;
 static int n_cpu_mem = 0;
 static int n_cpu_mhz = 0;

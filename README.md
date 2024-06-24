@@ -87,15 +87,18 @@ if (rsp != NULL) {
 
 ## Keeping up to date with note-c repo
 
-This library depends on the blues [note-c repo][note-c] and utilizes
-git subtrees to include those files in the src/note-c folder. To
-update this repo with the latest from note-c:
+This library depends on the Blues [`note-c` library][note-c]. To update this
+repo with the latest from `note-c`, run the `update_note_c.sh` shell script
+from the `scripts/` folder:
 
 ```none
-rm -rf src/note-c
-git commit -am 'remove note-c before re-add'
-git subtree add --prefix=src/note-c --squash https://github.com/blues/note-c.git master
+scripts/update_note_c.sh
 ```
+
+_**NOTE:** It is important to use the script. It utilizes git subtrees to
+include the appropriate files in the `src/note-c` folder. It also eliminates
+folders that necessary for testing `note-c` individually, but interfere with
+the Arduino build environment._
 
 ## Documentation
 

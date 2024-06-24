@@ -30,6 +30,15 @@ NoteI2c_Arduino::NoteI2c_Arduino
     _i2cPort.begin();
 }
 
+NoteI2c_Arduino::~NoteI2c_Arduino (
+    void
+)
+{
+#if WIRE_HAS_END
+    _i2cPort.end();
+#endif
+}
+
 const char *
 NoteI2c_Arduino::receive (
     uint16_t device_address_,

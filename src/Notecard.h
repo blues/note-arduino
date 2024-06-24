@@ -45,6 +45,12 @@
 #include "mock/mock-parameters.hpp"
 #endif
 
+#define NOTE_ARDUINO_VERSION_MAJOR 1
+#define NOTE_ARDUINO_VERSION_MINOR 6
+#define NOTE_ARDUINO_VERSION_PATCH 0
+
+#define NOTE_ARDUINO_VERSION NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_PATCH)
+
 #if defined(__GNUC__) | defined(__clang__)
     #define NOTE_ARDUINO_DEPRECATED __attribute__((__deprecated__))
 #elif defined(_MSC_VER)
@@ -67,47 +73,48 @@ public:
 #ifdef ARDUINO
     inline void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
                       uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
-                      TwoWire &wirePort = Wire) {
+                      TwoWire &wirePort = Wire) const {
         begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
     }
-    inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
+    inline void begin(HardwareSerial &serial, uint32_t speed = 9600) const {
         MakeNoteSerial_ArduinoParameters arduino_parameters(serial, speed);
         begin(make_note_serial(&arduino_parameters));
     }
-    inline void setDebugOutputStream(Stream &dbgserial) {
+    inline void setDebugOutputStream(Stream &dbgserial) const {
         setDebugOutputStream(make_note_log(&dbgserial));
     }
-    inline void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin) {
+    inline void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin) const {
         uint8_t txn_pins[2] = {ctx_pin, rtx_pin};
         setTransactionPins(make_note_txn(txn_pins));
     }
 #endif
     void begin(NoteI2c * noteI2c,
                uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT);
-    void begin(NoteSerial * noteSerial);
-    void clearDebugOutputStream(void);
-    inline void clearTransactionPins(void) {
+               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT) const;
+    void begin(NoteSerial * noteSerial) const;
+    void clearDebugOutputStream(void) const;
+    inline void clearTransactionPins(void) const {
         setTransactionPins(nullptr);
     }
-    bool debugSyncStatus(int pollFrequencyMs, int maxLevel);
-    void deleteResponse(J *rsp);
-    NOTE_ARDUINO_DEPRECATED void logDebug(const char *message);
-    NOTE_ARDUINO_DEPRECATED void logDebugf(const char *format, ...);
-    J *newCommand(const char *request);
-    J *newRequest(const char *request);
-    J *requestAndResponse(J *req);
-    J *requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds);
-    bool responseError(J *rsp);
-    bool sendRequest(J *req);
-    bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds);
-    void setDebugOutputStream(NoteLog * noteLog);
-    void setFnI2cMutex(mutexFn lockI2cFn, mutexFn unlockI2cFn);
-    void setFnNoteMutex(mutexFn lockNoteFn, mutexFn unlockNoteFn);
-    void setTransactionPins(NoteTxn * noteTxn);
+    bool debugSyncStatus (int pollFrequencyMs, int maxLevel) const;
+    void deleteResponse(J *rsp) const;
+    void end(void) const;
+    NOTE_ARDUINO_DEPRECATED void logDebug(const char *message) const;
+    NOTE_ARDUINO_DEPRECATED void logDebugf(const char *format, ...) const;
+    J *newCommand(const char *request) const;
+    J *newRequest(const char *request) const;
+    J *requestAndResponse(J *req) const;
+    J *requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds) const;
+    bool responseError(J *rsp) const;
+    bool sendRequest(J *req) const;
+    bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds) const;
+    void setDebugOutputStream(NoteLog * noteLog) const;
+    void setFnI2cMutex(mutexFn lockI2cFn, mutexFn unlockI2cFn) const;
+    void setFnNoteMutex(mutexFn lockNoteFn, mutexFn unlockNoteFn) const;
+    void setTransactionPins(NoteTxn * noteTxn) const;
 
 private:
-    void platformInit (bool assignCallbacks);
+    void platformInit (bool assignCallbacks) const;
 };
 
 #endif

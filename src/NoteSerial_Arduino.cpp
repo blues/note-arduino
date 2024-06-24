@@ -29,6 +29,13 @@ NoteSerial_Arduino::NoteSerial_Arduino
     _notecardSerial.begin(_notecardSerialSpeed);
 }
 
+NoteSerial_Arduino::~NoteSerial_Arduino (
+    void
+)
+{
+    _notecardSerial.end();
+}
+
 size_t
 NoteSerial_Arduino::available (
     void
@@ -50,6 +57,7 @@ NoteSerial_Arduino::reset (
     void
 )
 {
+    _notecardSerial.end();
     _notecardSerial.begin(_notecardSerialSpeed);
 
     return true;

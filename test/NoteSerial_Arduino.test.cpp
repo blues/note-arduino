@@ -27,7 +27,7 @@ int test_make_note_serial_instantiates_noteserial_object()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial == " << !!noteserial << ", EXPECTED: not nullptr" << std::endl;
         std::cout << "[";
     }
@@ -57,7 +57,7 @@ int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial_2 == " << std::hex << noteserial_2 << ", EXPECTED: " << noteserial_1 << std::endl;
         std::cout << "[";
     }
@@ -89,7 +89,7 @@ int test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter(
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial == " << std::hex << noteserial << ", EXPECTED: 0 (nullptr)" << std::endl;
         std::cout << "[";
     }
@@ -115,7 +115,7 @@ int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialBegin_Parameters.invoked == " << !!hardwareSerialBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -143,8 +143,35 @@ int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_pa
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
+
+int test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method()
+{
+    int result;
+
+    // Arrange
+    hardwareSerialEnd_Parameters.reset();
+    NoteSerial_Arduino * noteserial = new NoteSerial_Arduino(Serial, 9600);
+
+    // Action
+    delete noteserial;
+
+    // Assert
+    if (hardwareSerialEnd_Parameters.invoked)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialEnd_Parameters.invoked == " << !!hardwareSerialEnd_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
 
@@ -170,7 +197,7 @@ int test_noteserial_arduino_available_invokes_hardware_serial_available()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialAvailable_Parameters.invoked == " << !!hardwareSerialAvailable_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -200,7 +227,7 @@ int test_noteserial_arduino_available_does_not_modify_hardware_serial_available_
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial.available() == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
         std::cout << "[";
     }
@@ -228,7 +255,7 @@ int test_noteserial_arduino_receive_invokes_hardware_serial_read()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialRead_Parameters.invoked == " << hardwareSerialRead_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -258,8 +285,35 @@ int test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial.receive() == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
+
+int test_noteserial_arduino_reset_invokes_hardware_serial_end()
+{
+    int result;
+
+    // Arrange
+    NoteSerial_Arduino noteserial(Serial, 9600);
+    hardwareSerialEnd_Parameters.reset();
+
+    // Action
+    noteserial.reset();
+
+    // Assert
+    if (hardwareSerialEnd_Parameters.invoked)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialEnd_Parameters.invoked == " << !!hardwareSerialEnd_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
 
@@ -285,7 +339,7 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialBegin_Parameters.invoked == " << !!hardwareSerialBegin_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -314,7 +368,7 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_pa
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
         std::cout << "[";
     }
@@ -340,7 +394,7 @@ int test_noteserial_arduino_reset_always_returns_true()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial.reset() == " << ACTUAL_RESULT << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -368,7 +422,7 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_write()
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialWrite_Parameters.invoked == " << !!hardwareSerialWrite_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -397,7 +451,7 @@ int test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_befo
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialWrite_Parameters.buffer_cache.c_str() == \"" << hardwareSerialWrite_Parameters.buffer_cache.c_str() << "\", EXPECTED: \"" << EXPECTED_RESULT << "\"" << std::endl;
         std::cout << "[";
     }
@@ -426,7 +480,7 @@ int test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialWrite_Parameters.size == " << hardwareSerialWrite_Parameters.size << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
         std::cout << "[";
     }
@@ -453,7 +507,7 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_pa
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialFlush_Parameters.invoked == " << !!hardwareSerialFlush_Parameters.invoked << ", EXPECTED: " << true << std::endl;
         std::cout << "[";
     }
@@ -480,7 +534,7 @@ int test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\thardwareSerialFlush_Parameters.invoked == " << !!hardwareSerialFlush_Parameters.invoked << ", EXPECTED: " << false << std::endl;
         std::cout << "[";
     }
@@ -510,7 +564,7 @@ int test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_resul
     else
     {
         result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnoteserial.transmit(reinterpret_cast<uint8_t *>(const_cast<char *>(\"Hello, Test!\")), 13, true) == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
         std::cout << "[";
     }
@@ -526,12 +580,14 @@ int main(void)
         {test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter"},
         {test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method, "test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method"},
         {test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin, "test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin"},
+        {test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method, "test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method"},
         {test_noteserial_arduino_available_invokes_hardware_serial_available, "test_noteserial_arduino_available_invokes_hardware_serial_available"},
         {test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller, "test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller"},
         {test_noteserial_arduino_receive_invokes_hardware_serial_read, "test_noteserial_arduino_receive_invokes_hardware_serial_read"},
         {test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_value_before_returning_to_caller, "test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_value_before_returning_to_caller"},
         {test_noteserial_arduino_reset_invokes_hardware_serial_begin, "test_noteserial_arduino_reset_invokes_hardware_serial_begin"},
         {test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_parameter_that_was_originally_supplied_to_the_constructor, "test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_parameter_that_was_originally_supplied_to_the_constructor"},
+        {test_noteserial_arduino_reset_invokes_hardware_serial_end, "test_noteserial_arduino_reset_invokes_hardware_serial_end"},
         {test_noteserial_arduino_reset_always_returns_true, "test_noteserial_arduino_reset_always_returns_true"},
         {test_noteserial_arduino_transmit_invokes_hardware_serial_write, "test_noteserial_arduino_transmit_invokes_hardware_serial_write"},
         {test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_before_passing_to_hardware_serial_write, "test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_before_passing_to_hardware_serial_write"},

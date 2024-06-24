@@ -26,7 +26,7 @@ int test_make_note_log_instantiates_notelog_object()
     else
     {
         result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnotelog == " << !!notelog << ", EXPECTED: not nullptr" << std::endl;
         std::cout << "[";
     }
@@ -55,7 +55,7 @@ int test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_a
     else
     {
         result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnotelog_2 == " << std::hex << notelog_2 << ", EXPECTED: " << notelog_1 << std::endl;
         std::cout << "[";
     }
@@ -86,7 +86,7 @@ int test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter()
     else
     {
         result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnotelog == " << std::hex << notelog << ", EXPECTED: 0 (nullptr)" << std::endl;
         std::cout << "[";
     }
@@ -115,7 +115,7 @@ int test_notelog_arduino_print_does_not_modify_str_parameter_value_before_passin
     else
     {
         result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tstreamPrint_Parameters.str_cache.c_str() == \"" << streamPrint_Parameters.str_cache.c_str() << "\", EXPECTED: \"" << EXPECTED_RESULT << "\"" << std::endl;
         std::cout << "[";
     }
@@ -145,7 +145,7 @@ int test_notelog_arduino_print_does_not_modify_stream_print_result_value_before_
     else
     {
         result = static_cast<int>('d' + 'e' + 'b' + 'u' + 'g');
-        std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
         std::cout << "\tnotelog.print(\"Hello, Test!\") == " << ACTUAL_RESULT << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
         std::cout << "[";
     }

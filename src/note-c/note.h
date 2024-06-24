@@ -21,9 +21,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define _NOTE_C_STRINGIZE(x) #x
+#define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
+
 #define NOTE_C_VERSION_MAJOR 2
-#define NOTE_C_VERSION_MINOR 1
-#define NOTE_C_VERSION_PATCH 3
+#define NOTE_C_VERSION_MINOR 2
+#define NOTE_C_VERSION_PATCH 1
+
+#define NOTE_C_VERSION NOTE_C_STRINGIZE(NOTE_C_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_PATCH)
 
 // If double and float are the same size, then we must be on a small MCU. Turn
 // on NOTE_C_LOW_MEM to conserve memory.
@@ -54,16 +59,25 @@
 #define ERRSTR(x,y) (x)
 #endif
 
+/*!
+ @brief The floating point type used for JSON handling in note-c.
+ */
 #ifdef NOTE_C_TEST_SINGLE_PRECISION
 typedef float JNUMBER;
 #else
 typedef double JNUMBER;
 #endif
 
+/*!
+ @brief The signed integer type used for JSON handling in note-c.
+ */
 typedef int64_t JINTEGER;
 #define JINTEGER_MIN INT64_MIN
 #define JINTEGER_MAX INT64_MAX
 
+/*!
+ @brief The unsigned integer type used for JSON handling in note-c.
+ */
 typedef uint64_t JUINTEGER;
 
 // UNIX Epoch time (also known as POSIX time) is the  number of seconds that have elapsed since
@@ -75,9 +89,6 @@ typedef JUINTEGER JTIME;
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// Edge defs
-#include "n_edge.h"
 
 // cJSON wrappers
 #include "n_cjson.h"
@@ -327,9 +338,6 @@ void NoteDebugf(const char *format, ...);
 void NoteDebugWithLevel(uint8_t level, const char *msg);
 void NoteDebugWithLevelLn(uint8_t level, const char *msg);
 
-#define _NOTE_C_STRINGIZE(x) #x
-#define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
-
 #ifdef NOTE_C_LOG_SHOW_FILE_AND_LINE
 #define NOTE_C_LOG_FILE_AND_LINE(lvl) do { \
   NoteDebugWithLevel(lvl, __FILE__ ":" NOTE_C_STRINGIZE(__LINE__) " "); \
@@ -388,22 +396,22 @@ size_t strlcat(char *dst, const char *src, size_t siz);
 // JSON helpers
 void JInit(void);
 void JCheck(void);
-bool JIsPresent(J *rsp, const char *field);
-char *JGetString(J *rsp, const char *field);
-JNUMBER JGetNumber(J *rsp, const char *field);
-J *JGetArray(J *rsp, const char *field);
-J *JGetObject(J *rsp, const char *field);
-JINTEGER JGetInt(J *rsp, const char *field);
-bool JGetBool(J *rsp, const char *field);
+bool JIsPresent(J *json, const char *field);
+char *JGetString(J *json, const char *field);
+JNUMBER JGetNumber(J *json, const char *field);
+J *JGetArray(J *json, const char *field);
+J *JGetObject(J *json, const char *field);
+JINTEGER JGetInt(J *json, const char *field);
+bool JGetBool(J *json, const char *field);
 JNUMBER JNumberValue(J *item);
 char *JStringValue(J *item);
 bool JBoolValue(J *item);
 JINTEGER JIntValue(J *item);
-bool JIsNullString(J *rsp, const char *field);
-bool JIsExactString(J *rsp, const char *field, const char *teststr);
-bool JContainsString(J *rsp, const char *field, const char *substr);
-bool JAddBinaryToObject(J *req, const char *fieldName, const void *binaryData, uint32_t binaryDataLen);
-bool JGetBinaryFromObject(J *rsp, const char *fieldName, uint8_t **retBinaryData, uint32_t *retBinaryDataLen);
+bool JIsNullString(J *json, const char *field);
+bool JIsExactString(J *json, const char *field, const char *teststr);
+bool JContainsString(J *json, const char *field, const char *substr);
+bool JAddBinaryToObject(J *json, const char *fieldName, const void *binaryData, uint32_t binaryDataLen);
+bool JGetBinaryFromObject(J *json, const char *fieldName, uint8_t **retBinaryData, uint32_t *retBinaryDataLen);
 const char *JGetItemName(const J * item);
 char *JAllocString(uint8_t *buffer, uint32_t len);
 const char *JType(J *item);
@@ -423,7 +431,7 @@ const char *JType(J *item);
 #define JTYPE_STRING			11
 #define JTYPE_OBJECT			12
 #define JTYPE_ARRAY				13
-int JGetType(J *rsp, const char *field);
+int JGetType(J *json, const char *field);
 int JGetItemType(J *item);
 int JBaseItemType(int type);
 #define JGetObjectItemName(j) (j->string)

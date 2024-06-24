@@ -26,7 +26,7 @@ int test_make_note_txn_instantiates_notetxn_object()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tnotetxn == " << !!notetxn << ", EXPECTED: not nullptr" << std::endl;
     std::cout << "[";
   }
@@ -57,7 +57,7 @@ int test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_a
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tnotetxn_2 == " << std::hex << notetxn_2 << ", EXPECTED: " << notetxn_1 << std::endl;
     std::cout << "[";
   }
@@ -89,7 +89,7 @@ int test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tnotetxn == " << std::hex << notetxn << ", EXPECTED: 0 (nullptr)" << std::endl;
     std::cout << "[";
   }
@@ -117,7 +117,7 @@ int test_notetxn_arduino_constructor_floats_ctx_pin()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == 0x" << std::hex << static_cast<size_t>(pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << INPUT << std::endl;
     std::cout << "[";
   }
@@ -145,7 +145,7 @@ int test_notetxn_arduino_constructor_floats_rtx_pin()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<size_t>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << INPUT << std::endl;
     std::cout << "[";
   }
@@ -180,7 +180,7 @@ int test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     if (pinMode_Parameters.pin_mode.find(CTX_PIN) != pinMode_Parameters.pin_mode.end()) {
       std::cout << "\tpinMode_Parameters.pin_mode[CTX_PIN][0] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[CTX_PIN][0]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(INPUT_PULLUP) << std::endl;
     } else {
@@ -219,7 +219,7 @@ int test_notetxn_arduino_start_configures_rtx_pin_as_output()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     if (pinMode_Parameters.pin_mode.find(RTX_PIN) != pinMode_Parameters.pin_mode.end()) {
       std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(OUTPUT) << std::endl;
     } else {
@@ -258,7 +258,7 @@ int test_notetxn_arduino_start_sets_rtx_pin_high()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     if (digitalWrite_Parameters.pin_val.find(RTX_PIN) != digitalWrite_Parameters.pin_val.end()) {
       std::cout << "\tdigitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(digitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(HIGH) << std::endl;
     } else {
@@ -302,7 +302,7 @@ int test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     if (digitalRead_Parameters.result.find(CTX_PIN) != digitalRead_Parameters.result.end()) {
       std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << std::endl;
       std::cout << "\tdigitalRead_Parameters.result[CTX_PIN][(digitalRead_Parameters.invoked[CTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN][(digitalRead_Parameters.invoked[CTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(HIGH) << std::endl;
@@ -348,7 +348,7 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
     std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
     std::cout << "[";
@@ -386,7 +386,7 @@ int test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds_high()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
     std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(OUTPUT) << std::endl;
@@ -425,7 +425,7 @@ int test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
     std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
     std::cout << "\tdigitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(digitalWrite_Parameters.pin_val[RTX_PIN][(digitalWrite_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(HIGH) << std::endl;
@@ -462,7 +462,7 @@ int test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_high()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tpinMode_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(pinMode_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 1" << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(INPUT) << std::endl;
     std::cout << "[";
@@ -507,7 +507,7 @@ int test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
     std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(INPUT) << std::endl;
@@ -552,7 +552,7 @@ int test_notetxn_arduino_start_floats_rtx_pin_on_timeout()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     std::cout << "\tdigitalRead_Parameters.invoked[CTX_PIN] == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.invoked[CTX_PIN]) << ", EXPECTED: > 0" << std::endl;
     std::cout << "\tdigitalRead_Parameters.result[CTX_PIN].size() == " << std::dec << static_cast<unsigned>(digitalRead_Parameters.result[CTX_PIN].size()) << ", EXPECTED: 0" << std::endl;
     std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(INPUT) << std::endl;
@@ -587,7 +587,7 @@ int test_notetxn_arduino_stop_floats_rtx_pin()
   else
   {
     result = static_cast<int>('t' + 'x' + 'n');
-    std::cout << "FAILED] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
     if (pinMode_Parameters.pin_mode.find(RTX_PIN) != pinMode_Parameters.pin_mode.end()) {
       std::cout << "\tpinMode_Parameters.invoked[RTX_PIN] == " << std::dec << static_cast<unsigned>(pinMode_Parameters.invoked[RTX_PIN]) << ", EXPECTED: > 0" << std::endl;
       std::cout << "\tpinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == 0x" << std::hex << static_cast<unsigned>(pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)]) << ", EXPECTED: 0x" << std::hex << static_cast<unsigned>(INPUT) << std::endl;
