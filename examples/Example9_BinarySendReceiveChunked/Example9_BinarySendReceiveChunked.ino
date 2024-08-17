@@ -172,10 +172,11 @@ void loop()
         NoteBinaryStoreDecodedLength(&rx_data_len);
 
         // We intend to receive the Notecard's binary data store in chunks of
-        // 12 bytes. The `offset` and `length` used to request data describe
-        // decoded data. Therefore we will need to allocate a buffer that is
-        // large enough to hold the encoded data that will be transferred from
-        // the Notecard, as well as the terminating newline.
+        // 12 bytes. The `offset` and `length` values, used to request data, are
+        // based on decoded data size, not encoded size. Therefore, we need to
+        // allocate a buffer large enough to accommodate the encoded data to be
+        // transferred from the Notecard, as well as the terminating newline.
+
         // `NoteBinaryMaxEncodedLength()` will compute the worst-case size of
         // the encoded length plus the byte required for the newline terminator.
         const uint32_t rx_chunk_size = 12;
