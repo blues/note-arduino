@@ -186,7 +186,7 @@ void noteTransactionStop (void) {
               The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
-void Notecard::platformInit (bool assignCallbacks) const
+void Notecard::platformInit (bool assignCallbacks)
 {
     NoteSetUserAgent((char *) ("note-arduino " NOTE_ARDUINO_VERSION));
     if (assignCallbacks) {
@@ -225,7 +225,7 @@ Notecard::~Notecard (void)
               appropriately for the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_) const
+void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
 {
     noteI2c = noteI2c_;
     platformInit(noteI2c);
@@ -247,7 +247,7 @@ void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
               communicating with the Notecard from the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteSerial * noteSerial_) const
+void Notecard::begin(NoteSerial * noteSerial_)
 {
     noteSerial = noteSerial_;
     platformInit(noteSerial);
@@ -270,16 +270,6 @@ void Notecard::begin(NoteSerial * noteSerial_) const
 
 /**************************************************************************/
 /*!
-    @brief  Clear the debug output source.
-*/
-/**************************************************************************/
-void Notecard::clearDebugOutputStream(void) const
-{
-    setDebugOutputStream(nullptr);
-}
-
-/**************************************************************************/
-/*!
     @brief  Periodically show Notecard sync status, returning `TRUE`
             if something was displayed to the debug stream.
     @param    pollFrequencyMs
@@ -287,10 +277,10 @@ void Notecard::clearDebugOutputStream(void) const
     @param    maxLevel
               The maximum log level to output to the debug console. Pass
               -1 for all.
-    @return `True` if a pending response was displayed to the debug stream.
+    @return `true` if a pending response was displayed to the debug stream.
 */
 /**************************************************************************/
-bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel) const
+bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
 {
     return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
 }
@@ -314,7 +304,7 @@ void Notecard::deleteResponse(J *rsp) const
             interfaces, and frees all associated memory.
 */
 /**************************************************************************/
-void Notecard::end(void) const
+void Notecard::end(void)
 {
     // Clear Communication Interfaces
     NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
@@ -490,7 +480,7 @@ bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds) const
               debug output.
 */
 /**************************************************************************/
-void Notecard::setDebugOutputStream(NoteLog * noteLog_) const
+void Notecard::setDebugOutputStream(NoteLog * noteLog_)
 {
     noteLog = noteLog_;
     if (noteLog) {
@@ -513,7 +503,7 @@ void Notecard::setDebugOutputStream(NoteLog * noteLog_) const
               I2C bus taken during the call to `lockI2cFn()`.
 */
 /**************************************************************************/
-void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) const {
+void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) {
     NoteSetFnI2CMutex(lockI2cFn_, unlockI2cFn_);
 }
 
@@ -530,7 +520,7 @@ void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) const {
               Notecard transaction taken during the call to `lockNoteFn()`.
 */
 /**************************************************************************/
-void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) const {
+void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
     NoteSetFnNoteMutex(lockNoteFn_, unlockNoteFn_);
 }
 
@@ -549,7 +539,7 @@ void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) const 
               A platform specific tuple of digital I/O pins.
 */
 /**************************************************************************/
-void Notecard::setTransactionPins(NoteTxn * noteTxn_) const {
+void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
     noteTxn = noteTxn_;  // Set global interface
     if (noteTxn_) {
         NoteSetFnTransaction(noteTransactionStart, noteTransactionStop);
