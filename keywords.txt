@@ -11,8 +11,7 @@ clearDebugOutputStream		KEYWORD2
 clearTransactionPins		KEYWORD2
 debugSyncStatus			KEYWORD2
 deleteResponse			KEYWORD2
-logDebug			KEYWORD2
-logDebugf			KEYWORD2
+end				KEYWORD2
 newCommand			KEYWORD2
 newRequest			KEYWORD2
 requestAndResponse		KEYWORD2
@@ -30,6 +29,10 @@ setTransactionPins		KEYWORD2
 ########################################
 Notecard_h			LITERAL1
 Notecarrier_h			LITERAL1
+NOTE_ARDUINO_VERSION		LITERAL1
+NOTE_ARDUINO_VERSION_MAJOR	LITERAL1
+NOTE_ARDUINO_VERSION_MINOR	LITERAL1
+NOTE_ARDUINO_VERSION_PATCH	LITERAL1
 
 ########################################
 ## DATA TYPES

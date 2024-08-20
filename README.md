@@ -1,6 +1,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/blues/note-arduino/badge.svg?branch=master)](https://coveralls.io/github/blues/note-arduino?branch=master)
 
-# note-arduino 
+# note-arduino
 
 The note-arduino Arduino library for communicating with the
 [Blues][blues] Notecard via serial or I²C. Includes example sketches in
