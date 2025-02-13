@@ -70,6 +70,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Load CI Docker image
+        # Only load the Docker image artifact if build_ci_docker_image actually
+        # ran (e.g. it wasn't skipped and was successful).
         if: ${{ needs.build_ci_docker_image.result == 'success' }}
         uses: ./.github/actions/load-ci-image
 
@@ -113,7 +115,9 @@ jobs:
           - adafruit:samd:adafruit_feather_m4
           # The binary examples don't fit in the Uno's flash.
           # - arduino:avr:uno
-          - arduino:mbed_nano:nano33ble
+          # The mbed_nano platform generates compiler warning.
+          # https://github.com/arduino/ArduinoCore-mbed/issues/1024
+          # - arduino:mbed_nano:nano33ble
           - esp32:esp32:featheresp32
           - rp2040:rp2040:rpipico
           - SparkFun:apollo3:sfe_artemis_thing_plus
