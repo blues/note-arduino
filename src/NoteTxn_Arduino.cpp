@@ -9,19 +9,30 @@
 
 NoteTxn *
 make_note_txn (
-    NoteTxn::param_t txn_parameters_
-)
-{
+    nullptr_t
+) {
+    const uint8_t invoke_deletion[2] = {0, 0}; // Invalid tuple invokes deletion
+    return make_note_txn(invoke_deletion);
+}
+
+template <typename T>
+NoteTxn *
+make_note_txn (
+    T & txn_pins_
+) {
+    // Singleton
     static NoteTxn * note_txn = nullptr;
-    if (!txn_parameters_) {
+
+    if (txn_pins_[0] == txn_pins_[1]) {
+        // Invalid tuple invokes deletion
         if (note_txn) {
             delete note_txn;
             note_txn = nullptr;
         }
     } else if (!note_txn) {
-        const uint8_t * txn_pins = reinterpret_cast<uint8_t *>(txn_parameters_);
-        note_txn = new NoteTxn_Arduino(txn_pins[0], txn_pins[1]);
+        note_txn = new NoteTxn_Arduino(txn_pins_[0], txn_pins_[1]);
     }
+
     return note_txn;
 }
 
@@ -80,3 +91,7 @@ NoteTxn_Arduino::stop (
     // Float RTX pin
     ::pinMode(_rtx_pin, INPUT);
 }
+
+// Explicitly instantiate the template function for array types
+template NoteTxn * make_note_txn<uint8_t[2]>(uint8_t(&)[2]);
+template NoteTxn * make_note_txn<const uint8_t[2]>(const uint8_t(&)[2]);

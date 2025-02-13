@@ -96,7 +96,8 @@ public:
         setDebugOutputStream(nullptr);
     }
     inline void clearTransactionPins(void) {
-        setTransactionPins(nullptr);
+        uint8_t txn_pins[2] = {0};
+        setTransactionPins(make_note_txn(txn_pins));
     }
     bool debugSyncStatus (int pollFrequencyMs, int maxLevel);
     void deleteResponse(J *rsp) const;

@@ -1,12 +1,26 @@
 #include "mock/NoteTxn_Mock.hpp"
 
-MakeNoteTxn_Parameters make_note_txn_Parameters;
+MakeNoteTxn_Parameters<const uint8_t [2]> make_note_txn_Parameters;
 NoteTxnStart_Parameters noteTxnStart_Parameters;
 NoteTxnStop_Parameters noteTxnStop_Parameters;
 
 NoteTxn *
 make_note_txn (
-    NoteTxn::param_t txn_parameters_
+    nullptr_t
+) {
+    // Record invocation(s)
+    ++make_note_txn_Parameters.invoked;
+
+    // Stash parameter(s)
+
+    // Return user-supplied result
+    return make_note_txn_Parameters.result;
+}
+
+template <typename T>
+NoteTxn *
+make_note_txn (
+    T & txn_parameters_
 )
 {
     // Record invocation(s)
