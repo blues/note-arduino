@@ -13,12 +13,13 @@ public:
     void stop (void) override;
 };
 
+template <typename T>
 struct MakeNoteTxn_Parameters {
     MakeNoteTxn_Parameters(
         void
     ) :
         invoked(0),
-        txn_parameters(nullptr),
+        txn_parameters{0, 0},
         result(nullptr)
     { }
     void reset (
@@ -29,7 +30,7 @@ struct MakeNoteTxn_Parameters {
         result = nullptr;
     }
     size_t invoked;
-    NoteTxn::param_t txn_parameters;
+    T txn_parameters;
     NoteTxn * result;
 };
 
@@ -67,7 +68,7 @@ struct NoteTxnStop_Parameters {
     size_t invoked;
 };
 
-extern MakeNoteTxn_Parameters make_note_txn_Parameters;
+extern MakeNoteTxn_Parameters<const uint8_t [2]> make_note_txn_Parameters;
 extern NoteTxnStart_Parameters noteTxnStart_Parameters;
 extern NoteTxnStop_Parameters noteTxnStop_Parameters;
 
