@@ -15,4 +15,8 @@ private:
     uint8_t _rtx_pin;
 };
 
+template <> NoteTxn * make_note_txn <std::nullptr_t> (const std::nullptr_t & txn_pins_);
+template <> NoteTxn * make_note_txn <uint8_t [2]> (uint8_t (&txn_pins_)[2]);
+template <> NoteTxn * make_note_txn <const uint8_t [2]> (const uint8_t (&txn_pins_)[2]);
+
 #endif // NOTE_TXN_ARDUINO_HPP

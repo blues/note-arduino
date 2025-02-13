@@ -7,21 +7,45 @@
   #include "mock/mock-parameters.hpp"
 #endif
 
+template <>
 NoteTxn *
-make_note_txn (
-    NoteTxn::param_t txn_parameters_
-)
-{
+make_note_txn <std::nullptr_t> (
+    const std::nullptr_t & txn_pins_
+) {
+    // Invalid configuration indicates deletion
+    if (note_txn) {
+        delete note_txn;
+        note_txn = nullptr;
+    }
+    return note_txn;
+}
+
+template <>
+NoteTxn *
+make_note_txn <uint8_t [2]> (
+    uint8_t (&txn_pins_)[2]
+) {
+    return make_note_txn(const_cast<const uint8_t (&)[2]>(txn_pins_));
+}
+
+template <>
+NoteTxn *
+make_note_txn <const uint8_t [2]> (
+    const uint8_t (&txn_pins_)[2]
+) {
+    // Singleton
     static NoteTxn * note_txn = nullptr;
-    if (!txn_parameters_) {
+
+    if (txn_pins_[0] == txn_pins_[1]) {
+        // Invalid configuration indicates deletion
         if (note_txn) {
             delete note_txn;
             note_txn = nullptr;
         }
     } else if (!note_txn) {
-        const uint8_t * txn_pins = reinterpret_cast<uint8_t *>(txn_parameters_);
-        note_txn = new NoteTxn_Arduino(txn_pins[0], txn_pins[1]);
+        note_txn = new NoteTxn_Arduino(txn_pins_[0], txn_pins_[1]);
     }
+
     return note_txn;
 }
 
