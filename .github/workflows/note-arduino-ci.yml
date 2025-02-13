@@ -117,7 +117,8 @@ jobs:
           - esp32:esp32:featheresp32
           - rp2040:rp2040:rpipico
           - SparkFun:apollo3:sfe_artemis_thing_plus
-          - STMicroelectronics:stm32:BluesW:pnum=SWAN_R5
+          - STMicroelectronics:stm32:Blues:pnum=CYGNET
+          - STMicroelectronics:stm32:Blues:pnum=SWAN_R5
           - STMicroelectronics:stm32:GenF4:pnum=FEATHER_F405
           - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
 
