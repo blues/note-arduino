@@ -9,7 +9,7 @@
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
-ARG ARDUINO_CLI_VERSION=0.34.2
+ARG ARDUINO_CLI_VERSION=1.1.1
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UID=1000
 ARG USER="blues"
