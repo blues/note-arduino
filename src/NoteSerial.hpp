@@ -65,8 +65,7 @@ public:
                the platform specific UART implementation.
 */
 /******************************************************************************/
-NoteSerial * make_note_serial (
-    NoteSerial::param_t serial_parameters
-);
+template<typename T> NoteSerial * make_note_serial (T & serial_parameters);
+NoteSerial * make_note_serial (nullptr_t);
 
 #endif // NOTE_SERIAL_HPP

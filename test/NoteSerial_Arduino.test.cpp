@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 // Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteSerial_arduino.tests && ./noteSerial_arduino.tests || echo "Tests Result: $?"
 
@@ -14,10 +15,10 @@ int test_make_note_serial_instantiates_noteserial_object()
 
     // Arrange
     NoteSerial * noteserial = nullptr;
-    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
+    MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
 
     // Action
-    noteserial = make_note_serial(&arduino_parameters);
+    noteserial = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
 
     // Assert
     if (nullptr != noteserial)
@@ -43,11 +44,11 @@ int test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object
     int result;
 
     // Arrange
-    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
-    NoteSerial * const noteserial_1 = make_note_serial(&arduino_parameters);
+    MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
+    NoteSerial * const noteserial_1 = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
 
     // Action
-    NoteSerial * const noteserial_2 = make_note_serial(&arduino_parameters);
+    NoteSerial * const noteserial_2 = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
 
     // Assert
     if (noteserial_1 == noteserial_2)
@@ -74,8 +75,8 @@ int test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter(
     int result;
 
     // Arrange
-    MakeNoteSerial_ArduinoParameters arduino_parameters(Serial, 9600);
-    NoteSerial * noteserial = make_note_serial(&arduino_parameters);
+    MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
+    NoteSerial * noteserial = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
     assert(noteserial);
 
     // Action
@@ -105,7 +106,7 @@ int test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_
     hardwareSerialBegin_Parameters.reset();
 
     // Action
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     // Assert
     if (hardwareSerialBegin_Parameters.invoked)
@@ -133,7 +134,7 @@ int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_pa
     hardwareSerialBegin_Parameters.reset();
 
     // Action
-    NoteSerial_Arduino noteserial(Serial, EXPECTED_BAUD_RATE);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, EXPECTED_BAUD_RATE);
 
     // Assert
     if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
@@ -157,7 +158,7 @@ int test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method()
 
     // Arrange
     hardwareSerialEnd_Parameters.reset();
-    NoteSerial_Arduino * noteserial = new NoteSerial_Arduino(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> * noteserial = new NoteSerial_Arduino<HardwareSerial>(Serial, 9600);
 
     // Action
     delete noteserial;
@@ -183,7 +184,7 @@ int test_noteserial_arduino_available_invokes_hardware_serial_available()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     hardwareSerialAvailable_Parameters.reset();
 
     // Action
@@ -210,7 +211,7 @@ int test_noteserial_arduino_available_does_not_modify_hardware_serial_available_
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const size_t EXPECTED_RESULT = 79;
 
     hardwareSerialAvailable_Parameters.reset();
@@ -240,7 +241,7 @@ int test_noteserial_arduino_receive_invokes_hardware_serial_read()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     hardwareSerialRead_Parameters.reset();
 
@@ -269,7 +270,7 @@ int test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_
 
     // Arrange
     const char EXPECTED_RESULT = 'z';
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     hardwareSerialRead_Parameters.reset();
     hardwareSerialRead_Parameters.result = EXPECTED_RESULT;
@@ -298,7 +299,7 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_end()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     hardwareSerialEnd_Parameters.reset();
 
     // Action
@@ -325,7 +326,7 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     hardwareSerialBegin_Parameters.reset();
 
     // Action
@@ -353,7 +354,7 @@ int test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_pa
 
     // Arrange
     const size_t EXPECTED_BAUD_RATE = 9600;
-    NoteSerial_Arduino noteserial(Serial, EXPECTED_BAUD_RATE);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, EXPECTED_BAUD_RATE);
 
     hardwareSerialBegin_Parameters.reset();
 
@@ -381,7 +382,7 @@ int test_noteserial_arduino_reset_always_returns_true()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     // Action
     const bool ACTUAL_RESULT = noteserial.reset();
@@ -407,7 +408,7 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_write()
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     hardwareSerialWrite_Parameters.reset();
 
@@ -435,7 +436,7 @@ int test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_befo
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const char EXPECTED_RESULT[] = "Hello, Test!";
 
     hardwareSerialWrite_Parameters.reset();
@@ -464,7 +465,7 @@ int test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const size_t EXPECTED_RESULT = 13;
 
     hardwareSerialWrite_Parameters.reset();
@@ -493,7 +494,7 @@ int test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_pa
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     hardwareSerialFlush_Parameters.reset();
 
     // Action
@@ -520,7 +521,7 @@ int test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_
     int result;
 
     // Arrange
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     hardwareSerialFlush_Parameters.reset();
 
     // Action
@@ -548,7 +549,7 @@ int test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_resul
 
     // Arrange
     const size_t EXPECTED_RESULT = 13;
-    NoteSerial_Arduino noteserial(Serial, 9600);
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
     hardwareSerialWrite_Parameters.reset();
     hardwareSerialWrite_Parameters.result = EXPECTED_RESULT;
@@ -594,7 +595,8 @@ int main(void)
         {test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write, "test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write"},
         {test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true, "test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true"},
         {test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false, "test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false"},
-        {test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller, "test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller"}};
+        {test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller, "test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller"}
+    };
 
     return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
 }

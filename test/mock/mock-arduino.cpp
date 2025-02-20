@@ -13,6 +13,13 @@ HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
 
+SoftwareSerialAvailable_Parameters softwareSerialAvailable_Parameters;
+SoftwareSerialBegin_Parameters softwareSerialBegin_Parameters;
+SoftwareSerialEnd_Parameters softwareSerialEnd_Parameters;
+SoftwareSerialFlush_Parameters softwareSerialFlush_Parameters;
+SoftwareSerialRead_Parameters softwareSerialRead_Parameters;
+SoftwareSerialWrite_Parameters softwareSerialWrite_Parameters;
+
 StreamPrint_Parameters streamPrint_Parameters;
 
 TwoWireBegin_Parameters twoWireBegin_Parameters;
@@ -26,6 +33,7 @@ TwoWireWriteBuffer_Parameters twoWireWriteBuffer_Parameters;
 
 // Global Arduino Objects (Singletons)
 HardwareSerial Serial;
+SoftwareSerial SoftSerial;
 TwoWire Wire;
 
 void
@@ -165,6 +173,72 @@ HardwareSerial::write (
 
     // Return user-supplied result
     return hardwareSerialWrite_Parameters.result;
+}
+
+unsigned int
+SoftwareSerial::available (
+    void
+) {
+    // Record invocation(s)
+    ++softwareSerialAvailable_Parameters.invoked;
+
+    // Return user-supplied result
+    return softwareSerialAvailable_Parameters.result;
+}
+
+void
+SoftwareSerial::begin (
+    unsigned int baud
+) {
+    // Record invocation(s)
+    ++softwareSerialBegin_Parameters.invoked;
+
+    // Stash parameter(s)
+    softwareSerialBegin_Parameters.baud = baud;
+}
+
+void
+SoftwareSerial::end (
+    void
+) {
+    // Record invocation(s)
+    ++softwareSerialEnd_Parameters.invoked;
+}
+
+void
+SoftwareSerial::flush (
+    void
+) {
+    // Record invocation(s)
+    ++softwareSerialFlush_Parameters.invoked;
+}
+
+char
+SoftwareSerial::read (
+    void
+) {
+    // Record invocation(s)
+    ++softwareSerialRead_Parameters.invoked;
+
+    // Return user-supplied result
+    return softwareSerialRead_Parameters.result;
+}
+
+size_t
+SoftwareSerial::write (
+    uint8_t * buffer,
+    size_t size
+) {
+    // Record invocation(s)
+    ++softwareSerialWrite_Parameters.invoked;
+
+    // Stash parameter(s)
+    softwareSerialWrite_Parameters.buffer = buffer;
+    softwareSerialWrite_Parameters.buffer_cache = reinterpret_cast<char *>(buffer);
+    softwareSerialWrite_Parameters.size = size;
+
+    // Return user-supplied result
+    return softwareSerialWrite_Parameters.result;
 }
 
 size_t

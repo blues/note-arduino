@@ -38,13 +38,7 @@ public:
                the platform specific transaction implementation.
 */
 /******************************************************************************/
-template <typename T>
-NoteTxn * make_note_txn (
-    T & txn_parameters
-);
-
-NoteTxn * make_note_txn (
-    nullptr_t
-);
+template<typename T> NoteTxn * make_note_txn (T & txn_parameters);
+NoteTxn * make_note_txn (nullptr_t);
 
 #endif // NOTE_TXN_HPP

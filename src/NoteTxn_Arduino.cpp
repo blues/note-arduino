@@ -7,12 +7,24 @@
   #include "mock/mock-parameters.hpp"
 #endif
 
+// Singleton instance of the NoteSerial_Arduino class
+namespace instance {
+    inline NoteTxn* & note_txn (void) {
+        static NoteTxn* note_txn = nullptr;
+        return note_txn;
+    }
+};
+
 NoteTxn *
 make_note_txn (
     nullptr_t
 ) {
-    const uint8_t invoke_deletion[2] = {0, 0}; // Invalid tuple invokes deletion
-    return make_note_txn(invoke_deletion);
+    NoteTxn* & note_txn = instance::note_txn();
+    if (note_txn) {
+        delete note_txn;
+        note_txn = nullptr;
+    }
+    return note_txn;
 }
 
 template <typename T>
@@ -20,8 +32,7 @@ NoteTxn *
 make_note_txn (
     T & txn_pins_
 ) {
-    // Singleton
-    static NoteTxn * note_txn = nullptr;
+    NoteTxn* & note_txn = instance::note_txn();
 
     if (txn_pins_[0] == txn_pins_[1]) {
         // Invalid tuple invokes deletion

@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "NoteDefines.h"
 #include "NoteI2c.hpp"
 #include "NoteLog.hpp"
 #include "NoteSerial.hpp"
@@ -34,6 +35,9 @@
 
 #ifdef ARDUINO
 #include <Arduino.h>
+#ifdef NOTE_ARDUINO_SOFTWARE_SERIAL_SUPPORT
+#include <SoftwareSerial.h>
+#endif
 #include <Wire.h>
 #include "NoteSerial_Arduino.hpp"
 #endif
@@ -44,21 +48,6 @@
 #include "mock/mock-arduino.hpp"
 #include "mock/mock-parameters.hpp"
 #endif
-
-#define NOTE_ARDUINO_VERSION_MAJOR 1
-#define NOTE_ARDUINO_VERSION_MINOR 6
-#define NOTE_ARDUINO_VERSION_PATCH 3
-
-#define NOTE_ARDUINO_VERSION NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_ARDUINO_VERSION_PATCH)
-
-#if defined(__GNUC__) | defined(__clang__)
-    #define NOTE_ARDUINO_DEPRECATED __attribute__((__deprecated__))
-#elif defined(_MSC_VER)
-    #define NOTE_ARDUINO_DEPRECATED __declspec(deprecated)
-#else
-    #define NOTE_ARDUINO_DEPRECATED
-    #define NOTE_ARDUINO_NO_DEPRECATED_ATTR
-#endif // __GNUC__ || __clang__
 
 /**************************************************************************/
 /*!
@@ -77,9 +66,15 @@ public:
         begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
     }
     inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
-        MakeNoteSerial_ArduinoParameters arduino_parameters(serial, speed);
-        begin(make_note_serial(&arduino_parameters));
+        MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(serial, speed);
+        begin(make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters));
     }
+#ifdef NOTE_ARDUINO_SOFTWARE_SERIAL_SUPPORT
+    inline void begin(SoftwareSerial &serial, uint32_t speed = 9600) {
+        MakeNoteSerial_ArduinoParameters<SoftwareSerial> arduino_parameters(serial, speed);
+        begin(make_note_serial<MakeNoteSerial_ArduinoParameters<SoftwareSerial>>(arduino_parameters));
+    }
+#endif
     inline void setDebugOutputStream(Stream &dbgserial) {
         setDebugOutputStream(make_note_log(&dbgserial));
     }
@@ -96,8 +91,7 @@ public:
         setDebugOutputStream(nullptr);
     }
     inline void clearTransactionPins(void) {
-        uint8_t txn_pins[2] = {0};
-        setTransactionPins(make_note_txn(txn_pins));
+        setTransactionPins(make_note_txn(nullptr));
     }
     bool debugSyncStatus (int pollFrequencyMs, int maxLevel);
     void deleteResponse(J *rsp) const;
