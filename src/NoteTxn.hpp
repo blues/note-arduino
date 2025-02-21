@@ -7,12 +7,6 @@
 class NoteTxn
 {
 public:
-    /**************************************************************************/
-    /*!
-        @brief  Type used to abstract specific hardware implementation types.
-    */
-    /**************************************************************************/
-    typedef void * param_t;
 
     virtual ~NoteTxn(void) {}
 
@@ -44,8 +38,7 @@ public:
                the platform specific transaction implementation.
 */
 /******************************************************************************/
-NoteTxn * make_note_txn (
-    NoteTxn::param_t txn_parameters
-);
+template<typename T> NoteTxn * make_note_txn (T & txn_parameters);
+NoteTxn * make_note_txn (nullptr_t);
 
 #endif // NOTE_TXN_HPP

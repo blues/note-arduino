@@ -16,7 +16,7 @@ int test_make_note_txn_instantiates_notetxn_object()
   uint8_t txn_pins[2] = {19, 79};
 
   // Action
-  notetxn = make_note_txn(reinterpret_cast<NoteTxn::param_t>(txn_pins));
+  notetxn = make_note_txn(txn_pins);
 
   // Assert
   if (nullptr != notetxn)
@@ -32,7 +32,8 @@ int test_make_note_txn_instantiates_notetxn_object()
   }
 
   // Clean-up
-  make_note_txn(nullptr);
+  uint8_t invalid_pins[2] = {0};
+  make_note_txn(invalid_pins);
 
   return result;
 }
@@ -43,11 +44,11 @@ int test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_a
 
   // Arrange
   uint8_t txn_pins_1[2] = {19, 79};
-  NoteTxn * const notetxn_1 = make_note_txn(reinterpret_cast<NoteTxn::param_t>(txn_pins_1));
+  NoteTxn * const notetxn_1 = make_note_txn(txn_pins_1);
 
   // Action
   uint8_t txn_pins_2[2] = {9, 17};
-  NoteTxn * const notetxn_2 = make_note_txn(reinterpret_cast<NoteTxn::param_t>(txn_pins_2));
+  NoteTxn * const notetxn_2 = make_note_txn(txn_pins_2);
 
   // Assert
   if (notetxn_1 == notetxn_2)
@@ -63,23 +64,25 @@ int test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_a
   }
 
   // Clean-up
-  make_note_txn(nullptr);
+  uint8_t invalid_pins[2] = {0};
+  make_note_txn(invalid_pins);
 
   return result;
 }
 
-//int test_make_note_txn_returns_nullptr_when_nullptr_is_passed_as_parameter()
-int test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter()
+//int test_make_note_txn_returns_nullptr_when_same_pins_are_passed_as_parameter()
+int test_make_note_txn_deletes_singleton_when_same_pins_are_passed_as_parameter()
 {
   int result;
 
   // Arrange
   uint8_t txn_pins[2] = {19, 79};
-  NoteTxn * notetxn = make_note_txn(reinterpret_cast<NoteTxn::param_t>(txn_pins));
+  NoteTxn * notetxn = make_note_txn(txn_pins);
   assert(notetxn);
 
   // Action
-  notetxn = make_note_txn(nullptr);
+  uint8_t invalid_pins[2] = {0};
+  notetxn = make_note_txn(invalid_pins);
 
   // Assert
   if (nullptr == notetxn)
@@ -605,7 +608,7 @@ int main(void)
   TestFunction tests[] = {
       {test_make_note_txn_instantiates_notetxn_object, "test_make_note_txn_instantiates_notetxn_object"},
       {test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_all_calls, "test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_all_calls"},
-      {test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_txn_deletes_singleton_when_nullptr_is_passed_as_parameter"},
+      {test_make_note_txn_deletes_singleton_when_same_pins_are_passed_as_parameter, "test_make_note_txn_deletes_singleton_when_same_pins_are_passed_as_parameter"},
       {test_notetxn_arduino_constructor_floats_ctx_pin, "test_notetxn_arduino_constructor_floats_ctx_pin"},
       {test_notetxn_arduino_constructor_floats_rtx_pin, "test_notetxn_arduino_constructor_floats_rtx_pin"},
       {test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup, "test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup"},
