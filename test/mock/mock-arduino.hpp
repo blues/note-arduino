@@ -275,6 +275,126 @@ struct HardwareSerialWrite_Parameters {
     size_t result;
 };
 
+struct SoftwareSerial : public Stream {
+    unsigned int available (void);
+    void begin(unsigned int baud);
+    void end(void);
+    void flush(void);
+    char read (void);
+    size_t write(uint8_t * buffer, size_t size);
+};
+
+struct SoftwareSerialAvailable_Parameters {
+    SoftwareSerialAvailable_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = 0;
+    }
+    size_t invoked;
+    size_t result;
+};
+
+struct SoftwareSerialBegin_Parameters {
+    SoftwareSerialBegin_Parameters(
+        void
+    ) :
+        baud(0),
+        invoked(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        baud = 0;
+    }
+    unsigned int baud;
+    size_t invoked;
+};
+
+struct SoftwareSerialEnd_Parameters {
+    SoftwareSerialEnd_Parameters(
+        void
+    ) :
+        invoked(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+    }
+    size_t invoked;
+};
+
+struct SoftwareSerialFlush_Parameters {
+    SoftwareSerialFlush_Parameters(
+        void
+    ) :
+        invoked(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+    }
+    size_t invoked;
+};
+
+
+struct SoftwareSerialRead_Parameters {
+    SoftwareSerialRead_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = 0;
+    }
+    size_t invoked;
+    char result;
+};
+
+struct SoftwareSerialWrite_Parameters {
+    SoftwareSerialWrite_Parameters(
+        void
+    ) :
+        invoked(0),
+        buffer(nullptr),
+        size(0),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        buffer = nullptr;
+        buffer_cache.clear();
+        size = 0;
+        result = 0;
+    }
+    size_t invoked;
+    uint8_t * buffer;
+    std::string buffer_cache;
+    size_t size;
+    size_t result;
+};
+
 struct TwoWire {
     void begin(void);
     void beginTransmission(uint8_t address);
@@ -446,6 +566,14 @@ extern HardwareSerialEnd_Parameters hardwareSerialEnd_Parameters;
 extern HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
 extern HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 extern HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
+
+extern SoftwareSerial SoftSerial;
+extern SoftwareSerialAvailable_Parameters softwareSerialAvailable_Parameters;
+extern SoftwareSerialBegin_Parameters softwareSerialBegin_Parameters;
+extern SoftwareSerialEnd_Parameters softwareSerialEnd_Parameters;
+extern SoftwareSerialFlush_Parameters softwareSerialFlush_Parameters;
+extern SoftwareSerialRead_Parameters softwareSerialRead_Parameters;
+extern SoftwareSerialWrite_Parameters softwareSerialWrite_Parameters;
 
 extern StreamPrint_Parameters streamPrint_Parameters;
 
