@@ -1742,7 +1742,7 @@ int test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_associated
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.serial_parameters = &mockSerial;
+  make_note_serial_Parameters.serial_parameters = &Serial;
   notecard.begin(&mockSerial);
 
    // Action

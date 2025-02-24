@@ -7,12 +7,6 @@
 class NoteSerial
 {
 public:
-    /**************************************************************************/
-    /*!
-        @brief  Type used to abstract specific hardware implementation types.
-    */
-    /**************************************************************************/
-    typedef void * param_t;
 
     virtual ~NoteSerial(void) {}
 
