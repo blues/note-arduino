@@ -1706,7 +1706,7 @@ int test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memor
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   make_note_i2c_Parameters.reset();
-  make_note_i2c_Parameters.i2c_parameters = &mockI2c;
+  make_note_i2c_Parameters.i2c_parameters = &Wire;
   notecard.begin(&mockI2c);
 
    // Action

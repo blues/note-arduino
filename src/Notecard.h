@@ -63,7 +63,7 @@ public:
     inline void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
                       uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
                       TwoWire &wirePort = Wire) {
-        begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
+        begin(make_note_i2c(wirePort), i2cAddress, i2cMax);
     }
     inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
         MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(serial, speed);

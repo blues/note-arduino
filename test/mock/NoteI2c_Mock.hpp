@@ -7,6 +7,7 @@
 #include <string>
 
 #include "NoteI2c.hpp"
+#include "mock/mock-arduino.hpp"
 
 class NoteI2c_Mock final : public NoteI2c
 {
@@ -16,6 +17,7 @@ public:
     const char * transmit(uint16_t device_address, uint8_t * buffer, uint16_t size) override;
 };
 
+template <typename T>
 struct MakeNoteI2c_Parameters {
     MakeNoteI2c_Parameters(
         void
@@ -32,7 +34,7 @@ struct MakeNoteI2c_Parameters {
         result = nullptr;
     }
     size_t invoked;
-    NoteI2c::param_t i2c_parameters;
+    T * i2c_parameters;
     NoteI2c * result;
 };
 
@@ -115,7 +117,7 @@ struct NoteI2cTransmit_Parameters {
     const char * result;
 };
 
-extern MakeNoteI2c_Parameters make_note_i2c_Parameters;
+extern MakeNoteI2c_Parameters<TwoWire> make_note_i2c_Parameters;
 extern NoteI2cReceive_Parameters noteI2cReceive_Parameters;
 extern NoteI2cReset_Parameters noteI2cReset_Parameters;
 extern NoteI2cTransmit_Parameters noteI2cTransmit_Parameters;

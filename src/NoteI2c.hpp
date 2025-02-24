@@ -7,12 +7,6 @@
 class NoteI2c
 {
 public:
-    /**************************************************************************/
-    /*!
-        @brief  Type used to abstract specific hardware implementation types.
-    */
-    /**************************************************************************/
-    typedef void * param_t;
 
     virtual ~NoteI2c(void) {}
 
@@ -94,8 +88,7 @@ public:
                the platform specific I2C implementation.
 */
 /******************************************************************************/
-NoteI2c * make_note_i2c (
-    NoteI2c::param_t i2c_parameters
-);
+template <typename T> NoteI2c * make_note_i2c (T & i2c_parameters);
+NoteI2c * make_note_i2c (nullptr_t);
 
 #endif // NOTE_I2C_HPP

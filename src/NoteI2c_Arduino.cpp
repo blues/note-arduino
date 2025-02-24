@@ -4,20 +4,37 @@
 static const char *i2cerr = "i2c {io}";
 #endif
 
+// Singleton instance of the NoteI2c_Arduino class
+namespace instance {
+    inline NoteI2c* & note_i2c (void) {
+        static NoteI2c* note_i2c = nullptr;
+        return note_i2c;
+    }
+};
+
 NoteI2c *
 make_note_i2c (
-    NoteI2c::param_t i2c_parameters_
+    nullptr_t
+) {
+    NoteI2c* & note_i2c = instance::note_i2c();
+    if (note_i2c) {
+        delete note_i2c;
+        note_i2c = nullptr;
+    }
+    return note_i2c;
+}
+
+template <typename T>
+NoteI2c *
+make_note_i2c (
+    T & i2c_parameters_
 )
 {
-    static NoteI2c * note_i2c = nullptr;
-    if (!i2c_parameters_) {
-        if (note_i2c) {
-            delete note_i2c;
-            note_i2c = nullptr;
-        }
-    } else if (!note_i2c) {
-        note_i2c = new NoteI2c_Arduino(*reinterpret_cast<TwoWire *>(i2c_parameters_));
+    NoteI2c* & note_i2c = instance::note_i2c();
+    if (!note_i2c) {
+        note_i2c = new NoteI2c_Arduino(i2c_parameters_);
     }
+
     return note_i2c;
 }
 
@@ -182,3 +199,6 @@ NoteI2c_Arduino::transmit (
 
     return result;
 }
+
+// Explicitly instantiate the template function for the supported types
+template NoteI2c * make_note_i2c<TwoWire>(TwoWire &);
