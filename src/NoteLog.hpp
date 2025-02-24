@@ -6,12 +6,6 @@
 class NoteLog
 {
 public:
-    /**************************************************************************/
-    /*!
-        @brief  Type used to abstract specific hardware implementation types.
-    */
-    /**************************************************************************/
-    typedef void * param_t;
 
     virtual ~NoteLog(void) {}
 
@@ -36,8 +30,7 @@ public:
                the platform specific log output implementation.
 */
 /******************************************************************************/
-NoteLog * make_note_log (
-    NoteLog::param_t log_parameters
-);
+template <typename T> NoteLog * make_note_log (T & log_parameters);
+NoteLog * make_note_log (nullptr_t);
 
 #endif // NOTE_LOG_HPP

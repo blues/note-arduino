@@ -1,11 +1,26 @@
 #include "mock/NoteLog_Mock.hpp"
 
-MakeNoteLog_Parameters make_note_log_Parameters;
+MakeNoteLog_Parameters<HardwareSerial> make_note_log_Parameters;
 NoteLogPrint_Parameters noteLogPrint_Parameters;
 
 NoteLog *
 make_note_log (
-    NoteLog::param_t log_parameters_
+    nullptr_t
+) {
+    // Record invocation(s)
+    ++make_note_log_Parameters.invoked;
+
+    // Stash parameter(s)
+    make_note_log_Parameters.log_parameters = nullptr;
+
+    // Return user-supplied result
+    return make_note_log_Parameters.result;
+}
+
+template <typename T>
+NoteLog *
+make_note_log (
+    T & log_parameters_
 )
 {
     // Record invocation(s)

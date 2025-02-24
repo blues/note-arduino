@@ -76,7 +76,7 @@ public:
     }
 #endif
     inline void setDebugOutputStream(Stream &dbgserial) {
-        setDebugOutputStream(make_note_log(&dbgserial));
+        setDebugOutputStream(make_note_log(dbgserial));
     }
     inline void setTransactionPins(uint8_t ctx_pin, uint8_t rtx_pin) {
         uint8_t txn_pins[2] = {ctx_pin, rtx_pin};
