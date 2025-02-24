@@ -1732,7 +1732,7 @@ int test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memor
   return result;
 }
 
-int test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory()
+int test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_associated_memory()
 {
   int result;
 
@@ -1742,7 +1742,7 @@ int test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_me
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   make_note_serial_Parameters.reset();
-  make_note_serial_Parameters.serial_parameters = &mockSerial;
+  make_note_serial_Parameters.serial_parameters = &Serial;
   notecard.begin(&mockSerial);
 
    // Action
@@ -5040,7 +5040,7 @@ int main(void)
       {test_notecard_end_clears_all_serial_interface_function_pointers, "test_notecard_end_clears_all_serial_interface_function_pointers"},
       {test_notecard_end_clears_all_platform_interface_function_pointers, "test_notecard_end_clears_all_platform_interface_function_pointers"},
       {test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory, "test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory"},
-      {test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory, "test_notecard_end_provides_nullptr_to_make_note_serial_to_free_associated_memory"},
+      {test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_associated_memory, "test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_associated_memory"},
       {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},

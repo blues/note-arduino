@@ -35,6 +35,9 @@
 
 #ifdef ARDUINO
 #include <Arduino.h>
+#ifdef NOTE_ARDUINO_SOFTWARE_SERIAL_SUPPORT
+#include <SoftwareSerial.h>
+#endif
 #include <Wire.h>
 #include "NoteSerial_Arduino.hpp"
 #endif
@@ -63,9 +66,15 @@ public:
         begin(make_note_i2c(&wirePort), i2cAddress, i2cMax);
     }
     inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
-        MakeNoteSerial_ArduinoParameters arduino_parameters(serial, speed);
-        begin(make_note_serial(&arduino_parameters));
+        MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(serial, speed);
+        begin(make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters));
     }
+#ifdef NOTE_ARDUINO_SOFTWARE_SERIAL_SUPPORT
+    inline void begin(SoftwareSerial &serial, uint32_t speed = 9600) {
+        MakeNoteSerial_ArduinoParameters<SoftwareSerial> arduino_parameters(serial, speed);
+        begin(make_note_serial<MakeNoteSerial_ArduinoParameters<SoftwareSerial>>(arduino_parameters));
+    }
+#endif
     inline void setDebugOutputStream(Stream &dbgserial) {
         setDebugOutputStream(make_note_log(&dbgserial));
     }

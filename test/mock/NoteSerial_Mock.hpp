@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "NoteSerial.hpp"
+#include "mock/mock-arduino.hpp"
 
 class NoteSerial_Mock final : public NoteSerial
 {
@@ -15,6 +16,7 @@ public:
     size_t transmit(uint8_t * buffer, size_t size, bool flush) override;
 };
 
+template <typename T>
 struct MakeNoteSerial_Parameters {
     MakeNoteSerial_Parameters(
         void
@@ -31,7 +33,7 @@ struct MakeNoteSerial_Parameters {
         result = nullptr;
     }
     size_t invoked;
-    NoteSerial::param_t serial_parameters;
+    T * serial_parameters;
     NoteSerial * result;
 };
 
@@ -112,7 +114,7 @@ struct NoteSerialTransmit_Parameters {
     size_t result;
 };
 
-extern MakeNoteSerial_Parameters make_note_serial_Parameters;
+extern MakeNoteSerial_Parameters<HardwareSerial> make_note_serial_Parameters;
 extern NoteSerialAvailable_Parameters noteSerialAvailable_Parameters;
 extern NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 extern NoteSerialReset_Parameters noteSerialReset_Parameters;

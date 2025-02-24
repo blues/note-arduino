@@ -1,6 +1,6 @@
 #include "mock/NoteSerial_Mock.hpp"
 
-MakeNoteSerial_Parameters make_note_serial_Parameters;
+MakeNoteSerial_Parameters<HardwareSerial> make_note_serial_Parameters;
 NoteSerialAvailable_Parameters noteSerialAvailable_Parameters;
 NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 NoteSerialReset_Parameters noteSerialReset_Parameters;
@@ -8,14 +8,29 @@ NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
 
 NoteSerial *
 make_note_serial (
-    NoteSerial::param_t serial_parameters_
+    nullptr_t
+) {
+    // Record invocation(s)
+    ++make_note_serial_Parameters.invoked;
+
+    // Stash parameter(s)
+    make_note_serial_Parameters.serial_parameters = nullptr;
+
+    // Return user-supplied result
+    return make_note_serial_Parameters.result;
+}
+
+template <typename T>
+NoteSerial *
+make_note_serial (
+    T & serial_parameters_
 )
 {
     // Record invocation(s)
     ++make_note_serial_Parameters.invoked;
 
     // Stash parameter(s)
-    make_note_serial_Parameters.serial_parameters = serial_parameters_;
+    make_note_serial_Parameters.serial_parameters = &serial_parameters_;
 
     // Return user-supplied result
     return make_note_serial_Parameters.result;
