@@ -129,7 +129,7 @@ __attribute__((weak)) J *NoteUserAgent()
 
     JAddStringToObject(ua, "agent", n_agent);
     JAddStringToObject(ua, "compiler", compiler);
-    JAddStringToObject(ua, "req_interface", noteActiveInterface());
+    JAddStringToObject(ua, "req_interface", _noteActiveInterface());
 
     // Add CPU Details
     if (n_cpu_cores != 0) {
@@ -206,4 +206,4 @@ void NoteSetUserAgentCPU(int cpu_mem, int cpu_mhz, int cpu_cores, char *cpu_vend
     n_cpu_vendor = cpu_vendor;
 }
 
-#endif
+#endif  // !NOTE_C_LOW_MEM

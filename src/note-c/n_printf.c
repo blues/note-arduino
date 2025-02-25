@@ -34,7 +34,7 @@ extern debugOutputFn hookDebugOutput;
 void NoteDebugf(const char *format, ...)
 {
 #ifndef NOTE_NODEBUG
-    if (hookDebugOutput != NULL) {
+    if (_noteIsDebugOutputActive()) {
         char line[256];
         va_list args;
         va_start(args, format);

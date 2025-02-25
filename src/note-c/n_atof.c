@@ -256,7 +256,7 @@ char **endPtr;              /* If non-NULL, store terminating character's
         case 5:
             p10 = 1.0e32;
             break;
-#ifndef NOTE_C_LOW_MEM
+#ifndef NOTE_C_SINGLE_PRECISION
         case 6:
             p10 = 1.0e64;
             break;

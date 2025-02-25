@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0095 NEW)
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are not allowed.
@@ -14,13 +15,14 @@ if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
     file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
 endif()
 
-option(NOTE_C_BUILD_TESTS "Build tests." OFF)
-option(NOTE_C_COVERAGE "Compile for test NOTE_C_COVERAGE reporting." OFF)
-option(NOTE_C_MEM_CHECK "Run tests with Valgrind." OFF)
 option(NOTE_C_BUILD_DOCS "Build docs." OFF)
-option(NOTE_C_NO_LIBC "Build the library without linking against libc, generating errors for any undefined symbols." OFF)
+option(NOTE_C_BUILD_TESTS "Build tests." ON)
+option(NOTE_C_COVERAGE "Compile for test NOTE_C_COVERAGE reporting." OFF)
 option(NOTE_C_LOW_MEM "Build the library tailored for low memory usage." OFF)
-option(NOTE_C_TEST_SINGLE_PRECISION "Use single precision for JSON floating point numbers." OFF)
+option(NOTE_C_MEM_CHECK "Run tests with Valgrind." OFF)
+option(NOTE_C_NO_LIBC "Build the library without linking against libc, generating errors for any undefined symbols." OFF)
+option(NOTE_C_SHOW_MALLOC "Build the library with flags required to log memory usage." OFF)
+option(NOTE_C_SINGLE_PRECISION "Use single precision for JSON floating point numbers." OFF)
 
 set(NOTE_C_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(note_c SHARED)
@@ -52,10 +54,27 @@ target_compile_options(
         -Werror
         -Og
         -ggdb
+    PUBLIC
+        -m32
+        -mfpmath=sse
+        -msse2
 )
 target_include_directories(
     note_c
     PUBLIC ${NOTE_C_SRC_DIR}
+)
+target_link_directories(
+    note_c
+    PUBLIC
+        /lib32
+        /usr/lib32
+        /usr/lib/gcc/x86_64-linux-gnu/12/32
+)
+target_link_options(
+    note_c
+    PUBLIC
+        -m32
+        -Wl,-melf_i386
 )
 
 if(NOTE_C_LOW_MEM)
@@ -85,11 +104,19 @@ if(NOTE_C_NO_LIBC)
     )
 endif()
 
-if(NOTE_C_TEST_SINGLE_PRECISION)
+if(NOTE_C_SHOW_MALLOC)
     target_compile_definitions(
         note_c
         PUBLIC
-            NOTE_C_TEST_SINGLE_PRECISION
+            NOTE_C_SHOW_MALLOC
+    )
+endif()
+
+if(NOTE_C_SINGLE_PRECISION)
+    target_compile_definitions(
+        note_c
+        PUBLIC
+            NOTE_C_SINGLE_PRECISION
     )
 endif()
 
