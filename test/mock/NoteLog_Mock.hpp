@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "NoteLog.hpp"
+#include "mock-arduino.hpp"
 
 class NoteLog_Mock final : public NoteLog
 {
@@ -12,6 +13,7 @@ public:
     size_t print(const char * message) override;
 };
 
+template <typename T>
 struct MakeNoteLog_Parameters {
     MakeNoteLog_Parameters(
         void
@@ -28,7 +30,7 @@ struct MakeNoteLog_Parameters {
         result = nullptr;
     }
     size_t invoked;
-    NoteLog::param_t log_parameters;
+    T * log_parameters;
     NoteLog * result;
 };
 
@@ -52,7 +54,7 @@ struct NoteLogPrint_Parameters {
     size_t result;
 };
 
-extern MakeNoteLog_Parameters make_note_log_Parameters;
+extern MakeNoteLog_Parameters<HardwareSerial> make_note_log_Parameters;
 extern NoteLogPrint_Parameters noteLogPrint_Parameters;
 
 #endif // MOCK_NOTE_LOG_HPP

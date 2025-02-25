@@ -7,21 +7,43 @@
   #include "mock/mock-parameters.hpp"
 #endif
 
+// Singleton instance of the NoteTxn_Arduino class
+namespace instance {
+    inline NoteTxn* & note_txn (void) {
+        static NoteTxn* note_txn = nullptr;
+        return note_txn;
+    }
+};
+
 NoteTxn *
 make_note_txn (
-    NoteTxn::param_t txn_parameters_
-)
-{
-    static NoteTxn * note_txn = nullptr;
-    if (!txn_parameters_) {
+    nullptr_t
+) {
+    NoteTxn* & note_txn = instance::note_txn();
+    if (note_txn) {
+        delete note_txn;
+        note_txn = nullptr;
+    }
+    return note_txn;
+}
+
+template <typename T>
+NoteTxn *
+make_note_txn (
+    T & txn_pins_
+) {
+    NoteTxn* & note_txn = instance::note_txn();
+
+    if (txn_pins_[0] == txn_pins_[1]) {
+        // Invalid tuple invokes deletion
         if (note_txn) {
             delete note_txn;
             note_txn = nullptr;
         }
     } else if (!note_txn) {
-        const uint8_t * txn_pins = reinterpret_cast<uint8_t *>(txn_parameters_);
-        note_txn = new NoteTxn_Arduino(txn_pins[0], txn_pins[1]);
+        note_txn = new NoteTxn_Arduino(txn_pins_[0], txn_pins_[1]);
     }
+
     return note_txn;
 }
 
@@ -80,3 +102,7 @@ NoteTxn_Arduino::stop (
     // Float RTX pin
     ::pinMode(_rtx_pin, INPUT);
 }
+
+// Explicitly instantiate the template function for array types
+template NoteTxn * make_note_txn<uint8_t[2]>(uint8_t(&)[2]);
+template NoteTxn * make_note_txn<const uint8_t[2]>(const uint8_t(&)[2]);

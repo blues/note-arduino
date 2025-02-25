@@ -1,15 +1,29 @@
 #include "mock/NoteI2c_Mock.hpp"
 
-MakeNoteI2c_Parameters make_note_i2c_Parameters;
+MakeNoteI2c_Parameters<TwoWire> make_note_i2c_Parameters;
 NoteI2cReceive_Parameters noteI2cReceive_Parameters;
 NoteI2cReset_Parameters noteI2cReset_Parameters;
 NoteI2cTransmit_Parameters noteI2cTransmit_Parameters;
 
 NoteI2c *
 make_note_i2c (
-    NoteI2c::param_t i2c_parameters_
-)
-{
+    nullptr_t
+) {
+    // Record invocation(s)
+    ++make_note_i2c_Parameters.invoked;
+
+    // Stash parameter(s)
+    make_note_i2c_Parameters.i2c_parameters = nullptr;
+
+    // Return user-supplied result
+    return make_note_i2c_Parameters.result;
+}
+
+template <typename T>
+NoteI2c *
+make_note_i2c (
+    T & i2c_parameters_
+) {
     // Record invocation(s)
     ++make_note_i2c_Parameters.invoked;
 
