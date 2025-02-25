@@ -1,0 +1,26 @@
+name: Version Check
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/NoteDefines.h'
+      - 'library.properties'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/NoteDefines.h'
+      - 'library.properties'
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check version consistency
+        run: |
+          chmod +x scripts/check_version.sh
+          ./scripts/check_version.sh
