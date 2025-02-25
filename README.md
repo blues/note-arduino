@@ -118,7 +118,9 @@ with:
 - [Sensor tutorial](examples/Example6_SensorTutorial/Example6_SensorTutorial.ino)
 - [Power control](examples/Example7_PowerControl/Example7_PowerControl.ino)
 
-Before running an example, you will need to set the Product Identifier, either in code or on your connected Notecard. Steps on how to do this can be found at [https://dev.blues.io/tools-and-sdks/samples/product-uid](https://dev.blues.io/tools-and-sdks/samples/product-uid).
+Before running an example, you will need to set the Product Identifier, either
+in code or on your connected Notecard. Steps on how to do this can be found at
+[https://dev.blues.io/tools-and-sdks/samples/product-uid](https://dev.blues.io/tools-and-sdks/samples/product-uid).
 
 
 ## Contributing
@@ -255,6 +257,36 @@ To add a test to the runner, copy the test's name and use it to create an entry
 in the `tests` array in the `main` function. The entry will occupy it's own line
 at the end of the array, and syntax should be as follows,
 `{test_name, "test_name"},`.
+
+## Generating a Release
+
+### Update Files
+
+When generating a release of the `note-arduino` library, you will need to update
+the version in two places.
+
+- `NoteDefines.h`
+
+    The `note-arduino` library provides preprocessor defines to allow for
+    programmatic access to the version number. The following preprocessor
+    defines should be updated with the version you wish to publish:
+
+    - `NOTE_ARDUINO_VERSION_MAJOR`
+    - `NOTE_ARDUINO_VERSION_MINOR`
+    - `NOTE_ARDUINO_VERSION_PATCH`
+
+- `library.properties`
+
+    Update the `version` key to reflect the version you wish to publish. The
+    version string should follow the form "\<major\>.\<minor\>.\<patch\>" (e.g.
+    `1.6.4`). This value will be used by the Arduino Library Manager.
+
+### GitHub Release
+
+Publishing a release on GitHub will trigger the Arduino Library Manager. The
+Arduino Library Manager will then look to the `library.properties` file, and
+generate a release based on the `version` value it finds there. It should be
+noted, the version on GitHub is not evaluated by the Arduino Library Manager.
 
 ## More Information
 
