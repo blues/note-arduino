@@ -24,7 +24,7 @@
   @return the length of the decoded data
  */
 /**************************************************************************/
-uint32_t cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
+uint32_t _cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 {
     const uint8_t *start = dst, *end = ptr + length;
     uint8_t code = 0xFF, copy = 0;
@@ -60,13 +60,13 @@ uint32_t cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 
   @return the length of the encoded data
 
-  @note You may use `cobsEncodedLength()` to calculate the required size for
+  @note You may use `_cobsEncodedLength()` to calculate the required size for
         the buffer pointed to by the `dst` parameter.
 
-  @see cobsEncodedLength()
+  @see _cobsEncodedLength()
  */
 /**************************************************************************/
-uint32_t cobsEncode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
+uint32_t _cobsEncode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 {
     uint8_t ch;
     uint8_t *start = dst;
@@ -100,7 +100,7 @@ uint32_t cobsEncode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
   @note  The computed length does not include the EOP (end-of-packet) marker
  */
 /**************************************************************************/
-uint32_t cobsEncodedLength(const uint8_t *ptr, uint32_t length)
+uint32_t _cobsEncodedLength(const uint8_t *ptr, uint32_t length)
 {
     uint8_t ch;
     uint32_t dst = 1;
@@ -135,7 +135,7 @@ uint32_t cobsEncodedLength(const uint8_t *ptr, uint32_t length)
   @note  An additional byte is added for the EOP (end-of-packet) marker.
  */
 /**************************************************************************/
-uint32_t cobsEncodedMaxLength(uint32_t length)
+uint32_t _cobsEncodedMaxLength(uint32_t length)
 {
     const uint32_t overheadBytes = ((length / 254) + ((length % 254) > 0));
     return (length + overheadBytes + COBS_EOP_OVERHEAD);
@@ -154,7 +154,7 @@ uint32_t cobsEncodedMaxLength(uint32_t length)
   @note  An additional byte is added for the EOP (end-of-packet) marker.
  */
 /**************************************************************************/
-uint32_t cobsGuaranteedFit(uint32_t bufLen)
+uint32_t _cobsGuaranteedFit(uint32_t bufLen)
 {
     uint32_t cobsOverhead = 1 + (bufLen / 254) + COBS_EOP_OVERHEAD;
     return (cobsOverhead > bufLen ? 0 : (bufLen - cobsOverhead));

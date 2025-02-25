@@ -79,12 +79,6 @@
 
 #define PRINT_TAB_CHARS     4
 
-#ifdef NOTE_C_TEST
-#include "test_static.h"
-#else
-#define NOTE_C_STATIC static
-#endif
-
 typedef struct {
     const unsigned char *json;
     size_t position;
@@ -92,7 +86,7 @@ typedef struct {
 static error global_error = { NULL, 0 };
 
 // Forwards
-static J *JNew_Item(void);
+NOTE_C_STATIC J *_jNew_Item(void);
 
 N_CJSON_PUBLIC(const char *) JGetErrorPtr(void)
 {
@@ -118,7 +112,7 @@ N_CJSON_PUBLIC(const char*) JVersion(void)
     return NOTE_C_STRINGIZE(N_CJSON_VERSION_MAJOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_MINOR) "." NOTE_C_STRINGIZE(N_CJSON_VERSION_PATCH);
 }
 
-NOTE_C_STATIC char Jtolower(char c)
+NOTE_C_STATIC char _j_tolower(char c)
 {
     if (c < 'A' || c > 'Z') {
         return c;
@@ -130,7 +124,7 @@ NOTE_C_STATIC char Jtolower(char c)
 }
 
 /* Case insensitive string comparison, doesn't consider two NULL pointers equal though */
-static int case_insensitive_strcmp(const unsigned char *string1, const unsigned char *string2)
+NOTE_C_STATIC int _case_insensitive_strcmp(const unsigned char *string1, const unsigned char *string2)
 {
     if ((string1 == NULL) || (string2 == NULL)) {
         return 1;
@@ -140,16 +134,16 @@ static int case_insensitive_strcmp(const unsigned char *string1, const unsigned 
         return 0;
     }
 
-    for(; Jtolower(*string1) == Jtolower(*string2); (void)string1++, string2++) {
+    for(; _j_tolower(*string1) == _j_tolower(*string2); (void)string1++, string2++) {
         if (*string1 == '\0') {
             return 0;
         }
     }
 
-    return Jtolower(*string1) - Jtolower(*string2);
+    return _j_tolower(*string1) - _j_tolower(*string2);
 }
 
-static unsigned char* Jstrdup(const unsigned char* string)
+NOTE_C_STATIC unsigned char* _j_strdup(const unsigned char* string)
 {
     size_t length = 0;
     unsigned char *copy = NULL;
@@ -197,7 +191,7 @@ N_CJSON_PUBLIC(void) JFree(void *p)
 }
 
 /* Internal constructor. */
-static J *JNew_Item(void)
+NOTE_C_STATIC J *_jNew_Item(void)
 {
     J* node = (J*)_Malloc(sizeof(J));
     if (node) {
@@ -232,7 +226,7 @@ N_CJSON_PUBLIC(void) JDelete(J *item)
 }
 
 /* get the decimal point character of the current locale */
-static unsigned char get_decimal_point(void)
+NOTE_C_STATIC unsigned char _get_decimal_point(void)
 {
 #ifdef ENABLE_LOCALES
     struct lconv *lconv = localeconv();
@@ -258,12 +252,12 @@ typedef struct {
 #define buffer_at_offset(buffer) ((buffer)->content + (buffer)->offset)
 
 /* Parse the input text to generate a number, and populate the result into item. */
-static Jbool parse_number(J * const item, parse_buffer * const input_buffer)
+NOTE_C_STATIC Jbool _parse_number(J * const item, parse_buffer * const input_buffer)
 {
     JNUMBER number = 0;
     unsigned char *after_end = NULL;
     unsigned char number_c_string[64];
-    unsigned char decimal_point = get_decimal_point();
+    unsigned char decimal_point = _get_decimal_point();
     size_t i = 0;
 
     if ((input_buffer == NULL) || (input_buffer->content == NULL)) {
@@ -354,7 +348,7 @@ typedef struct {
 } printbuffer;
 
 /* realloc printbuffer if necessary to have at least "needed" bytes more */
-static unsigned char* ensure(printbuffer * const p, size_t needed)
+NOTE_C_STATIC unsigned char* _ensure(printbuffer * const p, size_t needed)
 {
     unsigned char *newbuffer = NULL;
     size_t newsize = 0;
@@ -414,7 +408,7 @@ static unsigned char* ensure(printbuffer * const p, size_t needed)
 }
 
 /* calculate the new length of the string in a printbuffer and update the offset */
-static void update_offset(printbuffer * const buffer)
+NOTE_C_STATIC void _update_offset(printbuffer * const buffer)
 {
     const unsigned char *buffer_pointer = NULL;
     if ((buffer == NULL) || (buffer->buffer == NULL)) {
@@ -426,7 +420,7 @@ static void update_offset(printbuffer * const buffer)
 }
 
 /* Render the number nicely from the given item into a string. */
-static Jbool print_number(const J * const item, printbuffer * const output_buffer)
+NOTE_C_STATIC Jbool _print_number(const J * const item, printbuffer * const output_buffer)
 {
     if (item == NULL) {
         return false;
@@ -438,7 +432,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     int length = 0;
     size_t i = 0;
     unsigned char number_buffer[JNTOA_MAX]; /* temporary buffer to print the number into */
-    unsigned char decimal_point = get_decimal_point();
+    unsigned char decimal_point = _get_decimal_point();
 
     if (output_buffer == NULL) {
         return false;
@@ -467,7 +461,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
     }
 
     /* reserve appropriate space in the output */
-    output_pointer = ensure(output_buffer, (size_t)length + sizeof(""));
+    output_pointer = _ensure(output_buffer, (size_t)length + sizeof(""));
     if (output_pointer == NULL) {
         return false;
     }
@@ -490,7 +484,7 @@ static Jbool print_number(const J * const item, printbuffer * const output_buffe
 }
 
 /* parse 4 digit hexadecimal number */
-static unsigned long parse_hex4(const unsigned char * const input)
+NOTE_C_STATIC unsigned long _parse_hex4(const unsigned char * const input)
 {
     unsigned long int h = 0;
     size_t i = 0;
@@ -518,7 +512,7 @@ static unsigned long parse_hex4(const unsigned char * const input)
 
 /* converts a UTF-16 literal to UTF-8
  * A literal can be one or two sequences of the form \uXXXX */
-static unsigned char utf16_literal_to_utf8(const unsigned char * const input_pointer, const unsigned char * const input_end, unsigned char **output_pointer)
+NOTE_C_STATIC unsigned char _utf16_literal_to_utf8(const unsigned char * const input_pointer, const unsigned char * const input_end, unsigned char **output_pointer)
 {
     long unsigned int codepoint = 0;
     unsigned long int first_code = 0;
@@ -534,7 +528,7 @@ static unsigned char utf16_literal_to_utf8(const unsigned char * const input_poi
     }
 
     /* get the first utf16 sequence */
-    first_code = parse_hex4(first_sequence + 2);
+    first_code = _parse_hex4(first_sequence + 2);
 
     /* check that the code is valid */
     if (((first_code >= 0xDC00) && (first_code <= 0xDFFF))) {
@@ -558,7 +552,7 @@ static unsigned char utf16_literal_to_utf8(const unsigned char * const input_poi
         }
 
         /* get the second utf16 sequence */
-        second_code = parse_hex4(second_sequence + 2);
+        second_code = _parse_hex4(second_sequence + 2);
         /* check that the code is valid */
         if ((second_code < 0xDC00) || (second_code > 0xDFFF)) {
             /* invalid second half of the surrogate pair */
@@ -618,14 +612,23 @@ fail:
 }
 
 /* Parse the input text into an unescaped cinput, and populate item. */
-static Jbool parse_string(J * const item, parse_buffer * const input_buffer)
+NOTE_C_STATIC Jbool _parse_string(J * const item, parse_buffer * const input_buffer)
 {
+    // This is a static function that is only called internally, and we are
+    // guaranteed that item is not NULL. `cppcheck` is not able to infer this
+    // from the code, because we are using a macro, NOTE_C_STATIC, to remove
+    // the static keyword in the public header during testing.
+
+    // cppcheck-suppress ctunullpointer
+    // cppcheck-suppress nullPointerRedundantCheck
     const unsigned char *input_pointer = buffer_at_offset(input_buffer) + 1;
+    // cppcheck-suppress nullPointerRedundantCheck
     const unsigned char *input_end = buffer_at_offset(input_buffer) + 1;
     unsigned char *output_pointer = NULL;
     unsigned char *output = NULL;
 
     /* not a string */
+    // cppcheck-suppress nullPointerRedundantCheck
     if (buffer_at_offset(input_buffer)[0] != '\"') {
         goto fail;
     }
@@ -695,7 +698,7 @@ static Jbool parse_string(J * const item, parse_buffer * const input_buffer)
 
             /* UTF-16 literal */
             case 'u':
-                sequence_length = utf16_literal_to_utf8(input_pointer, input_end, &output_pointer);
+                sequence_length = _utf16_literal_to_utf8(input_pointer, input_end, &output_pointer);
                 if (sequence_length == 0) {
                     /* failed to convert UTF16-literal to UTF-8 */
                     goto fail;
@@ -733,7 +736,7 @@ fail:
 }
 
 /* Convert a 16-bit number to 4 hex digits, null-terminating it */
-void n_htoa16(uint16_t n, unsigned char *p)
+void _n_htoa16(uint16_t n, unsigned char *p)
 {
     int i;
     for (i=0; i<4; i++) {
@@ -749,7 +752,7 @@ void n_htoa16(uint16_t n, unsigned char *p)
 }
 
 /* Render the cstring provided to an escaped version that can be printed. */
-static Jbool print_string_ptr(const unsigned char * const input, printbuffer * const output_buffer)
+NOTE_C_STATIC Jbool _print_string_ptr(const unsigned char * const input, printbuffer * const output_buffer)
 {
     const unsigned char *input_pointer = NULL;
     unsigned char *output = NULL;
@@ -764,7 +767,7 @@ static Jbool print_string_ptr(const unsigned char * const input, printbuffer * c
 
     /* empty string */
     if (input == NULL) {
-        output = ensure(output_buffer, 2);  // sizeof("\"\"")
+        output = _ensure(output_buffer, 2);  // sizeof("\"\"")
         if (output == NULL) {
             return false;
         }
@@ -798,7 +801,7 @@ static Jbool print_string_ptr(const unsigned char * const input, printbuffer * c
     }
     output_length = (size_t)(input_pointer - input) + escape_characters;
 
-    output = ensure(output_buffer, output_length + 2);  // sizeof("\"\"")
+    output = _ensure(output_buffer, output_length + 2);  // sizeof("\"\"")
     if (output == NULL) {
         return false;
     }
@@ -848,7 +851,7 @@ static Jbool print_string_ptr(const unsigned char * const input, printbuffer * c
             default:
                 /* escape and print as unicode codepoint */
                 *output_pointer++ = 'u';
-                n_htoa16(*input_pointer, output_pointer);
+                _n_htoa16(*input_pointer, output_pointer);
                 output_pointer += 4;
                 break;
             }
@@ -860,22 +863,22 @@ static Jbool print_string_ptr(const unsigned char * const input, printbuffer * c
     return true;
 }
 
-/* Invoke print_string_ptr (which is useful) on an item. */
-static Jbool print_string(const J * const item, printbuffer * const p)
+/* Invoke _print_string_ptr (which is useful) on an item. */
+NOTE_C_STATIC Jbool _print_string(const J * const item, printbuffer * const p)
 {
-    return print_string_ptr((unsigned char*)item->valuestring, p);
+    return _print_string_ptr((unsigned char*)item->valuestring, p);
 }
 
 /* Predeclare these prototypes. */
-static Jbool parse_value(J * const item, parse_buffer * const input_buffer);
-static Jbool print_value(const J * const item, printbuffer * const output_buffer);
-static Jbool parse_array(J * const item, parse_buffer * const input_buffer);
-static Jbool print_array(const J * const item, printbuffer * const output_buffer);
-static Jbool parse_object(J * const item, parse_buffer * const input_buffer);
-static Jbool print_object(const J * const item, printbuffer * const output_buffer);
+NOTE_C_STATIC Jbool _parse_value(J * const item, parse_buffer * const input_buffer);
+NOTE_C_STATIC Jbool _print_value(const J * const item, printbuffer * const output_buffer);
+NOTE_C_STATIC Jbool _parse_array(J * const item, parse_buffer * const input_buffer);
+NOTE_C_STATIC Jbool _print_array(const J * const item, printbuffer * const output_buffer);
+NOTE_C_STATIC Jbool _parse_object(J * const item, parse_buffer * const input_buffer);
+NOTE_C_STATIC Jbool _print_object(const J * const item, printbuffer * const output_buffer);
 
 /* Utility to jump whitespace and cr/lf */
-static parse_buffer *buffer_skip_whitespace(parse_buffer * const buffer)
+NOTE_C_STATIC parse_buffer *_buffer_skip_whitespace(parse_buffer * const buffer)
 {
     if ((buffer == NULL) || (buffer->content == NULL)) {
         return NULL;
@@ -893,7 +896,7 @@ static parse_buffer *buffer_skip_whitespace(parse_buffer * const buffer)
 }
 
 /* skip the UTF-8 BOM (byte order mark) if it is at the beginning of a buffer */
-static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
+NOTE_C_STATIC parse_buffer *_skip_utf8_bom(parse_buffer * const buffer)
 {
     if ((buffer == NULL) || (buffer->content == NULL) || (buffer->offset != 0)) {
         return NULL;
@@ -924,19 +927,19 @@ N_CJSON_PUBLIC(J *) JParseWithOpts(const char *value, const char **return_parse_
     buffer.length = strlen((const char*)value) + 1;   // Trailing '\0'
     buffer.offset = 0;
 
-    item = JNew_Item();
+    item = _jNew_Item();
     if (item == NULL) { /* memory fail */
         goto fail;
     }
 
-    if (!parse_value(item, buffer_skip_whitespace(skip_utf8_bom(&buffer)))) {
+    if (!_parse_value(item, _buffer_skip_whitespace(_skip_utf8_bom(&buffer)))) {
         /* parse failure. ep is set. */
         goto fail;
     }
 
     /* if we require null-terminated JSON without appended garbage, skip and then check for a null terminator */
     if (require_null_terminated) {
-        buffer_skip_whitespace(&buffer);
+        _buffer_skip_whitespace(&buffer);
         if ((buffer.offset >= buffer.length) || buffer_at_offset(&buffer)[0] != '\0') {
             goto fail;
         }
@@ -988,7 +991,7 @@ N_CJSON_PUBLIC(J *) JParse(const char *value)
 
 #define cjson_min(a, b) ((a < b) ? a : b)
 
-static unsigned char *print(const J * const item, Jbool format, Jbool omitempty)
+NOTE_C_STATIC unsigned char *_print(const J * const item, Jbool format, Jbool omitempty)
 {
     static const size_t default_buffer_size = 128;
     printbuffer buffer[1];
@@ -1006,10 +1009,10 @@ static unsigned char *print(const J * const item, Jbool format, Jbool omitempty)
     }
 
     /* print the value */
-    if (!print_value(item, buffer)) {
+    if (!_print_value(item, buffer)) {
         goto fail;
     }
-    update_offset(buffer);
+    _update_offset(buffer);
 
     /* copy the JSON over to a new buffer */
     printed = (unsigned char*) _Malloc(buffer->offset + 1);
@@ -1042,7 +1045,7 @@ N_CJSON_PUBLIC(char *) JPrint(const J *item)
     if (item == NULL) {
         return NULL;
     }
-    return (char*)print(item, true, false);
+    return (char*)_print(item, true, false);
 }
 
 /*!
@@ -1061,7 +1064,7 @@ N_CJSON_PUBLIC(char *) JPrintUnformatted(const J *item)
     if (item == NULL) {
         return NULL;
     }
-    return (char*)print(item, false, false);
+    return (char*)_print(item, false, false);
 }
 
 N_CJSON_PUBLIC(char *) JPrintUnformattedOmitEmpty(const J *item)
@@ -1069,7 +1072,7 @@ N_CJSON_PUBLIC(char *) JPrintUnformattedOmitEmpty(const J *item)
     if (item == NULL) {
         return NULL;
     }
-    return (char*)print(item, false, true);
+    return (char*)_print(item, false, true);
 }
 
 N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
@@ -1094,7 +1097,7 @@ N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
     p.noalloc = false;
     p.format = fmt;
 
-    if (!print_value(item, &p)) {
+    if (!_print_value(item, &p)) {
         _Free(p.buffer);
         return NULL;
     }
@@ -1102,7 +1105,7 @@ N_CJSON_PUBLIC(char *) JPrintBuffered(const J *item, int prebuffer, Jbool fmt)
     return (char*)p.buffer;
 }
 
-static Jbool printPreallocated(J *item, char *buf, const int len, const Jbool fmt, const Jbool omit)
+NOTE_C_STATIC Jbool _printPreallocated(J *item, char *buf, const int len, const Jbool fmt, const Jbool omit)
 {
     printbuffer p = { 0, 0, 0, 0, 0, 0, 0 };
 
@@ -1120,21 +1123,21 @@ static Jbool printPreallocated(J *item, char *buf, const int len, const Jbool fm
     p.format = fmt;
     p.omitempty = omit;
 
-    return print_value(item, &p);
+    return _print_value(item, &p);
 }
 
 N_CJSON_PUBLIC(Jbool) JPrintPreallocatedOmitEmpty(J *item, char *buf, const int len, const Jbool fmt)
 {
-    return printPreallocated(item, buf, len, fmt, true);
+    return _printPreallocated(item, buf, len, fmt, true);
 }
 
 N_CJSON_PUBLIC(Jbool) JPrintPreallocated(J *item, char *buf, const int len, const Jbool fmt)
 {
-    return printPreallocated(item, buf, len, fmt, false);
+    return _printPreallocated(item, buf, len, fmt, false);
 }
 
 /* Parser core - when encountering text, process appropriately. */
-static Jbool parse_value(J * const item, parse_buffer * const input_buffer)
+NOTE_C_STATIC Jbool _parse_value(J * const item, parse_buffer * const input_buffer)
 {
     if (item == NULL) {
         return false;
@@ -1165,26 +1168,26 @@ static Jbool parse_value(J * const item, parse_buffer * const input_buffer)
     }
     /* string */
     if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '\"')) {
-        return parse_string(item, input_buffer);
+        return _parse_string(item, input_buffer);
     }
     /* number */
     if (can_access_at_index(input_buffer, 0) && ((buffer_at_offset(input_buffer)[0] == '-') || ((buffer_at_offset(input_buffer)[0] >= '0') && (buffer_at_offset(input_buffer)[0] <= '9')))) {
-        return parse_number(item, input_buffer);
+        return _parse_number(item, input_buffer);
     }
     /* array */
     if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '[')) {
-        return parse_array(item, input_buffer);
+        return _parse_array(item, input_buffer);
     }
     /* object */
     if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '{')) {
-        return parse_object(item, input_buffer);
+        return _parse_object(item, input_buffer);
     }
 
     return false;
 }
 
 /* Render a value to text. */
-static Jbool print_value(const J * const item, printbuffer * const output_buffer)
+NOTE_C_STATIC Jbool _print_value(const J * const item, printbuffer * const output_buffer)
 {
     unsigned char *output = NULL;
 
@@ -1194,7 +1197,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
 
     switch ((item->type) & 0xFF) {
     case JNULL:
-        output = ensure(output_buffer, c_null_len+1);
+        output = _ensure(output_buffer, c_null_len+1);
         if (output == NULL) {
             return false;
         }
@@ -1202,7 +1205,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         return true;
 
     case JFalse:
-        output = ensure(output_buffer, c_false_len+1);
+        output = _ensure(output_buffer, c_false_len+1);
         if (output == NULL) {
             return false;
         }
@@ -1210,7 +1213,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         return true;
 
     case JTrue:
-        output = ensure(output_buffer, c_true_len+1);
+        output = _ensure(output_buffer, c_true_len+1);
         if (output == NULL) {
             return false;
         }
@@ -1218,7 +1221,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         return true;
 
     case JNumber:
-        return print_number(item, output_buffer);
+        return _print_number(item, output_buffer);
 
     case JRaw: {
         size_t raw_length = 0;
@@ -1227,7 +1230,7 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
         }
 
         raw_length = strlen(item->valuestring) + 1;   // Trailing '\0';
-        output = ensure(output_buffer, raw_length);
+        output = _ensure(output_buffer, raw_length);
         if (output == NULL) {
             return false;
         }
@@ -1236,13 +1239,13 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
     }
 
     case JString:
-        return print_string(item, output_buffer);
+        return _print_string(item, output_buffer);
 
     case JArray:
-        return print_array(item, output_buffer);
+        return _print_array(item, output_buffer);
 
     case JObject:
-        return print_object(item, output_buffer);
+        return _print_object(item, output_buffer);
 
     default:
         return false;
@@ -1250,23 +1253,34 @@ static Jbool print_value(const J * const item, printbuffer * const output_buffer
 }
 
 /* Build an array from input text. */
-static Jbool parse_array(J * const item, parse_buffer * const input_buffer)
+NOTE_C_STATIC Jbool _parse_array(J * const item, parse_buffer * const input_buffer)
 {
+    // This is a static function that is only called internally, and we are
+    // guaranteed that item is not NULL. `cppcheck` is not able to infer this
+    // from the code, because we are using a macro, NOTE_C_STATIC, to remove
+    // the static keyword in the public header during testing.
+
     J *head = NULL; /* head of the linked list */
     J *current_item = NULL;
 
+    // cppcheck-suppress nullPointerRedundantCheck
     if (input_buffer->depth >= N_CJSON_NESTING_LIMIT) {
         return false; /* to deeply nested */
     }
+    // cppcheck-suppress nullPointerRedundantCheck
     input_buffer->depth++;
 
+    // cppcheck-suppress nullPointerRedundantCheck
     if (buffer_at_offset(input_buffer)[0] != '[') {
         /* not an array */
         goto fail;
     }
 
+    // _buffer_skip_whitespace() will verify the input_buffer is not NULL at
+    // the new offset.
+    // cppcheck-suppress nullPointerRedundantCheck
     input_buffer->offset++;
-    buffer_skip_whitespace(input_buffer);
+    _buffer_skip_whitespace(input_buffer);
     if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == ']')) {
         /* empty array */
         goto success;
@@ -1274,16 +1288,20 @@ static Jbool parse_array(J * const item, parse_buffer * const input_buffer)
 
     /* check if we skipped to the end of the buffer */
     if (cannot_access_at_index(input_buffer, 0)) {
+        // _buffer_skip_whitespace() has moved us one beyond the end, therefore
+        // we need to move back one, and we know we can access it.
+        // cppcheck-suppress nullPointerRedundantCheck
         input_buffer->offset--;
         goto fail;
     }
 
     /* step back to character in front of the first element */
     input_buffer->offset--;
+
     /* loop through the comma separated array elements */
     do {
         /* allocate next item */
-        J *new_item = JNew_Item();
+        J *new_item = _jNew_Item();
         if (new_item == NULL) {
             goto fail; /* allocation failure */
         }
@@ -1301,11 +1319,11 @@ static Jbool parse_array(J * const item, parse_buffer * const input_buffer)
 
         /* parse next value */
         input_buffer->offset++;
-        buffer_skip_whitespace(input_buffer);
-        if (!parse_value(current_item, input_buffer)) {
+        _buffer_skip_whitespace(input_buffer);
+        if (!_parse_value(current_item, input_buffer)) {
             goto fail; /* failed to parse value */
         }
-        buffer_skip_whitespace(input_buffer);
+        _buffer_skip_whitespace(input_buffer);
     } while (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == ','));
 
     if (cannot_access_at_index(input_buffer, 0) || buffer_at_offset(input_buffer)[0] != ']') {
@@ -1331,7 +1349,7 @@ fail:
 }
 
 /* Render an array to text */
-static Jbool print_array(const J * const item, printbuffer * const output_buffer)
+NOTE_C_STATIC Jbool _print_array(const J * const item, printbuffer * const output_buffer)
 {
     unsigned char *output_pointer = NULL;
     size_t length = 0;
@@ -1343,7 +1361,7 @@ static Jbool print_array(const J * const item, printbuffer * const output_buffer
 
     /* Compose the output array. */
     /* opening square bracket */
-    output_pointer = ensure(output_buffer, 1);
+    output_pointer = _ensure(output_buffer, 1);
     if (output_pointer == NULL) {
         return false;
     }
@@ -1353,13 +1371,13 @@ static Jbool print_array(const J * const item, printbuffer * const output_buffer
     output_buffer->depth++;
 
     while (current_element != NULL) {
-        if (!print_value(current_element, output_buffer)) {
+        if (!_print_value(current_element, output_buffer)) {
             return false;
         }
-        update_offset(output_buffer);
+        _update_offset(output_buffer);
         if (current_element->next) {
             length = (size_t) (output_buffer->format ? 2 : 1);
-            output_pointer = ensure(output_buffer, length + 1);
+            output_pointer = _ensure(output_buffer, length + 1);
             if (output_pointer == NULL) {
                 return false;
             }
@@ -1373,7 +1391,7 @@ static Jbool print_array(const J * const item, printbuffer * const output_buffer
         current_element = current_element->next;
     }
 
-    output_pointer = ensure(output_buffer, 2);
+    output_pointer = _ensure(output_buffer, 2);
     if (output_pointer == NULL) {
         return false;
     }
@@ -1385,38 +1403,53 @@ static Jbool print_array(const J * const item, printbuffer * const output_buffer
 }
 
 /* Build an object from the text. */
-static Jbool parse_object(J * const item, parse_buffer * const input_buffer)
+NOTE_C_STATIC Jbool _parse_object(J * const item, parse_buffer * const input_buffer)
 {
+    // This is a static function that is only called internally, and we are
+    // guaranteed that item is not NULL. `cppcheck` is not able to infer this
+    // from the code, because we are using a macro, NOTE_C_STATIC, to remove
+    // the static keyword in the public header during testing.
+
     J *head = NULL; /* linked list head */
     J *current_item = NULL;
 
+    // cppcheck-suppress nullPointerRedundantCheck
     if (input_buffer->depth >= N_CJSON_NESTING_LIMIT) {
         return false; /* to deeply nested */
     }
+    // cppcheck-suppress nullPointerRedundantCheck
     input_buffer->depth++;
 
     if (cannot_access_at_index(input_buffer, 0) || (buffer_at_offset(input_buffer)[0] != '{')) {
         goto fail; /* not an object */
     }
 
+    // _buffer_skip_whitespace() will verify the input_buffer is not NULL at
+    // the new offset.
+    // cppcheck-suppress nullPointerRedundantCheck
     input_buffer->offset++;
-    buffer_skip_whitespace(input_buffer);
+    _buffer_skip_whitespace(input_buffer);
     if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '}')) {
         goto success; /* empty object */
     }
 
     /* check if we skipped to the end of the buffer */
     if (cannot_access_at_index(input_buffer, 0)) {
+        // _buffer_skip_whitespace() has moved us one beyond the end, therefore
+        // we need to move back one, and we know we can access it.
+        // cppcheck-suppress nullPointerRedundantCheck
         input_buffer->offset--;
         goto fail;
     }
 
     /* step back to character in front of the first element */
+    // cppcheck-suppress nullPointerRedundantCheck
     input_buffer->offset--;
+
     /* loop through the comma separated array elements */
     do {
         /* allocate next item */
-        J *new_item = JNew_Item();
+        J *new_item = _jNew_Item();
         if (new_item == NULL) {
             goto fail; /* allocation failure */
         }
@@ -1433,12 +1466,15 @@ static Jbool parse_object(J * const item, parse_buffer * const input_buffer)
         }
 
         /* parse the name of the child */
+        // _buffer_skip_whitespace() will verify the input_buffer is not NULL at
+        // the new offset.
+        // cppcheck-suppress nullPointerRedundantCheck
         input_buffer->offset++;
-        buffer_skip_whitespace(input_buffer);
-        if (!parse_string(current_item, input_buffer)) {
+        _buffer_skip_whitespace(input_buffer);
+        if (!_parse_string(current_item, input_buffer)) {
             goto fail; /* faile to parse name */
         }
-        buffer_skip_whitespace(input_buffer);
+        _buffer_skip_whitespace(input_buffer);
 
         /* swap valuestring and string, because we parsed the name */
         current_item->string = current_item->valuestring;
@@ -1450,11 +1486,11 @@ static Jbool parse_object(J * const item, parse_buffer * const input_buffer)
 
         /* parse the value */
         input_buffer->offset++;
-        buffer_skip_whitespace(input_buffer);
-        if (!parse_value(current_item, input_buffer)) {
+        _buffer_skip_whitespace(input_buffer);
+        if (!_parse_value(current_item, input_buffer)) {
             goto fail; /* failed to parse value */
         }
-        buffer_skip_whitespace(input_buffer);
+        _buffer_skip_whitespace(input_buffer);
     } while (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == ','));
 
     if (cannot_access_at_index(input_buffer, 0) || (buffer_at_offset(input_buffer)[0] != '}')) {
@@ -1479,7 +1515,7 @@ fail:
 }
 
 /* See if there is another non-omitted item looking forward */
-static bool last_non_omitted_object(J * item, printbuffer * const output_buffer)
+NOTE_C_STATIC bool _last_non_omitted_object(J * item, printbuffer * const output_buffer)
 {
     if (!output_buffer->omitempty) {
         return (item->next == 0);
@@ -1495,7 +1531,7 @@ static bool last_non_omitted_object(J * item, printbuffer * const output_buffer)
 }
 
 /* Render an object to text. */
-static Jbool print_object(const J * const item, printbuffer * const output_buffer)
+NOTE_C_STATIC Jbool _print_object(const J * const item, printbuffer * const output_buffer)
 {
     unsigned char *output_pointer = NULL;
     size_t length = 0;
@@ -1507,7 +1543,7 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
 
     /* Compose the output: */
     length = (size_t) (output_buffer->format ? 2 : 1); /* fmt: {\n */
-    output_pointer = ensure(output_buffer, length + 1);
+    output_pointer = _ensure(output_buffer, length + 1);
     if (output_pointer == NULL) {
         return false;
     }
@@ -1527,7 +1563,7 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
 #else
             int needed = output_buffer->depth * PRINT_TAB_CHARS;
 #endif
-            output_pointer = ensure(output_buffer, needed);
+            output_pointer = _ensure(output_buffer, needed);
             if (output_pointer == NULL) {
                 return false;
             }
@@ -1555,13 +1591,13 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
         if (!omit) {
 
             /* print key */
-            if (!print_string_ptr((unsigned char*)current_item->string, output_buffer)) {
+            if (!_print_string_ptr((unsigned char*)current_item->string, output_buffer)) {
                 return false;
             }
-            update_offset(output_buffer);
+            _update_offset(output_buffer);
 
             length = (size_t) (output_buffer->format ? 2 : 1);
-            output_pointer = ensure(output_buffer, length);
+            output_pointer = _ensure(output_buffer, length);
             if (output_pointer == NULL) {
                 return false;
             }
@@ -1576,15 +1612,15 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
             output_buffer->offset += length;
 
             /* print value */
-            if (!print_value(current_item, output_buffer)) {
+            if (!_print_value(current_item, output_buffer)) {
                 return false;
             }
-            update_offset(output_buffer);
+            _update_offset(output_buffer);
 
             /* print comma if not last */
-            bool more_fields_coming = !last_non_omitted_object(current_item, output_buffer);
+            bool more_fields_coming = !_last_non_omitted_object(current_item, output_buffer);
             length = (size_t) ((output_buffer->format ? 1 : 0) + (more_fields_coming ? 1 : 0));
-            output_pointer = ensure(output_buffer, length + 1);
+            output_pointer = _ensure(output_buffer, length + 1);
             if (output_pointer == NULL) {
                 return false;
             }
@@ -1608,7 +1644,7 @@ static Jbool print_object(const J * const item, printbuffer * const output_buffe
     int needed = output_buffer->format ? ((output_buffer->depth - 1) * PRINT_TAB_CHARS) : 0;
 #endif
     needed += 2; // }\0
-    output_pointer = ensure(output_buffer, needed);
+    output_pointer = _ensure(output_buffer, needed);
     if (output_pointer == NULL) {
         return false;
     }
@@ -1653,7 +1689,7 @@ N_CJSON_PUBLIC(int) JGetArraySize(const J *array)
     return (int)size;
 }
 
-static J* get_array_item(const J *array, size_t index)
+NOTE_C_STATIC J* _get_array_item(const J *array, size_t index)
 {
     J *current_child = NULL;
 
@@ -1679,10 +1715,10 @@ N_CJSON_PUBLIC(J *) JGetArrayItem(const J *array, int index)
         return NULL;
     }
 
-    return get_array_item(array, (size_t)index);
+    return _get_array_item(array, (size_t)index);
 }
 
-static J *get_object_item(const J * const object, const char * const name, const Jbool case_sensitive)
+NOTE_C_STATIC J *_get_object_item(const J * const object, const char * const name, const Jbool case_sensitive)
 {
     J *current_element = NULL;
 
@@ -1696,7 +1732,7 @@ static J *get_object_item(const J * const object, const char * const name, const
             current_element = current_element->next;
         }
     } else {
-        while ((current_element != NULL) && (case_insensitive_strcmp((const unsigned char*)name, (const unsigned char*)(current_element->string)) != 0)) {
+        while ((current_element != NULL) && (_case_insensitive_strcmp((const unsigned char*)name, (const unsigned char*)(current_element->string)) != 0)) {
             current_element = current_element->next;
         }
     }
@@ -1709,7 +1745,7 @@ N_CJSON_PUBLIC(J *) JGetObjectItem(const J * const object, const char * const st
     if (object == NULL) {
         return NULL;
     }
-    return get_object_item(object, string, false);
+    return _get_object_item(object, string, false);
 }
 
 N_CJSON_PUBLIC(J *) JGetObjectItemCaseSensitive(const J * const object, const char * const string)
@@ -1717,7 +1753,7 @@ N_CJSON_PUBLIC(J *) JGetObjectItemCaseSensitive(const J * const object, const ch
     if (object == NULL) {
         return NULL;
     }
-    return get_object_item(object, string, true);
+    return _get_object_item(object, string, true);
 }
 
 N_CJSON_PUBLIC(Jbool) JHasObjectItem(const J *object, const char *string)
@@ -1729,21 +1765,21 @@ N_CJSON_PUBLIC(Jbool) JHasObjectItem(const J *object, const char *string)
 }
 
 /* Utility for array list handling. */
-static void suffix_object(J *prev, J *item)
+NOTE_C_STATIC void _suffix_object(J *prev, J *item)
 {
     prev->next = item;
     item->prev = prev;
 }
 
 /* Utility for handling references. */
-static J *create_reference(const J *item)
+NOTE_C_STATIC J *_create_reference(const J *item)
 {
     J *reference = NULL;
     if (item == NULL) {
         return NULL;
     }
 
-    reference = JNew_Item();
+    reference = _jNew_Item();
     if (reference == NULL) {
         return NULL;
     }
@@ -1755,7 +1791,7 @@ static J *create_reference(const J *item)
     return reference;
 }
 
-static Jbool add_item_to_array(J *array, J *item)
+NOTE_C_STATIC Jbool _add_item_to_array(J *array, J *item)
 {
     J *child = NULL;
 
@@ -1773,7 +1809,7 @@ static Jbool add_item_to_array(J *array, J *item)
         while (child->next) {
             child = child->next;
         }
-        suffix_object(child, item);
+        _suffix_object(child, item);
     }
 
     return true;
@@ -1785,7 +1821,7 @@ N_CJSON_PUBLIC(void) JAddItemToArray(J *array, J *item)
     if (array == NULL || item == NULL) {
         return;
     }
-    add_item_to_array(array, item);
+    _add_item_to_array(array, item);
 }
 
 #if defined(__clang__) || (defined(__GNUC__)  && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 5))))
@@ -1795,7 +1831,7 @@ N_CJSON_PUBLIC(void) JAddItemToArray(J *array, J *item)
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 /* helper function to cast away const */
-static void* cast_away_const(const void* string)
+NOTE_C_STATIC void* _cast_away_const(const void* string)
 {
     return (void*)string;
 }
@@ -1804,7 +1840,7 @@ static void* cast_away_const(const void* string)
 #endif
 
 
-static Jbool add_item_to_object(J * const object, const char * const string, J * const item, const Jbool constant_key)
+NOTE_C_STATIC Jbool _add_item_to_object(J * const object, const char * const string, J * const item, const Jbool constant_key)
 {
     char *new_key = NULL;
     int new_type = JInvalid;
@@ -1814,10 +1850,10 @@ static Jbool add_item_to_object(J * const object, const char * const string, J *
     }
 
     if (constant_key) {
-        new_key = (char*)cast_away_const(string);
+        new_key = (char*)_cast_away_const(string);
         new_type = item->type | JStringIsConst;
     } else {
-        new_key = (char*)Jstrdup((const unsigned char*)string);
+        new_key = (char*)_j_strdup((const unsigned char*)string);
         if (new_key == NULL) {
             return false;
         }
@@ -1832,7 +1868,7 @@ static Jbool add_item_to_object(J * const object, const char * const string, J *
     item->string = new_key;
     item->type = new_type;
 
-    return add_item_to_array(object, item);
+    return _add_item_to_array(object, item);
 }
 
 N_CJSON_PUBLIC(void) JAddItemToObject(J *object, const char *string, J *item)
@@ -1840,7 +1876,7 @@ N_CJSON_PUBLIC(void) JAddItemToObject(J *object, const char *string, J *item)
     if (object == NULL || string == NULL || item == NULL) {
         return;
     }
-    add_item_to_object(object, string, item, false);
+    _add_item_to_object(object, string, item, false);
 }
 
 /* Add an item to an object with constant string as key */
@@ -1849,7 +1885,7 @@ N_CJSON_PUBLIC(void) JAddItemToObjectCS(J *object, const char *string, J *item)
     if (object == NULL || string == NULL || item == NULL) {
         return;
     }
-    add_item_to_object(object, string, item, true);
+    _add_item_to_object(object, string, item, true);
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToArray(J *array, J *item)
@@ -1857,7 +1893,7 @@ N_CJSON_PUBLIC(void) JAddItemReferenceToArray(J *array, J *item)
     if (array == NULL || item == NULL) {
         return;
     }
-    add_item_to_array(array, create_reference(item));
+    _add_item_to_array(array, _create_reference(item));
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToObject(J *object, const char *string, J *item)
@@ -1865,7 +1901,7 @@ N_CJSON_PUBLIC(void) JAddItemReferenceToObject(J *object, const char *string, J 
     if (object == NULL || string == NULL || item == NULL) {
         return;
     }
-    add_item_to_object(object, string, create_reference(item), false);
+    _add_item_to_object(object, string, _create_reference(item), false);
 }
 
 N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name)
@@ -1875,7 +1911,7 @@ N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name)
     }
 
     J *true_item = JCreateTrue();
-    if (add_item_to_object(object, name, true_item, false)) {
+    if (_add_item_to_object(object, name, true_item, false)) {
         return true_item;
     }
 
@@ -1890,7 +1926,7 @@ N_CJSON_PUBLIC(J*) JAddFalseToObject(J * const object, const char * const name)
     }
 
     J *false_item = JCreateFalse();
-    if (add_item_to_object(object, name, false_item, false)) {
+    if (_add_item_to_object(object, name, false_item, false)) {
         return false_item;
     }
 
@@ -1914,7 +1950,7 @@ N_CJSON_PUBLIC(J*) JAddBoolToObject(J * const object, const char * const name, c
     }
 
     J *bool_item = JCreateBool(boolean);
-    if (add_item_to_object(object, name, bool_item, false)) {
+    if (_add_item_to_object(object, name, bool_item, false)) {
         return bool_item;
     }
 
@@ -1938,7 +1974,7 @@ N_CJSON_PUBLIC(J*) JAddNumberToObject(J * const object, const char * const name,
     }
 
     J *number_item = JCreateNumber(number);
-    if (add_item_to_object(object, name, number_item, false)) {
+    if (_add_item_to_object(object, name, number_item, false)) {
         return number_item;
     }
 
@@ -1953,7 +1989,7 @@ N_CJSON_PUBLIC(J*) JAddIntToObject(J * const object, const char * const name, co
     }
 
     J *integer_item = JCreateInteger(integer);
-    if (add_item_to_object(object, name, integer_item, false)) {
+    if (_add_item_to_object(object, name, integer_item, false)) {
         return integer_item;
     }
 
@@ -1977,7 +2013,7 @@ N_CJSON_PUBLIC(J*) JAddStringToObject(J * const object, const char * const name,
     }
 
     J *string_item = JCreateString(string);
-    if (add_item_to_object(object, name, string_item, false)) {
+    if (_add_item_to_object(object, name, string_item, false)) {
         return string_item;
     }
 
@@ -1992,7 +2028,7 @@ N_CJSON_PUBLIC(J*) JAddRawToObject(J * const object, const char * const name, co
     }
 
     J *raw_item = JCreateRaw(raw);
-    if (add_item_to_object(object, name, raw_item, false)) {
+    if (_add_item_to_object(object, name, raw_item, false)) {
         return raw_item;
     }
 
@@ -2015,7 +2051,7 @@ N_CJSON_PUBLIC(J*) JAddObjectToObject(J * const object, const char * const name)
     }
 
     J *object_item = JCreateObject();
-    if (add_item_to_object(object, name, object_item, false)) {
+    if (_add_item_to_object(object, name, object_item, false)) {
         return object_item;
     }
 
@@ -2038,7 +2074,7 @@ N_CJSON_PUBLIC(J*) JAddArrayToObject(J * const object, const char * const name)
     }
 
     J *array = JCreateArray();
-    if (add_item_to_object(object, name, array, false)) {
+    if (_add_item_to_object(object, name, array, false)) {
         return array;
     }
 
@@ -2081,7 +2117,7 @@ N_CJSON_PUBLIC(J *) JDetachItemFromArray(J *array, int which)
         return NULL;
     }
 
-    return JDetachItemViaPointer(array, get_array_item(array, (size_t)which));
+    return JDetachItemViaPointer(array, _get_array_item(array, (size_t)which));
 }
 
 N_CJSON_PUBLIC(void) JDeleteItemFromArray(J *array, int which)
@@ -2143,9 +2179,9 @@ N_CJSON_PUBLIC(void) JInsertItemInArray(J *array, int which, J *newitem)
         return;
     }
 
-    after_inserted = get_array_item(array, (size_t)which);
+    after_inserted = _get_array_item(array, (size_t)which);
     if (after_inserted == NULL) {
-        add_item_to_array(array, newitem);
+        _add_item_to_array(array, newitem);
         return;
     }
 
@@ -2199,10 +2235,10 @@ N_CJSON_PUBLIC(void) JReplaceItemInArray(J *array, int which, J *newitem)
         return;
     }
 
-    JReplaceItemViaPointer(array, get_array_item(array, (size_t)which), newitem);
+    JReplaceItemViaPointer(array, _get_array_item(array, (size_t)which), newitem);
 }
 
-static Jbool replace_item_in_object(J *object, const char *string, J *replacement, Jbool case_sensitive)
+NOTE_C_STATIC Jbool _replace_item_in_object(J *object, const char *string, J *replacement, Jbool case_sensitive)
 {
     if (object == NULL || replacement == NULL || string == NULL) {
         return false;
@@ -2212,10 +2248,10 @@ static Jbool replace_item_in_object(J *object, const char *string, J *replacemen
     if (!(replacement->type & JStringIsConst) && (replacement->string != NULL)) {
         _Free(replacement->string);
     }
-    replacement->string = (char*)Jstrdup((const unsigned char*)string);
+    replacement->string = (char*)_j_strdup((const unsigned char*)string);
     replacement->type &= ~JStringIsConst;
 
-    JReplaceItemViaPointer(object, get_object_item(object, string, case_sensitive), replacement);
+    JReplaceItemViaPointer(object, _get_object_item(object, string, case_sensitive), replacement);
 
     return true;
 }
@@ -2225,7 +2261,7 @@ N_CJSON_PUBLIC(void) JReplaceItemInObject(J *object, const char *string, J *newi
     if (object == NULL || newitem == NULL) {
         return;
     }
-    replace_item_in_object(object, string, newitem, false);
+    _replace_item_in_object(object, string, newitem, false);
 }
 
 N_CJSON_PUBLIC(void) JReplaceItemInObjectCaseSensitive(J *object, const char *string, J *newitem)
@@ -2233,12 +2269,12 @@ N_CJSON_PUBLIC(void) JReplaceItemInObjectCaseSensitive(J *object, const char *st
     if (object == NULL || newitem == NULL) {
         return;
     }
-    replace_item_in_object(object, string, newitem, true);
+    _replace_item_in_object(object, string, newitem, true);
 }
 
 N_CJSON_PUBLIC(J *) JCreateTrue(void)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JTrue;
     }
@@ -2247,7 +2283,7 @@ N_CJSON_PUBLIC(J *) JCreateTrue(void)
 
 N_CJSON_PUBLIC(J *) JCreateFalse(void)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JFalse;
     }
@@ -2256,7 +2292,7 @@ N_CJSON_PUBLIC(J *) JCreateFalse(void)
 
 N_CJSON_PUBLIC(J *) JCreateBool(Jbool b)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = b ? JTrue : JFalse;
     }
@@ -2265,7 +2301,7 @@ N_CJSON_PUBLIC(J *) JCreateBool(Jbool b)
 
 N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JNumber;
         item->valuenumber = num;
@@ -2284,7 +2320,7 @@ N_CJSON_PUBLIC(J *) JCreateNumber(JNUMBER num)
 
 N_CJSON_PUBLIC(J *) JCreateInteger(JINTEGER integer)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JNumber;
         item->valuenumber = (JNUMBER)integer;
@@ -2295,10 +2331,10 @@ N_CJSON_PUBLIC(J *) JCreateInteger(JINTEGER integer)
 
 N_CJSON_PUBLIC(J *) JCreateString(const char *string)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JString;
-        item->valuestring = (char*)Jstrdup((const unsigned char*)string);
+        item->valuestring = (char*)_j_strdup((const unsigned char*)string);
         if(!item->valuestring) {
             JDelete(item);
             return NULL;
@@ -2309,20 +2345,20 @@ N_CJSON_PUBLIC(J *) JCreateString(const char *string)
 
 N_CJSON_PUBLIC(J *) JCreateStringValue(const char *string)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if (item != NULL) {
         item->type = JString;
-        item->valuestring = (char*)cast_away_const(string);
+        item->valuestring = (char*)_cast_away_const(string);
     }
     return item;
 }
 
 N_CJSON_PUBLIC(J *) JCreateStringReference(const char *string)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if (item != NULL) {
         item->type = JString | JIsReference;
-        item->valuestring = (char*)cast_away_const(string);
+        item->valuestring = (char*)_cast_away_const(string);
     }
     return item;
 }
@@ -2332,10 +2368,10 @@ N_CJSON_PUBLIC(J *) JCreateObjectReference(const J *child)
     if (child == NULL) {
         return NULL;
     }
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if (item != NULL) {
         item->type = JObject | JIsReference;
-        item->child = (J*)cast_away_const(child);
+        item->child = (J*)_cast_away_const(child);
     }
     return item;
 }
@@ -2345,20 +2381,20 @@ N_CJSON_PUBLIC(J *) JCreateArrayReference(const J *child)
     if (child == NULL) {
         return NULL;
     }
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if (item != NULL) {
         item->type = JArray | JIsReference;
-        item->child = (J*)cast_away_const(child);
+        item->child = (J*)_cast_away_const(child);
     }
     return item;
 }
 
 N_CJSON_PUBLIC(J *) JCreateRaw(const char *raw)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type = JRaw;
-        item->valuestring = (char*)Jstrdup((const unsigned char*)raw);
+        item->valuestring = (char*)_j_strdup((const unsigned char*)raw);
         if(!item->valuestring) {
             JDelete(item);
             return NULL;
@@ -2369,7 +2405,7 @@ N_CJSON_PUBLIC(J *) JCreateRaw(const char *raw)
 
 N_CJSON_PUBLIC(J *) JCreateArray(void)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if(item) {
         item->type=JArray;
     }
@@ -2385,7 +2421,7 @@ N_CJSON_PUBLIC(J *) JCreateArray(void)
  */
 N_CJSON_PUBLIC(J *) JCreateObject(void)
 {
-    J *item = JNew_Item();
+    J *item = _jNew_Item();
     if (item) {
         item->type = JObject;
     }
@@ -2414,7 +2450,7 @@ N_CJSON_PUBLIC(J *) JCreateIntArray(const long int *numbers, int count)
         if(!i) {
             a->child = n;
         } else {
-            suffix_object(p, n);
+            _suffix_object(p, n);
         }
         p = n;
     }
@@ -2444,7 +2480,7 @@ N_CJSON_PUBLIC(J *) JCreateNumberArray(const JNUMBER *numbers, int count)
         if(!i) {
             a->child = n;
         } else {
-            suffix_object(p, n);
+            _suffix_object(p, n);
         }
         p = n;
     }
@@ -2474,7 +2510,7 @@ N_CJSON_PUBLIC(J *) JCreateStringArray(const char **strings, int count)
         if(!i) {
             a->child = n;
         } else {
-            suffix_object(p,n);
+            _suffix_object(p,n);
         }
         p = n;
     }
@@ -2495,7 +2531,7 @@ N_CJSON_PUBLIC(J *) JDuplicate(const J *item, Jbool recurse)
         goto fail;
     }
     /* Create new item */
-    newitem = JNew_Item();
+    newitem = _jNew_Item();
     if (!newitem) {
         goto fail;
     }
@@ -2504,13 +2540,13 @@ N_CJSON_PUBLIC(J *) JDuplicate(const J *item, Jbool recurse)
     newitem->valueint = item->valueint;
     newitem->valuenumber = item->valuenumber;
     if (item->valuestring) {
-        newitem->valuestring = (char*)Jstrdup((unsigned char*)item->valuestring);
+        newitem->valuestring = (char*)_j_strdup((unsigned char*)item->valuestring);
         if (!newitem->valuestring) {
             goto fail;
         }
     }
     if (item->string) {
-        newitem->string = (item->type&JStringIsConst) ? item->string : (char*)Jstrdup((unsigned char*)item->string);
+        newitem->string = (item->type&JStringIsConst) ? item->string : (char*)_j_strdup((unsigned char*)item->string);
         if (!newitem->string) {
             goto fail;
         }
@@ -2755,7 +2791,7 @@ N_CJSON_PUBLIC(Jbool) JCompare(const J * const a, const J * const b, const Jbool
         J *b_element = NULL;
         JArrayForEach(a_element, a) {
             /* TODO This has O(n^2) runtime, which is horrible! */
-            b_element = get_object_item(b, a_element->string, case_sensitive);
+            b_element = _get_object_item(b, a_element->string, case_sensitive);
             if (b_element == NULL) {
                 return false;
             }
@@ -2768,7 +2804,7 @@ N_CJSON_PUBLIC(Jbool) JCompare(const J * const a, const J * const b, const Jbool
         /* doing this twice, once on a and b to prevent true comparison if a subset of b
          * TODO: Do this the proper way, this is just a fix for now */
         JArrayForEach(b_element, b) {
-            a_element = get_object_item(a, b_element->string, case_sensitive);
+            a_element = _get_object_item(a, b_element->string, case_sensitive);
             if (a_element == NULL) {
                 return false;
             }

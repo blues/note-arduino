@@ -31,7 +31,7 @@
   @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
+const char *_serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
     // Strip off the newline and optional carriage return characters. This
     // allows for standardized output to be reapplied.
@@ -40,7 +40,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
         reqLen--; // remove carriage return if it exists
     }
 
-    const char *err = serialChunkedTransmit((uint8_t *)request, reqLen, true);
+    const char *err = _serialChunkedTransmit((uint8_t *)request, reqLen, true);
     if (err) {
         NOTE_C_LOG_ERROR(err);
         return err;
@@ -86,7 +86,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
         uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
 
         // Append into the json buffer
-        const char *err = serialChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
+        const char *err = _serialChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
         if (err) {
             _Free(jsonbuf);
             NOTE_C_LOG_ERROR(ERRSTR("error occured during receive", c_iobad));
@@ -132,7 +132,7 @@ const char *serialNoteTransaction(const char *request, size_t reqLen, char **res
     @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
-bool serialNoteReset(void)
+bool _serialNoteReset(void)
 {
     NOTE_C_LOG_DEBUG("resetting Serial interface...");
 
@@ -213,7 +213,7 @@ bool serialNoteReset(void)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
+const char *_serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
 {
     size_t received = 0;
     bool overflow = (received >= *size);
@@ -279,7 +279,7 @@ const char *serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, ui
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+const char *_serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
 {
     // Transmit the request in segments so as not to overwhelm the Notecard's
     // interrupt buffers

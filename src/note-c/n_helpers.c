@@ -19,12 +19,6 @@
 
 #include "n_lib.h"
 
-#ifdef NOTE_C_TEST
-#include "test_static.h"
-#else
-#define NOTE_C_STATIC static
-#endif
-
 // When interfacing with the Notecard, it is generally encouraged that the JSON
 // object manipulation and calls to the note-arduino library are done directly
 // at point of need. However, there are cases in which it's convenient to have a
@@ -77,12 +71,12 @@ static char scService[128] = {0};
 #define daysByMonth(y) ((y)&03||(y)==0?normalYearDaysByMonth:leapYearDaysByMonth)
 static short leapYearDaysByMonth[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
 static short normalYearDaysByMonth[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-static const char *daynames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const char *dayNames[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 // Forwards
-NOTE_C_STATIC void setTime(JTIME seconds);
-NOTE_C_STATIC bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
-NOTE_C_STATIC int yToDays(int year);
+NOTE_C_STATIC void _setTime(JTIME seconds);
+NOTE_C_STATIC bool _timerExpiredSecs(uint32_t *timer, uint32_t periodSecs);
+NOTE_C_STATIC int _yToDays(int year);
 
 static const char NOTE_C_BINARY_EOP = '\n';
 
@@ -114,11 +108,11 @@ uint32_t NoteBinaryCodecDecode(const uint8_t *encData, uint32_t encDataLen,
     if (encData == NULL || decBuf == NULL) {
         NOTE_C_LOG_ERROR(ERRSTR("NULL parameter", c_err));
         result = 0;
-    } else if (decBufSize < cobsGuaranteedFit(encDataLen)) {
+    } else if (decBufSize < _cobsGuaranteedFit(encDataLen)) {
         NOTE_C_LOG_ERROR(ERRSTR("output buffer too small", c_err));
         result = 0;
     } else {
-        result = cobsDecode((uint8_t *)encData, encDataLen, NOTE_C_BINARY_EOP, decBuf);
+        result = _cobsDecode((uint8_t *)encData, encDataLen, NOTE_C_BINARY_EOP, decBuf);
     }
 
     return result;
@@ -156,15 +150,15 @@ uint32_t NoteBinaryCodecEncode(const uint8_t *decData, uint32_t decDataLen,
     if (decData == NULL || encBuf == NULL) {
         NOTE_C_LOG_ERROR(ERRSTR("NULL parameter", c_err));
         result = 0;
-    } else if ((encBufSize < cobsEncodedMaxLength(decDataLen))
-               && (encBufSize < cobsEncodedLength(decData, decDataLen))) {
-        // NOTE: `cobsEncodedMaxLength()` provides a constant time [O(1)] means
+    } else if ((encBufSize < _cobsEncodedMaxLength(decDataLen))
+               && (encBufSize < _cobsEncodedLength(decData, decDataLen))) {
+        // NOTE: `_cobsEncodedMaxLength()` provides a constant time [O(1)] means
         //       of checking the buffer size. Only when it fails will the linear
-        //       time [O(n)] check, `cobsEncodedLength()`, be invoked.
+        //       time [O(n)] check, `_cobsEncodedLength()`, be invoked.
         NOTE_C_LOG_ERROR(ERRSTR("output buffer too small", c_err));
         result = 0;
     } else {
-        result = cobsEncode((uint8_t *)decData, decDataLen, NOTE_C_BINARY_EOP, encBuf);
+        result = _cobsEncode((uint8_t *)decData, decDataLen, NOTE_C_BINARY_EOP, encBuf);
     }
 
     return result;
@@ -198,7 +192,7 @@ uint32_t NoteBinaryCodecEncode(const uint8_t *decData, uint32_t decDataLen,
 /**************************************************************************/
 uint32_t NoteBinaryCodecMaxDecodedLength(uint32_t bufferSize)
 {
-    return cobsGuaranteedFit(bufferSize);
+    return _cobsGuaranteedFit(bufferSize);
 }
 
 //**************************************************************************/
@@ -213,7 +207,7 @@ uint32_t NoteBinaryCodecMaxDecodedLength(uint32_t bufferSize)
 /**************************************************************************/
 uint32_t NoteBinaryCodecMaxEncodedLength(uint32_t unencodedLength)
 {
-    return cobsEncodedMaxLength(unencodedLength);
+    return _cobsEncodedMaxLength(unencodedLength);
 }
 
 //**************************************************************************/
@@ -346,7 +340,7 @@ const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
         NOTE_C_LOG_ERROR(err);
         return err;
     }
-    if (bufLen < cobsEncodedMaxLength(decodedLen)) {
+    if (bufLen < _cobsEncodedMaxLength(decodedLen)) {
         const char *err = ERRSTR("insufficient buffer size", c_bad);
         NOTE_C_LOG_ERROR(err);
         return err;
@@ -368,9 +362,9 @@ const char * NoteBinaryStoreReceive(uint8_t *buffer, uint32_t bufLen,
         JAddIntToObject(req, "length", decodedLen);
 
         // We already have the Notecard lock, so call
-        // noteTransactionShouldLock with `lockNotecard` set to false so we
+        // _noteTransactionShouldLock with `lockNotecard` set to false so we
         // don't try to lock again.
-        J *rsp = noteTransactionShouldLock(req, false);
+        J *rsp = _noteTransactionShouldLock(req, false);
         JDelete(req);
         // Ensure the transaction doesn't return an error.
         if (!rsp || NoteResponseError(rsp)) {
@@ -525,11 +519,11 @@ const char * NoteBinaryStoreTransmit(uint8_t *unencodedData, uint32_t unencodedL
         const char *err = ERRSTR("unencodedData cannot be NULL", c_err);
         NOTE_C_LOG_ERROR(err);
         return err;
-    } else if ((bufLen < cobsEncodedMaxLength(unencodedLen))
-               && (bufLen < (cobsEncodedLength(unencodedData, unencodedLen) + 1))) {
-        // NOTE: `cobsEncodedMaxLength()` provides a constant time [O(1)] means
+    } else if ((bufLen < _cobsEncodedMaxLength(unencodedLen))
+               && (bufLen < (_cobsEncodedLength(unencodedData, unencodedLen) + 1))) {
+        // NOTE: `_cobsEncodedMaxLength()` provides a constant time [O(1)] means
         //       of checking the buffer size. Only when it fails will the linear
-        //       time [O(n)] check, `cobsEncodedLength()`, be invoked.
+        //       time [O(n)] check, `_cobsEncodedLength()`, be invoked.
         const char *err = ERRSTR("insufficient buffer size", c_bad);
         NOTE_C_LOG_ERROR(err);
         return err;
@@ -623,9 +617,9 @@ const char * NoteBinaryStoreTransmit(uint8_t *unencodedData, uint32_t unencodedL
             JAddStringToObject(req, "status", hashString);
 
             // We already have the Notecard lock, so call
-            // noteTransactionShouldLock with `lockNotecard` set to false so we
+            // _noteTransactionShouldLock with `lockNotecard` set to false so we
             // don't try to lock again.
-            rsp = noteTransactionShouldLock(req, false);
+            rsp = _noteTransactionShouldLock(req, false);
             JDelete(req);
             // Ensure the transaction doesn't return an error.
             if (!rsp || NoteResponseError(rsp)) {
@@ -763,7 +757,7 @@ void NoteTimeRefreshMins(uint32_t mins)
   @param   seconds The UNIX Epoch time.
 */
 /**************************************************************************/
-NOTE_C_STATIC void setTime(JTIME seconds)
+NOTE_C_STATIC void _setTime(JTIME seconds)
 {
     timeBaseSec = seconds;
     timeBaseSetAtMs = _GetMs();
@@ -823,8 +817,8 @@ bool NotePrint(const char *text)
 {
     bool success = false;
 
-    if (noteIsDebugOutputActive()) {
-        NoteDebug(text);
+    if (_noteIsDebugOutputActive()) {
+        _Debug(text);
         return true;
     }
 
@@ -857,7 +851,7 @@ JTIME NoteTimeST(void)
     }
 
     // If it's time to refresh the time, do so
-    if (refreshTimerSecs != 0 && timerExpiredSecs(&timeRefreshTimer, refreshTimerSecs)) {
+    if (refreshTimerSecs != 0 && _timerExpiredSecs(&timeRefreshTimer, refreshTimerSecs)) {
         timeTimer = 0;
     }
 
@@ -865,7 +859,7 @@ JTIME NoteTimeST(void)
     // so with a suppression timer so that we don't hammer the module before
     // it's had a chance to connect to the network to fetch time.
     if (!timeBaseSetManually && (timeTimer == 0 || timeBaseSec == 0 || zoneStillUnavailable || zoneForceRefresh)) {
-        if (timerExpiredSecs(&timeTimer, suppressionTimerSecs)) {
+        if (_timerExpiredSecs(&timeTimer, suppressionTimerSecs)) {
 
             // Request time and zone info from the card
             J *rsp = NoteRequestResponse(NoteNewRequest("card.time"));
@@ -875,7 +869,7 @@ JTIME NoteTimeST(void)
                     if (seconds != 0) {
 
                         // Set the time
-                        setTime(seconds);
+                        _setTime(seconds);
 
                         // Get the zone
                         char *z = JGetString(rsp, "zone");
@@ -1040,9 +1034,9 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay,
     secs = (uint32_t) currentEpochTime + ((70*365L+17)*86400LU);
     days = secs / 86400;
     if (retWeekday != NULL) {
-        *retWeekday = (char *) daynames[(days + 1) % 7];
+        *retWeekday = (char *) dayNames[(days + 1) % 7];
     }
-    for (year = days / 365; days < (i = yToDays(year) + 365L * year); ) {
+    for (year = days / 365; days < (i = _yToDays(year) + 365L * year); ) {
         --year;
     }
     days -= i;
@@ -1091,7 +1085,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay,
 }
 
 // Figure out how many days at start of the year
-NOTE_C_STATIC int yToDays(int year)
+NOTE_C_STATIC int _yToDays(int year)
 {
     int days = 0;
     if (0 < year) {
@@ -1148,7 +1142,7 @@ bool NoteLocationValidST(char *errbuf, uint32_t errbuflen)
     // If we haven't yet fetched the location, do so with a suppression
     // timer so that we don't hammer the module before it's had a chance to
     // connect to the gps to fetch location.
-    if (!timerExpiredSecs(&locationTimer, suppressionTimerSecs)) {
+    if (!_timerExpiredSecs(&locationTimer, suppressionTimerSecs)) {
         return false;
     }
 
@@ -1320,7 +1314,7 @@ bool NoteIsConnected(void)
 /**************************************************************************/
 bool NoteIsConnectedST(void)
 {
-    if (timerExpiredSecs(&connectivityTimer, suppressionTimerSecs)) {
+    if (_timerExpiredSecs(&connectivityTimer, suppressionTimerSecs)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("hub.status"));
         if (rsp != NULL) {
             if (!NoteResponseError(rsp)) {
@@ -1559,7 +1553,7 @@ bool NoteGetServiceConfigST(char *productBuf, int productBufLen, char *serviceBu
     bool success = false;
 
     // Use cache except for a rare refresh
-    if (scProduct[0] == '\0' || scDevice[0] == '\0' || timerExpiredSecs(&serviceConfigTimer, 4*60*60)) {
+    if (scProduct[0] == '\0' || scDevice[0] == '\0' || _timerExpiredSecs(&serviceConfigTimer, 4*60*60)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("hub.get"));
         if (rsp != NULL) {
             success = !NoteResponseError(rsp);
@@ -1630,7 +1624,7 @@ bool NoteGetStatusST(char *statusBuf, int statusBufLen, JTIME *bootTime, bool *r
     static bool lastSignals = false;
 
     // Refresh if it's time to do so
-    if (timerExpiredSecs(&statusTimer, suppressionTimerSecs)) {
+    if (_timerExpiredSecs(&statusTimer, suppressionTimerSecs)) {
         J *rsp = NoteRequestResponse(NoteNewRequest("card.status"));
         if (rsp != NULL) {
             success = !NoteResponseError(rsp);
@@ -1828,7 +1822,7 @@ bool NotePayloadRetrieveAfterSleep(NotePayloadDesc *desc)
     // Note the current time, if the field is present
     JTIME seconds = JGetInt(rsp, "time");
     if (seconds != 0) {
-        setTime(seconds);
+        _setTime(seconds);
     }
 
     // If we didn't expect any state to be restored, we're done
@@ -2273,7 +2267,7 @@ bool NoteSetContact(char *nameBuf, char *orgBuf, char *roleBuf, char *emailBuf)
 // reset to 0 after boot and every wake. This returns true if the specified
 // interval has elapsed, in seconds, and it updates the timer if it expires so
 // that we will go another period.
-NOTE_C_STATIC bool timerExpiredSecs(uint32_t *timer, uint32_t periodSecs)
+NOTE_C_STATIC bool _timerExpiredSecs(uint32_t *timer, uint32_t periodSecs)
 {
     bool expired = false;
 
@@ -2320,9 +2314,9 @@ bool NoteDebugSyncStatus(int pollFrequencyMs, int maxLevel)
     }
     JAddStringToObject(req, "file", "_synclog.qi");
     JAddBoolToObject(req, "delete", true);
-    NoteSuspendTransactionDebug();
+    _noteSuspendTransactionDebug();
     J *rsp = NoteRequestResponse(req);
-    NoteResumeTransactionDebug();
+    _noteResumeTransactionDebug();
     if (rsp != NULL) {
 
         // If an error is returned, this means that no response is pending. Note

@@ -15,6 +15,15 @@
 
 #pragma once
 
+#if defined(__GNUC__) || defined(__clang__)
+#define NOTE_C_DEPRECATED __attribute__((__deprecated__))
+#elif defined(_MSC_VER)
+#define NOTE_C_DEPRECATED __declspec(deprecated)
+#else
+#define NOTE_C_DEPRECATED
+#define NOTE_C_NO_DEPRECATED_ATTR
+#endif // __GNUC__ || __clang__
+
 // In case they're not yet defined
 #include <float.h>
 #include <limits.h>
@@ -25,7 +34,7 @@
 #define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
 
 #define NOTE_C_VERSION_MAJOR 2
-#define NOTE_C_VERSION_MINOR 2
+#define NOTE_C_VERSION_MINOR 3
 #define NOTE_C_VERSION_PATCH 1
 
 #define NOTE_C_VERSION NOTE_C_STRINGIZE(NOTE_C_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_PATCH)
@@ -35,10 +44,12 @@
 #if defined(FLT_MAX_EXP) && defined(DBL_MAX_EXP)
 #if (FLT_MAX_EXP == DBL_MAX_EXP)
 #define NOTE_C_LOW_MEM
+#define NOTE_C_SINGLE_PRECISION
 #endif
 #elif defined(__FLT_MAX_EXP__) && defined(__DBL_MAX_EXP__)
 #if (__FLT_MAX_EXP__ == __DBL_MAX_EXP__)
 #define NOTE_C_LOW_MEM
+#define NOTE_C_SINGLE_PRECISION
 #endif
 #else
 #error What are floating point exponent length symbols for this compiler?
@@ -57,12 +68,12 @@
 #define ERRSTR(x,y) (y)
 #else
 #define ERRSTR(x,y) (x)
-#endif
+#endif // NOTE_C_LOW_MEM
 
 /*!
  @brief The floating point type used for JSON handling in note-c.
  */
-#ifdef NOTE_C_TEST_SINGLE_PRECISION
+#ifdef NOTE_C_SINGLE_PRECISION
 typedef float JNUMBER;
 #else
 typedef double JNUMBER;
@@ -231,8 +242,8 @@ J *NoteNewCommand(const char *request);
 J *NoteRequestResponse(J *req);
 J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds);
 char * NoteRequestResponseJSON(const char *reqJSON);
-void NoteSuspendTransactionDebug(void);
-void NoteResumeTransactionDebug(void);
+NOTE_C_DEPRECATED void NoteSuspendTransactionDebug(void);
+NOTE_C_DEPRECATED void NoteResumeTransactionDebug(void);
 #define SYNCSTATUS_LEVEL_MAJOR         0
 #define SYNCSTATUS_LEVEL_MINOR         1
 #define SYNCSTATUS_LEVEL_DETAILED      2
@@ -260,22 +271,36 @@ J *NoteTransaction(J *req);
 bool NoteErrorContains(const char *errstr, const char *errtype);
 void NoteErrorClean(char *errbuf);
 void NoteSetFnDebugOutput(debugOutputFn fn);
+void NoteGetFnDebugOutput(debugOutputFn *fn);
 void NoteSetFnTransaction(txnStartFn startFn, txnStopFn stopFn);
+void NoteGetFnTransaction(txnStartFn *startFn, txnStopFn *stopFn);
 void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn,
                     mutexFn unlockNotefn);
+void NoteGetFnMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn, mutexFn *lockNotefn,
+                    mutexFn *unlockNotefn);
 void NoteSetFnI2CMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn);
+void NoteGetFnI2CMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn);
 void NoteSetFnNoteMutex(mutexFn lockFn, mutexFn unlockFn);
+void NoteGetFnNoteMutex(mutexFn *lockFn, mutexFn *unlockFn);
 void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn,
                       getMsFn millisfn);
 void NoteSetFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook,
                getMsFn getMsHook);
+void NoteGetFn(mallocFn *mallocHook, freeFn *freeHook, delayMsFn *delayMsHook,
+               getMsFn *getMsHook);
 void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
                      serialAvailableFn availFn, serialReceiveFn receiveFn);
+void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
+                     serialAvailableFn *availFn, serialReceiveFn *receiveFn);
 void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
                   i2cResetFn resetFn, i2cTransmitFn transmitFn,
                   i2cReceiveFn receiveFn);
+void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
+                  i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
+                  i2cReceiveFn *receiveFn);
 void NoteSetFnDisabled(void);
 void NoteSetI2CAddress(uint32_t i2caddress);
+void NoteGetI2CAddress(uint32_t *i2caddress);
 
 // The Notecard, whose default I2C address is below, uses a serial-to-i2c
 // protocol whose "byte count" must fit into a single byte and which must not
@@ -370,11 +395,13 @@ void NoteDebugWithLevelLn(uint8_t level, const char *msg);
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_DEBUG, msg); \
 } while (0);
 
-// The max log level for NoteDebugWithLevel is only configurable at
+// The max log level for NoteDebugWithLevel may be configured at
 // compile-time, via NOTE_C_LOG_LEVEL.
 #ifndef NOTE_C_LOG_LEVEL
 #define NOTE_C_LOG_LEVEL NOTE_C_LOG_LEVEL_INFO
 #endif
+// Otherwise, it may be set at runtime, via NoteSetLogLevel.
+void NoteSetLogLevel(int level);
 
 void *NoteMalloc(size_t size);
 void NoteFree(void *);
@@ -490,7 +517,7 @@ bool NoteLocalTimeST(uint16_t *retYear, uint8_t *retMonth, uint8_t *retDay, uint
 bool NoteRegion(char **retCountry, char **retArea, char **retZone, int *retZoneOffset);
 bool NoteLocationValid(char *errbuf, uint32_t errbuflen);
 bool NoteLocationValidST(char *errbuf, uint32_t errbuflen);
-void NoteTurboIO(bool enable);
+NOTE_C_DEPRECATED void NoteTurboIO(bool enable);
 JINTEGER NoteGetEnvInt(const char *variable, JINTEGER defaultVal);
 JNUMBER NoteGetEnvNumber(const char *variable, JNUMBER defaultVal);
 bool NoteGetEnv(const char *variable, const char *defaultVal, char *buf, uint32_t buflen);

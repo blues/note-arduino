@@ -15,15 +15,9 @@
 
 #include "n_lib.h"
 
-#ifdef NOTE_C_TEST
-#include "test_static.h"
-#else
-#define NOTE_C_STATIC static
-#endif
-
 // Forwards
-NOTE_C_STATIC void delayIO(void);
-NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available, uint32_t timeoutMs);
+NOTE_C_STATIC void _delayIO(void);
+NOTE_C_STATIC const char * _i2cNoteQueryLength(uint32_t * available, uint32_t timeoutMs);
 
 /**************************************************************************/
 /*!
@@ -33,7 +27,7 @@ NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available, uint32_t tim
   empirically based on a number of commercial devices.
 */
 /**************************************************************************/
-NOTE_C_STATIC void delayIO(void)
+NOTE_C_STATIC void _delayIO(void)
 {
     if (!cardTurboIO) {
         _DelayMs(6);
@@ -49,7 +43,7 @@ NOTE_C_STATIC void delayIO(void)
              I2C read request can be issued.
 */
 /**************************************************************************/
-NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available,
+NOTE_C_STATIC const char * _i2cNoteQueryLength(uint32_t * available,
         uint32_t timeoutMs)
 {
     uint8_t dummy_buffer = 0;
@@ -88,14 +82,14 @@ NOTE_C_STATIC const char * i2cNoteQueryLength(uint32_t * available,
   @returns a c-string with an error, or `NULL` if no error occurred.
 */
 /**************************************************************************/
-const char *i2cNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
+const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
     const char *err = NULL;
 
     // Lock over the entire transaction
     _LockI2C();
 
-    err = i2cChunkedTransmit((uint8_t *)request, reqLen, true);
+    err = _i2cChunkedTransmit((uint8_t *)request, reqLen, true);
     if (err) {
         _UnlockI2C();
         return err;
@@ -107,13 +101,13 @@ const char *i2cNoteTransaction(const char *request, size_t reqLen, char **respon
         return NULL;
     }
 
-    delayIO();
+    _delayIO();
 
     // Allocate a buffer for input, noting that we always put the +1 in the
     // alloc so we can be assured that it can be null-terminated. This must be
     // the case because json parsing requires a null-terminated string.
     uint32_t available = 0;
-    err = i2cNoteQueryLength(&available, timeoutMs);
+    err = _i2cNoteQueryLength(&available, timeoutMs);
     if (err) {
         NOTE_C_LOG_ERROR(ERRSTR("failed to query Notecard", c_err));
         _UnlockI2C();
@@ -137,7 +131,7 @@ const char *i2cNoteTransaction(const char *request, size_t reqLen, char **respon
         uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
 
         // Append into the json buffer
-        const char *err = i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
+        const char *err = _i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
         if (err) {
             if (jsonbuf) {
                 _Free(jsonbuf);
@@ -196,7 +190,7 @@ const char *i2cNoteTransaction(const char *request, size_t reqLen, char **respon
   @returns a boolean. `true` if the reset was successful, `false`, if not.
 */
 /**************************************************************************/
-bool i2cNoteReset(void)
+bool _i2cNoteReset(void)
 {
     bool notecardReady = false;
 
@@ -212,7 +206,7 @@ bool i2cNoteReset(void)
         _UnlockI2C();
         return false;
     }
-    delayIO();
+    _delayIO();
 
     // The guaranteed behavior for robust resyncing is to send two newlines
     // and  wait for two echoed blank lines in return.
@@ -300,7 +294,7 @@ bool i2cNoteReset(void)
                     NOTE_C_LOG_ERROR(ERRSTR("error encountered during I2C reset hook execution", c_err));
                     break;
                 }
-                delayIO();
+                _delayIO();
             }
         } else {
             notecardReady = true;
@@ -336,7 +330,7 @@ bool i2cNoteReset(void)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
+const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
 {
     // Load buffer with chunked I2C values
     size_t received = 0;
@@ -427,7 +421,7 @@ const char *i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint3
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
 {
     // Transmit the request in chunks, but also in segments so as not to
     // overwhelm the notecard's interrupt buffers
@@ -441,7 +435,7 @@ const char *i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
         // Constrain chunkLen to be <= _I2CMax().
         chunkLen = (chunkLen > _I2CMax()) ? _I2CMax() : chunkLen;
 
-        delayIO();
+        _delayIO();
         estr = _I2CTransmit(_I2CAddress(), chunk, chunkLen);
         if (estr != NULL) {
             _I2CReset(_I2CAddress());

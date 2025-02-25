@@ -8,3 +8,6 @@ __pycache__/
 *.code-workspace
 *.orig
 settings.json
+
+# Development Artifacts
+cppcheck_output.txt

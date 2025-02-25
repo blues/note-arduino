@@ -3,8 +3,6 @@
 We love pull requests from everyone. By participating in this project, you
 agree to abide by the Blues Inc [code of conduct].
 
-[code of conduct]: https://blues.github.io/opensource/code-of-conduct
-
 Here are some ways *you* can contribute:
 
 * by using alpha, beta, and prerelease versions
@@ -33,6 +31,12 @@ clean up inconsistent whitespace )
 
 [gist]: https://gist.github.com/
 
+## Library Development
+
+Review our [contribution guidelines](./CONTRIBUTING.md) and [developer
+documentation](./test/README.md) for setting up your environment and
+configuring your toolchain.
+
 ## Cleaning up issues
 
 * Issues that have no response from the submitter will be closed after 30 days.
@@ -59,6 +63,7 @@ clean up inconsistent whitespace )
 https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/
 [pr]: https://help.github.com/articles/creating-a-pull-request-from-a-fork/
 
-Inspired by
+Inspired by:
 https://github.com/thoughtbot/factory_bot/blob/master/CONTRIBUTING.md
 
+[code of conduct]: https://blues.github.io/opensource/code-of-conduct
