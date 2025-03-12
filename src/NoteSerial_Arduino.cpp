@@ -80,6 +80,15 @@ NoteSerial_Arduino<T>::~NoteSerial_Arduino (
 }
 
 template <typename T>
+int
+NoteSerial_Arduino<T>::getBaudRate (
+    void
+) const
+{
+    return _notecardSerialSpeed;
+}
+
+template <typename T>
 size_t
 NoteSerial_Arduino<T>::available (
     void

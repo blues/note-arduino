@@ -28,6 +28,7 @@ class NoteSerial_Arduino final : public NoteSerial
 public:
     NoteSerial_Arduino(T & serial_, size_t baud_rate_);
     ~NoteSerial_Arduino(void);
+    int getBaudRate(void) const;
     size_t available(void) override;
     char receive(void) override;
     bool reset(void) override;
