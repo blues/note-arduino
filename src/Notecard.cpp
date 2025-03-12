@@ -259,6 +259,7 @@ void Notecard::begin(NoteSerial * noteSerial_)
         J *req = NoteNewRequest("card.aux.serial");
         if (req != NULL)
         {
+            JAddIntToObject(req, "rate", noteSerial->getBaudRate());
             JAddIntToObject(req, "max", SERIAL_RX_BUFFER_SIZE - 1);
             JAddIntToObject(req, "ms", 1);
             NoteRequestWithRetry(req, 15);

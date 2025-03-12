@@ -10,6 +10,8 @@ public:
 
     virtual ~NoteSerial(void) {}
 
+    virtual int getBaudRate(void) const = 0;
+
     /**************************************************************************/
     /*!
         @brief  Determines if the Notecard Serial port has data available.

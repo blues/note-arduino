@@ -10,6 +10,7 @@
 class NoteSerial_Mock final : public NoteSerial
 {
 public:
+    int getBaudRate(void) const override;
     size_t available(void) override;
     char receive(void) override;
     bool reset(void) override;
