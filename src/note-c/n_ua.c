@@ -129,7 +129,21 @@ __attribute__((weak)) J *NoteUserAgent()
 
     JAddStringToObject(ua, "agent", n_agent);
     JAddStringToObject(ua, "compiler", compiler);
-    JAddStringToObject(ua, "req_interface", _noteActiveInterface());
+
+    switch (NoteGetActiveInterface()) {
+        case NOTE_C_INTERFACE_NONE:
+            JAddStringToObject(ua, "req_interface", "none");
+            break;
+        case NOTE_C_INTERFACE_SERIAL:
+            JAddStringToObject(ua, "req_interface", "serial");
+            break;
+        case NOTE_C_INTERFACE_I2C:
+            JAddStringToObject(ua, "req_interface", "i2c");
+            break;
+        default:
+            JAddStringToObject(ua, "req_interface", "unknown");
+            break;
+    }
 
     // Add CPU Details
     if (n_cpu_cores != 0) {

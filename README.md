@@ -85,21 +85,6 @@ if (rsp != NULL) {
 }
 ```
 
-## Keeping up to date with note-c repo
-
-This library depends on the Blues [`note-c` library][note-c]. To update this
-repo with the latest from `note-c`, run the `update_note_c.sh` shell script
-from the `scripts/` folder:
-
-```none
-scripts/update_note_c.sh
-```
-
-_**NOTE:** It is important to use the script. It utilizes git subtrees to
-include the appropriate files in the `src/note-c` folder. It also eliminates
-folders that necessary for testing `note-c` individually, but interfere with
-the Arduino build environment._
-
 ## Documentation
 
 The documentation for this library can be found
@@ -260,7 +245,22 @@ at the end of the array, and syntax should be as follows,
 
 ## Generating a Release
 
-### Update Files
+### Update `note-c` dependency
+
+This library depends on the Blues [`note-c` library][note-c]. To update this
+repo with the latest from `note-c`, run the `update_note_c.sh` shell script
+from the `scripts/` folder:
+
+```none
+scripts/update_note_c.sh
+```
+
+_**NOTE:** It is important to use the script. It utilizes git subtrees to
+include the appropriate files in the `src/note-c` folder. It also eliminates
+folders that necessary for testing `note-c` individually, but interfere with
+the Arduino build environment._
+
+### Update Version Files
 
 When generating a release of the `note-arduino` library, you will need to update
 the version in two places.
@@ -281,12 +281,13 @@ the version in two places.
     version string should follow the form "\<major\>.\<minor\>.\<patch\>" (e.g.
     `1.6.4`). This value will be used by the Arduino Library Manager.
 
-### GitHub Release
+### Arduino Library Manager Release
 
 Publishing a release on GitHub will trigger the Arduino Library Manager. The
-Arduino Library Manager will then look to the `library.properties` file, and
-generate a release based on the `version` value it finds there. It should be
-noted, the version on GitHub is not evaluated by the Arduino Library Manager.
+Arduino Library Manager will look to the `library.properties` file, and generate
+a release based solely on the `version` value it finds there.
+
+_**NOTE:** The GitHub version is not evaluated by the Arduino Library Manager._
 
 ## More Information
 

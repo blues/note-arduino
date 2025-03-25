@@ -330,6 +330,33 @@ bool _i2cNoteReset(void)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
+const char *_i2cNoteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
+{
+    _LockI2C();
+    const char *errstr = _i2cChunkedReceive(buffer, size, delay, timeoutMs, available);
+    _UnlockI2C();
+    return errstr;
+}
+
+/**************************************************************************/
+/*!
+  @brief  Receive bytes over I2C from the Notecard.
+
+  @param   buffer A buffer to receive bytes into.
+  @param   size (in/out)
+            - (in) The size of the buffer in bytes.
+            - (out) The length of the received data in bytes.
+  @param   delay Respect standard processing delays.
+  @param   timeoutMs The maximum amount of time, in milliseconds, to wait for
+            serial data to arrive. Passing zero (0) disables the timeout.
+  @param   available (in/out)
+            - (in) The amount of bytes to request. Sending zero (0) will
+                   initiate a priming query when using the I2C interface.
+            - (out) The amount of bytes unable to fit into the provided buffer.
+
+  @returns  A c-string with an error, or `NULL` if no error ocurred.
+*/
+/**************************************************************************/
 const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available)
 {
     // Load buffer with chunked I2C values
@@ -421,6 +448,25 @@ const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
+const char *_i2cNoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+{
+    _LockI2C();
+    const char *errstr = _i2cChunkedTransmit(buffer, size, delay);
+    _UnlockI2C();
+    return errstr;
+}
+
+/**************************************************************************/
+/*!
+  @brief  Transmit bytes over I2C to the Notecard.
+
+  @param   buffer A buffer of bytes to transmit.
+  @param   size The count of bytes in the buffer to send
+  @param   delay Respect standard processing delays.
+
+  @returns  A c-string with an error, or `NULL` if no error ocurred.
+*/
+/**************************************************************************/
 const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
 {
     // Transmit the request in chunks, but also in segments so as not to
@@ -435,7 +481,9 @@ const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
         // Constrain chunkLen to be <= _I2CMax().
         chunkLen = (chunkLen > _I2CMax()) ? _I2CMax() : chunkLen;
 
-        _delayIO();
+        if (delay) {
+            _delayIO();
+        }
         estr = _I2CTransmit(_I2CAddress(), chunk, chunkLen);
         if (estr != NULL) {
             _I2CReset(_I2CAddress());

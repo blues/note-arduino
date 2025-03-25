@@ -29,6 +29,7 @@ extern "C" {
 */
 /**************************************************************************/
 #ifdef NOTE_C_TEST
+#include "test/include/test_static.h"
 #define NOTE_C_STATIC
 #else
 #define NOTE_C_STATIC static
@@ -125,6 +126,8 @@ const char *_serialNoteTransaction(const char *request, size_t reqLen, char **re
 bool _serialNoteReset(void);
 const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+const char *_i2cNoteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
+const char *_i2cNoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 const char *_serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *_serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 

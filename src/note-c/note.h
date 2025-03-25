@@ -30,11 +30,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum {
+    NOTE_C_INTERFACE_NONE = 0,
+    NOTE_C_INTERFACE_SERIAL,
+    NOTE_C_INTERFACE_I2C,
+};
+
 #define _NOTE_C_STRINGIZE(x) #x
 #define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
 
 #define NOTE_C_VERSION_MAJOR 2
-#define NOTE_C_VERSION_MINOR 3
+#define NOTE_C_VERSION_MINOR 4
 #define NOTE_C_VERSION_PATCH 1
 
 #define NOTE_C_VERSION NOTE_C_STRINGIZE(NOTE_C_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_PATCH)
@@ -298,9 +304,11 @@ void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
 void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
                   i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
                   i2cReceiveFn *receiveFn);
+void NoteSetActiveInterface(int interface);
+int NoteGetActiveInterface(void);
 void NoteSetFnDisabled(void);
-void NoteSetI2CAddress(uint32_t i2caddress);
-void NoteGetI2CAddress(uint32_t *i2caddress);
+void NoteSetI2CAddress(uint32_t i2cAddr);
+void NoteGetI2CAddress(uint32_t *i2cAddr);
 
 // The Notecard, whose default I2C address is below, uses a serial-to-i2c
 // protocol whose "byte count" must fit into a single byte and which must not
@@ -395,12 +403,17 @@ void NoteDebugWithLevelLn(uint8_t level, const char *msg);
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_DEBUG, msg); \
 } while (0);
 
+// The default log level
+#define NOTE_C_LOG_LEVEL_DEFAULT NOTE_C_LOG_LEVEL_INFO
+
 // The max log level for NoteDebugWithLevel may be configured at
-// compile-time, via NOTE_C_LOG_LEVEL.
+// compile-time, via NOTE_C_LOG_LEVEL, otherwise it defaults to
+// NOTE_C_LOG_LEVEL_DEFAULT.
 #ifndef NOTE_C_LOG_LEVEL
-#define NOTE_C_LOG_LEVEL NOTE_C_LOG_LEVEL_INFO
+#define NOTE_C_LOG_LEVEL NOTE_C_LOG_LEVEL_DEFAULT
 #endif
-// Otherwise, it may be set at runtime, via NoteSetLogLevel.
+
+// Log level may also be set at runtime, via NoteSetLogLevel.
 void NoteSetLogLevel(int level);
 
 void *NoteMalloc(size_t size);
