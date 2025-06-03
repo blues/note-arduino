@@ -82,6 +82,31 @@ static const char NOTE_C_BINARY_EOP = '\n';
 
 //**************************************************************************/
 /*!
+  @brief  Configure the flow control for the auxiliary serial port.
+  @param   bufSize The size of the receive buffer.
+  @param   delayMs The time to wait between reads.
+
+  @returns `true` on success, `false` on failure.
+*/
+/**************************************************************************/
+bool NoteAuxSerialFlowControl(int bufSize, int delayMs)
+{
+    bool result = false;
+
+    J *req = NoteNewRequest("card.aux.serial");
+    if (req != NULL) {
+        JAddIntToObject(req, "max", bufSize - 1);
+        JAddIntToObject(req, "ms", delayMs);
+        result = NoteRequest(req);
+    } else {
+        NOTE_C_LOG_ERROR(ERRSTR("Failed to configure AUX serial flow control", c_mem));
+    }
+
+    return result;
+}
+
+//**************************************************************************/
+/*!
   @brief  Decode binary data received from the Notecard.
 
   @param  encData The encoded binary data to decode.

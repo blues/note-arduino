@@ -190,7 +190,7 @@ bool _serialNoteReset(void)
             return false;
         }
 
-        NOTE_C_LOG_DEBUG("retrying Serial interface reset.")
+        NOTE_C_LOG_DEBUG("retrying Serial interface reset.");
     }
 
     // Done

@@ -301,7 +301,7 @@ bool _i2cNoteReset(void)
             break;
         }
 
-        NOTE_C_LOG_DEBUG("retrying I2C interface reset...")
+        NOTE_C_LOG_DEBUG("retrying I2C interface reset...");
     }
 
     // Done with the I2C bus

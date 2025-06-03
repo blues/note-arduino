@@ -40,7 +40,7 @@ enum {
 #define NOTE_C_STRINGIZE(x) _NOTE_C_STRINGIZE(x)
 
 #define NOTE_C_VERSION_MAJOR 2
-#define NOTE_C_VERSION_MINOR 4
+#define NOTE_C_VERSION_MINOR 5
 #define NOTE_C_VERSION_PATCH 1
 
 #define NOTE_C_VERSION NOTE_C_STRINGIZE(NOTE_C_VERSION_MAJOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_MINOR) "." NOTE_C_STRINGIZE(NOTE_C_VERSION_PATCH)
@@ -72,6 +72,7 @@ enum {
 
 #ifdef NOTE_C_LOW_MEM
 #define ERRSTR(x,y) (y)
+#define NOTE_C_LOG_DEBUG(msg) do { } while (0)
 #else
 #define ERRSTR(x,y) (x)
 #endif // NOTE_C_LOW_MEM
@@ -296,11 +297,16 @@ void NoteGetFn(mallocFn *mallocHook, freeFn *freeHook, delayMsFn *delayMsHook,
                getMsFn *getMsHook);
 void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
                      serialAvailableFn availFn, serialReceiveFn receiveFn);
+void NoteSetFnSerialDefault(serialResetFn resetFn, serialTransmitFn transmitFn,
+                            serialAvailableFn availFn, serialReceiveFn receiveFn);
 void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
                      serialAvailableFn *availFn, serialReceiveFn *receiveFn);
 void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
                   i2cResetFn resetFn, i2cTransmitFn transmitFn,
                   i2cReceiveFn receiveFn);
+void NoteSetFnI2cDefault(uint32_t notecardAddr, uint32_t maxTransmitSize,
+                         i2cResetFn resetFn, i2cTransmitFn transmitFn,
+                         i2cReceiveFn receiveFn);
 void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
                   i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
                   i2cReceiveFn *receiveFn);
@@ -379,29 +385,37 @@ void NoteDebugWithLevelLn(uint8_t level, const char *msg);
 #define NOTE_C_LOG_FILE_AND_LINE(lvl)
 #endif
 
+#ifndef NOTE_C_LOG_ERROR
 #define NOTE_C_LOG_ERROR(msg) do { \
   NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_ERROR); \
   NoteDebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "[ERROR] "); \
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_ERROR, msg); \
-} while (0);
+} while (0)
+#endif
 
+#ifndef NOTE_C_LOG_WARN
 #define NOTE_C_LOG_WARN(msg) do { \
   NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_WARN); \
   NoteDebugWithLevel(NOTE_C_LOG_LEVEL_WARN, "[WARN] "); \
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_WARN, msg); \
-} while (0);
+} while (0)
+#endif
 
+#ifndef NOTE_C_LOG_INFO
 #define NOTE_C_LOG_INFO(msg) do { \
   NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_INFO); \
   NoteDebugWithLevel(NOTE_C_LOG_LEVEL_INFO, "[INFO] "); \
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_INFO, msg); \
-} while (0);
+} while (0)
+#endif
 
+#ifndef NOTE_C_LOG_DEBUG
 #define NOTE_C_LOG_DEBUG(msg) do { \
   NOTE_C_LOG_FILE_AND_LINE(NOTE_C_LOG_LEVEL_DEBUG); \
   NoteDebugWithLevel(NOTE_C_LOG_LEVEL_DEBUG, "[DEBUG] "); \
   NoteDebugWithLevelLn(NOTE_C_LOG_LEVEL_DEBUG, msg); \
-} while (0);
+} while (0)
+#endif
 
 // The default log level
 #define NOTE_C_LOG_LEVEL_DEFAULT NOTE_C_LOG_LEVEL_INFO
@@ -506,6 +520,7 @@ void NoteMD5HashToString(unsigned char *hash, char *strbuf, unsigned long buflen
 
 // High-level helper functions that are both useful and serve to show developers
 // how to call the API
+bool NoteAuxSerialFlowControl(int bufSize, int delayMs);
 uint32_t NoteBinaryCodecDecode(const uint8_t *encData, uint32_t encDataLen,
                                uint8_t *decBuf, uint32_t decBufSize);
 uint32_t NoteBinaryCodecEncode(const uint8_t *decData, uint32_t decDataLen,

@@ -12,15 +12,19 @@
 
 #include "n_lib.h"
 
+#include <string.h>
+
+static const int RETRY_DELAY_MS = 500;
+
 // For flow tracing
 static int suppressShowTransactions = 0;
 
 // Flag that gets set whenever an error occurs that should force a reset
-static bool resetRequired = true;
+NOTE_C_STATIC bool resetRequired = true;
 
 // CRC data
 #ifndef NOTE_C_LOW_MEM
-static uint16_t lastRequestSeqno = 0;
+static uint16_t seqNo = 0;
 #define CRC_FIELD_LENGTH        22  // ,"crc":"SSSS:CCCCCCCC"
 #define CRC_FIELD_NAME_OFFSET   1
 #define CRC_FIELD_NAME_TEST     "\"crc\":\""
@@ -45,7 +49,7 @@ NOTE_C_STATIC bool notecardFirmwareSupportsCrc = false;
 
  @returns A `J` object with the "err" field populated.
  */
-NOTE_C_STATIC J * errDoc(uint32_t id, const char *errmsg)
+NOTE_C_STATIC J * _errDoc(uint32_t id, const char *errmsg)
 {
     J *rspdoc = JCreateObject();
     if (rspdoc != NULL) {
@@ -60,9 +64,19 @@ NOTE_C_STATIC J * errDoc(uint32_t id, const char *errmsg)
             _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, errmsg);
             _DebugWithLevelLn(NOTE_C_LOG_LEVEL_ERROR, "\",\"src\":\"note-c\"}");
         }
+    } else {
+        NOTE_C_LOG_ERROR("Failed to allocate error document!");
     }
 
     return rspdoc;
+}
+
+/*!
+ @brief Resume showing transaction details.
+ */
+void _noteResumeTransactionDebug(void)
+{
+    suppressShowTransactions--;
 }
 
 /*!
@@ -74,11 +88,60 @@ void _noteSuspendTransactionDebug(void)
 }
 
 /*!
- @brief Resume showing transaction details.
- */
-void _noteResumeTransactionDebug(void)
+ @internal
+
+ @brief Calculate the transaction timeout.
+
+  When note.add or web.* requests are used to transfer binary data, the
+  time to complete the transaction can vary depending on the size of
+  the payload and network conditions. Therefore, it's possible for
+  these transactions to timeout prematurely.
+
+  The algorithm executes the following logic:
+  - If the request is a `note.add`, set the timeout value to the
+    value of the "milliseconds" parameter, if it exists. If it
+    doesn't, use the "seconds" parameter. If that doesn't exist,
+    use the standard timeout of `CARD_INTER_TRANSACTION_TIMEOUT_SEC`.
+  - If the request is a `web.*`, follow the same logic, but instead
+    of using the standard timeout, use the Notecard timeout of 90
+    seconds for all `web.*` transactions.
+
+ @param req The request object.
+ @param isReq Whether the request is a regular request or a command.
+
+ @returns The timeout in milliseconds.
+*/
+NOTE_C_STATIC uint32_t _noteTransaction_calculateTimeoutMs(J *req, bool isReq)
 {
-    suppressShowTransactions--;
+    uint32_t result = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+
+    // Interrogate the request
+    if (JContainsString(req, (isReq ? "req" : "cmd"), "note.add")) {
+        if (JIsPresent(req, "milliseconds")) {
+            NOTE_C_LOG_DEBUG("Using `milliseconds` parameter value for "
+                             "timeout.");
+            result = JGetInt(req, "milliseconds");
+        } else if (JIsPresent(req, "seconds")) {
+            NOTE_C_LOG_DEBUG("Using `seconds` parameter value for timeout.");
+            result = (JGetInt(req, "seconds") * 1000);
+        }
+    } else if (JContainsString(req, (isReq ? "req" : "cmd"), "web.")) {
+        NOTE_C_LOG_DEBUG("web.* request received.");
+        if (JIsPresent(req, "milliseconds")) {
+            NOTE_C_LOG_DEBUG("Using `milliseconds` parameter value for "
+                             "timeout.");
+            result = JGetInt(req, "milliseconds");
+        } else if (JIsPresent(req, "seconds")) {
+            NOTE_C_LOG_DEBUG("Using `seconds` parameter value for timeout.");
+            result = (JGetInt(req, "seconds") * 1000);
+        } else {
+            NOTE_C_LOG_DEBUG("No `milliseconds` or `seconds` parameter "
+                             "provided. Defaulting to 90-second timeout.");
+            result = (90 * 1000);
+        }
+    }
+
+    return result;
 }
 
 /*!
@@ -307,11 +370,18 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
           if there was no response or if there was an error.
 
  @note When a "cmd" is sent, it is not possible to determine if an error occurred.
+
+ @note Unlike the `NoteRequest*` functions, this function does not automatically
+       free the request JSON string. It is not possible to know if the parameter
+       is a string literal. As such, it is the caller's responsibility to manage
+       the memory associated with the request string.
 */
 char * NoteRequestResponseJSON(const char *reqJSON)
 {
-    uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+    const uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
     char *rspJSON = NULL;
+    char *allocatedJSON = NULL; // required to free the string if it is not newline-terminated
+    bool isCmdPipeline = false;
 
     if (reqJSON == NULL) {
         return NULL;
@@ -324,34 +394,38 @@ char * NoteRequestResponseJSON(const char *reqJSON)
 
     _LockNote();
 
-    // Manually tokenize the string to search for multiple embedded commands (cannot use strtok)
+    // Manually tokenize the string to search for multiple embedded
+    // commands (cannot use strtok)
     for (;;) {
         const char *endPtr;
         const char * const newlinePtr = strchr(reqJSON, '\n');
 
-        // If string is not newline-terminated, then allocate a new string and terminate it
+        // If string is not newline-terminated, then allocate a new
+        // string and terminate it
         if (NULL == newlinePtr) {
-            // All JSON strings should be newline-terminated to meet the specification, however
-            // this is required to ensure backward compatibility with the previous implementation.
-            const size_t tempLen = strlen(reqJSON);
-            if (0 == tempLen) {
+            // All JSON strings should be newline-terminated to meet the
+            // specification, however this is required to ensure backward
+            // compatibility with the previous implementation.
+            const size_t allocLen = strlen(reqJSON);
+            if (0 == allocLen) {
                 NOTE_C_LOG_ERROR(ERRSTR("request: jsonbuf zero length", c_bad));
                 break;
             }
 
             NOTE_C_LOG_WARN(ERRSTR("Memory allocation due to malformed request (not newline-terminated)", c_bad));
-            char * const temp = _Malloc(tempLen + 2);  // +2 for newline and null-terminator
-            if (temp == NULL) {
+            allocatedJSON = _Malloc(allocLen + 2);  // +2 for newline and null-terminator
+            if (allocatedJSON == NULL) {
                 NOTE_C_LOG_ERROR(ERRSTR("request: jsonbuf malloc failed", c_mem));
                 break;
             }
 
-            memcpy(temp, reqJSON, tempLen);
-            temp[tempLen] = '\n';
-            temp[tempLen + 1] = '\0';
-            reqJSON = temp;
-            endPtr = &temp[tempLen];
+            memcpy(allocatedJSON, reqJSON, allocLen);
+            allocatedJSON[allocLen] = '\n';
+            allocatedJSON[allocLen + 1] = '\0';
+            reqJSON = allocatedJSON;
+            endPtr = &allocatedJSON[allocLen];
         } else {
+            isCmdPipeline = !(strlen(newlinePtr) == 1);
             endPtr = newlinePtr;
         }
         const size_t reqLen = ((endPtr - reqJSON) + 1);
@@ -376,15 +450,17 @@ char * NoteRequestResponseJSON(const char *reqJSON)
             const char *errstr = _Transaction(reqJSON, reqLen, &rspJSON, transactionTimeoutMs);
             if (errstr != NULL) {
                 NOTE_C_LOG_ERROR(errstr);
+
+                // Extract ID from the request JSON, if present
                 uint32_t id = 0;
-                if (reqJSON != NULL) {
-                    J *req = JParse(reqJSON);
-                    if (req != NULL) {
-                        id = JGetInt(req, "id");
-                        JDelete(req);
-                    }
+                J *req = JParse(reqJSON);
+                if (req != NULL) {
+                    id = JGetInt(req, "id");
+                    JDelete(req);
                 }
-                J *errdoc = errDoc(id, errstr);
+
+                // Use _errDoc() to create a well-formed JSON error string
+                J *errdoc = _errDoc(id, errstr);
                 if (errdoc != NULL) {
                     char *errdocJSON = JPrintUnformatted(errdoc);
                     JDelete(errdoc);
@@ -400,25 +476,31 @@ char * NoteRequestResponseJSON(const char *reqJSON)
                     }
                 }
             }
-            if (NULL == newlinePtr) {
-                _Free((void *)reqJSON);
+            if (allocatedJSON) {
+                _Free((void *)allocatedJSON);
+                allocatedJSON = NULL;
             }
             break;
         } else {
-            // If it's a command, the Notecard will not respond, so we pass NULL for
-            // the response parameter.
+            // If it's a command, the Notecard will not respond, so we pass
+            // NULL for the response parameter.
             const char *errstr = _Transaction(reqJSON, reqLen, NULL, transactionTimeoutMs);
-            reqJSON = (endPtr + 1);
+            reqJSON = (endPtr + 1);  // Move to the next command in the pipeline
             if (errstr != NULL) {
                 NOTE_C_LOG_ERROR(errstr);
             }
         }
 
         // Clean up if we allocated a new string
-        if (NULL == newlinePtr) {
-            _Free((void *)reqJSON);
+        (void)isCmdPipeline;
+        if (allocatedJSON) {
+            _Free((void *)allocatedJSON);
+            break;
         }
-    }
+        if (!isCmdPipeline) {
+            break;
+        }
+    } // for(;;)
 
     _UnlockNote();
     _TransactionStop();
@@ -460,254 +542,259 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
 {
     // Validate in case of memory failure of the requestor
     if (req == NULL) {
+        NOTE_C_LOG_ERROR(ERRSTR("NULL request", c_bad));
         return NULL;
     }
-
-    // Make sure that we get access to the notecard hardware before we begin
-    if (!_TransactionStart(CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000)) {
-        return NULL;
-    }
-
-    // Determine the request or command type
-    const char *reqType = JGetString(req, "req");
-    const char *cmdType = JGetString(req, "cmd");
-
-    // Add the user agent object only when we're doing a hub.set and only when we're
-    // specifying the product UID.  The intent is that we only piggyback user agent
-    // data when the host is initializing the Notecard, as opposed to every time
-    // the host does a hub.set to change mode.
-#ifndef NOTE_DISABLE_USER_AGENT
-    if (!JIsPresent(req, "body") && (strcmp(reqType, "hub.set") == 0) && JIsPresent(req, "product")) {
-        J *body = NoteUserAgent();
-        if (body != NULL) {
-            JAddItemToObject(req, "body", body);
-        }
-    }
-#endif
-
-    // Determine whether or not a response will be expected, by virtue of "cmd" being present
-    // Both `reqType` and `cmdType` are guaranteed to be NULL-terminated strings, but cppcheck
-    // doesn't know that (so we redundantly check for not NULL).
-    bool noResponseExpected = ((reqType && (reqType[0] == '\0')) && (cmdType && (cmdType[0] != '\0')));
-
-    // If a reset of the module is required for any reason, do it now.
-    // We must do this before acquiring lock.
-    if (resetRequired) {
-        if (!NoteReset()) {
-            _TransactionStop();
-            return NULL;
-        }
-    }
-
-    if (lockNotecard) {
-        _LockNote();
-    }
-
-    // Extract the ID of the request so that errors can be returned with the same ID
-    uint32_t id = JGetInt(req, "id");
 
     // Serialize the JSON request
-    char *json = JPrintUnformatted(req);
+    char *json = JPrintUnformatted(req); // `json` allocated, must be freed
     if (json == NULL) {
-        J *errRsp = errDoc(id, ERRSTR("can't convert to JSON", c_bad));
         if (lockNotecard) {
             _UnlockNote();
         }
         _TransactionStop();
-        return errRsp;
+        NOTE_C_LOG_ERROR(ERRSTR("failed to serialize JSON request", c_mem));
+        return NULL;
     }
 
-    // If it is a request (as opposed to a command), include a CRC so that the
-    // request might be retried if it is received in a corrupted state.  (We can
-    // only do this on requests because for cmd's there is no 'response channel'
-    // where we can find out that the cmd failed.  Note that a Seqno is included
-    // as part of the CRC data so that two identical requests occurring within the
-    // modulus of seqno never are mistaken as being the same request being retried.
-    uint8_t lastRequestRetries = 0;
+    // Determine the request or command type
+    const char * const reqApi = JGetString(req, "req");
+    const bool reqFound = reqApi[0];  // test for non-empty string
+    const char * const cmdApi = JGetString(req, "cmd");
+    const bool cmdFound = cmdApi[0];  // test for non-empty string
+
+    // If neither `"req"` nor `"cmd"` are found, then we have an error
+    // condition. If both are present, then we have undefined behavior.
+    if (!reqFound && !cmdFound) {
+        _Free(json);
+        NOTE_C_LOG_ERROR(ERRSTR("neither req nor cmd found in API invocation (invalid JSON)", c_bad));
+        return NULL;
+    } else if (reqFound && cmdFound) {
+        _Free(json);
+        NOTE_C_LOG_ERROR(ERRSTR("both req and cmd present in API invocation (undefined behavior)", c_bad));
+        return NULL;
+    }
+
+    // Extract the ID of the request so that errors can be returned with the same ID
+    const uint32_t id = JGetInt(req, "id");
+
+    // Ensure the Notecard is ready
+    if (!_TransactionStart(CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000)) {
+        _Free(json);
+        const char *errStr = ERRSTR("Notecard not ready (CTX/RTX) {io}", c_ioerr);
+        if (cmdFound) {
+            NOTE_C_LOG_ERROR(errStr);
+            return NULL;
+        }
+        return _errDoc(id, errStr);
+    }
+
+    // Inject the user agent object only when we're doing a `hub.set` and
+    // specifying the product UID together. The goal is to only piggyback
+    // user agent data when the host is initializing the Notecard, as opposed
+    // to every time the host does a `hub.set` to change mode.
+#ifndef NOTE_DISABLE_USER_AGENT
+    if (!JIsPresent(req, "body") && JContainsString(req, (reqFound ? "req" : "cmd"), "hub.set") && JIsPresent(req, "product")) {
+        J *body = NoteUserAgent();
+        if (body != NULL) {
+            JAddItemToObject(req, "body", body);
+            NOTE_C_LOG_DEBUG("Added user-agent to request");
+        } else {
+            NOTE_C_LOG_ERROR(ERRSTR("Failed to add user-agent to request", c_mem));
+        }
+    }
+#endif
+
+    // If a reset of the I/O interface is required for any reason, do it now.
+    // We must do this before acquiring lock.
+    if (resetRequired) {
+        NOTE_C_LOG_DEBUG("Resetting Notecard I/O Interface...");
+        if (!NoteReset()) {
+            _Free(json);
+            _TransactionStop();
+            const char *errStr = ERRSTR("failed to reset Notecard interface {io}", c_iobad);
+            if (cmdFound) {
+                NOTE_C_LOG_ERROR(errStr);
+                return NULL;
+            }
+            return _errDoc(id, errStr);
+        }
+    }
+
+    // Take the lock on the Notecard.  This is required to ensure that we don't
+    // have multiple threads trying to access the Notecard at the same time.
+    if (lockNotecard) {
+        _LockNote();
+    }
+
+    // Calculate the transaction timeout based on the parameters in the request.
+    const uint32_t transactionTimeoutMs = _noteTransaction_calculateTimeoutMs(req, reqFound);
+
 #ifndef NOTE_C_LOW_MEM
-    bool lastRequest_crcAdded = false;
-    if (!noResponseExpected) {
-        char *newJson = _crcAdd(json, lastRequestSeqno);
+    /*
+    * Add a CRC value, so the request may be retried if it is received
+    * in a corrupted state.
+    *
+    * NOTE: This can only performed on requests, because commands do not have a
+    *       'response channel'. As such, we have no ability to understand if a
+    *       command failed and should be retried. A sequence number is included
+    *       as part of the CRC data, so that two identical but separate requests
+    *       are not mistaken as the same request being retried.
+    *
+    *   req   cmd  response
+    *  found found expected
+    *  ----- ----- --------
+    *    0     0    ERROR
+    *    0     1      0
+    *    1     0      1
+    *    1     1    1 (UB)
+    */
+    bool crcAddedToRequest = false;
+    if (reqFound) {
+        char *newJson = _crcAdd(json, seqNo);
         if (newJson != NULL) {
-            JFree(json);
+            _Free(json);
             json = newJson;
-            lastRequest_crcAdded = true;
+            crcAddedToRequest = true;
         }
     }
 #endif // !NOTE_C_LOW_MEM
 
-    // When note.add or web.* requests are used to transfer binary data, the
-    // time to complete the transaction can vary depending on the size of
-    // the payload and network conditions. Therefore, it's possible for
-    // these transactions to timeout prematurely.
-    //
-    // The algorithm below, executes the following logic:
-    //   - If the request is a `note.add`, set the timeout value to the
-    //     value of the "milliseconds" parameter, if it exists. If it
-    //     doesn't, use the "seconds" parameter. If that doesn't exist,
-    //     use the standard timeout of `CARD_INTER_TRANSACTION_TIMEOUT_SEC`.
-    //   - If the request is a `web.*`, follow the same logic, but instead
-    //     of using the standard timeout, use the Notecard timeout of 90
-    //     seconds for all `web.*` transactions.
-    uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
-
-    // Interrogate the request
-    if (JContainsString(req, (reqType ? "req" : "cmd"), "note.add")) {
-        if (JIsPresent(req, "milliseconds")) {
-            NOTE_C_LOG_DEBUG("Using `milliseconds` parameter value for "
-                             "timeout.");
-            transactionTimeoutMs = JGetInt(req, "milliseconds");
-        } else if (JIsPresent(req, "seconds")) {
-            NOTE_C_LOG_DEBUG("Using `seconds` parameter value for timeout.");
-            transactionTimeoutMs = (JGetInt(req, "seconds") * 1000);
-        }
-    } else if (JContainsString(req, (reqType ? "req" : "cmd"), "web.")) {
-        NOTE_C_LOG_DEBUG("web.* request received.");
-        if (JIsPresent(req, "milliseconds")) {
-            NOTE_C_LOG_DEBUG("Using `milliseconds` parameter value for "
-                             "timeout.");
-            transactionTimeoutMs = JGetInt(req, "milliseconds");
-        } else if (JIsPresent(req, "seconds")) {
-            NOTE_C_LOG_DEBUG("Using `seconds` parameter value for timeout.");
-            transactionTimeoutMs = (JGetInt(req, "seconds") * 1000);
-        } else {
-            NOTE_C_LOG_DEBUG("No `milliseconds` or `seconds` parameter "
-                             "provided. Defaulting to 90-second timeout.");
-            transactionTimeoutMs = (90 * 1000);
-        }
-    }
-
     // If we're performing retries, this is where we come back to
+    // after a failed transaction.
     const char *errStr = NULL;
-    char *responseJSON = NULL;
+    char *rspJsonStr = NULL;
     J *rsp = NULL;
-    while (true) {
-        // If no retry possibility, break out
-        if (lastRequestRetries > CARD_REQUEST_RETRIES_ALLOWED) {
-            break;
-        } else if (rsp != NULL) {
-            // free on retry
+    for (uint8_t lastRequestRetries = 0; lastRequestRetries <= CARD_REQUEST_RETRIES_ALLOWED; ++lastRequestRetries) {
+        // free on retry
+        if (rsp != NULL) {
             JDelete(rsp);
         }
 
         // reset variables
+        errStr = NULL;
+        rspJsonStr = NULL;
         rsp = NULL;
-        responseJSON = NULL;
 
-        // Trace
+        // Trace request unless suppressed
         if (suppressShowTransactions == 0) {
             NOTE_C_LOG_INFO(json);
         }
 
-        // Swap NULL-terminator for newline-terminator
+        // In-place replacement of NULL-terminator with a newline character.
+        // The Notecard expects a newline-terminated string to understand the
+        // end of the request.
         const size_t jsonLen = strlen(json);
         json[jsonLen] = '\n';
 
         // Perform the transaction
-        if (noResponseExpected) {
+        if (cmdFound) {
             errStr = _Transaction(json, (jsonLen + 1), NULL, transactionTimeoutMs);
-            break;
+            // break;  // No response expected for commands and no ability to retry.
+        } else {
+            errStr = _Transaction(json, (jsonLen + 1), &rspJsonStr, transactionTimeoutMs);
         }
-        errStr = _Transaction(json, (jsonLen + 1), &responseJSON, transactionTimeoutMs);
 
-        // Swap newline-terminator for NULL-terminator
+        // Restore NULL-terminator
         json[jsonLen] = '\0';
 
-        // If there's an I/O error on the transaction, retry
+        ////////////////////////
+        // Request retry logic
+        ////////////////////////
+
+        // Handle transaction errors
         if (errStr != NULL) {
-            JFree(responseJSON);
-            resetRequired = !_Reset();
-            lastRequestRetries++;
-            NOTE_C_LOG_WARN(ERRSTR("retrying I/O error detected by host", c_iobad));
-            _DelayMs(500);
-            continue;
+            _Free(rspJsonStr);
+            // If there's an I/O error on the transaction, retry
+            if (NoteErrorContains(errStr, c_ioerr)) {
+                NOTE_C_LOG_WARN(ERRSTR("retrying... transaction failure", c_iobad));
+                resetRequired = !_Reset();
+                _DelayMs(RETRY_DELAY_MS);
+                continue;  // I/O error, retry
+            } else {
+                NOTE_C_LOG_DEBUG(ERRSTR("transaction failure", c_bad));
+                break;  // Fatal error, do not retry
+            }
+        } else if (cmdFound) {
+            NOTE_C_LOG_DEBUG("Command successfully sent to Notecard");
+            break;  // No response expected and no further ability to retry.
+        }
+
+        // Inspect the Notecard Response
+        if (rspJsonStr == NULL) {
+            // If the response is NULL, then we have a timeout or other error
+            errStr = ERRSTR("response expected, but response is NULL {io}", c_ioerr);
+            NOTE_C_LOG_WARN(ERRSTR("retrying... no response", c_iobad));
+            _DelayMs(RETRY_DELAY_MS);
+            continue;  // I/O error, retry
         }
 
 #ifndef NOTE_C_LOW_MEM
         // If we sent a CRC in the request, examine the response JSON to see if
         // it has a CRC error.  Note that the CRC is stripped from the
-        // responseJSON as a side-effect of this method.
-        if (lastRequest_crcAdded && _crcError(responseJSON, lastRequestSeqno)) {
-            JFree(responseJSON);
-            errStr = "crc error {io}";
-            lastRequestRetries++;
-            NOTE_C_LOG_ERROR(ERRSTR("CRC error on response", c_iobad));
-            _DelayMs(500);
+        // rspJsonStr as a side-effect of this method.
+        if (crcAddedToRequest && _crcError(rspJsonStr, seqNo)) {
+            _Free(rspJsonStr);
+            errStr = ERRSTR("CRC error {io}", c_iobad);
+            NOTE_C_LOG_WARN(ERRSTR("retrying... CRC error", c_iobad));
+            _DelayMs(RETRY_DELAY_MS);
             continue;
         }
 #endif // !NOTE_C_LOW_MEM
 
-        // See if the response JSON can't be unmarshaled, or if it contains an {io} error
-        rsp = JParse(responseJSON);
+        // Error types
         bool isBadBin = false;
         bool isIoError = false;
+
+        // Error detection / classification
+        rsp = JParse(rspJsonStr);
         if (rsp != NULL) {
             isBadBin = JContainsString(rsp, c_err, c_badbinerr);
             isIoError = JContainsString(rsp, c_err, c_ioerr) && !JContainsString(rsp, c_err, c_unsupported);
         } else {
             // Failed to parse response as JSON
-            if (responseJSON == NULL) {
-                NOTE_C_LOG_ERROR(ERRSTR("response expected, but response is NULL.", c_ioerr));
-            } else {
-#ifndef NOTE_C_LOW_MEM
-                _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "[ERROR] ");
-                _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "invalid JSON: ");
-                _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, responseJSON);
-#else
-                NOTE_C_LOG_ERROR(c_ioerr);
-#endif // !NOTE_C_LOW_MEM
-            }
             isIoError = true;
+#ifndef NOTE_C_LOW_MEM
+            _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "[ERROR] ");
+            _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, "invalid JSON {io}: ");
+            _DebugWithLevel(NOTE_C_LOG_LEVEL_ERROR, rspJsonStr);
+#else
+            NOTE_C_LOG_ERROR(c_ioerr);
+#endif // !NOTE_C_LOW_MEM
         }
+
+        // Error handling
         if (isIoError || isBadBin) {
             if (rsp != NULL) {
                 NOTE_C_LOG_ERROR(JGetString(rsp, c_err));
             }
             if (isBadBin) {
-                NOTE_C_LOG_DEBUG("{bad-bin} is not elibigle for retry");
+                NOTE_C_LOG_DEBUG("{bad-bin} errors not eligible for retry");
                 break;
             } else {
-                if (responseJSON != NULL) {
-                    JFree(responseJSON);
-                    responseJSON = NULL;
-                }
-                errStr = ERRSTR("notecard i/o error {io}", c_ioerr);
-                lastRequestRetries++;
-                NOTE_C_LOG_WARN(ERRSTR("retrying I/O error detected by notecard", c_iobad));
-                _DelayMs(500);
+                _Free(rspJsonStr);
+                errStr = ERRSTR("corrupt response {io}", c_ioerr);
+                NOTE_C_LOG_WARN(ERRSTR("retrying... corrupt response", c_iobad));
+                _DelayMs(RETRY_DELAY_MS);
                 continue;
             }
         }
 
         // Transaction completed
         break;
-    }
-
-    // Bump the request sequence number now that we've processed this request, success or error
-#ifndef NOTE_C_LOW_MEM
-    lastRequestSeqno++;
-#endif // !NOTE_C_LOW_MEM
+    } // end of retry loop
 
     // Free the original serialized JSON request
-    JFree(json);
+    _Free(json);
 
-    // If error, queue up a reset
-    if (errStr != NULL) {
-        if (rsp != NULL) {
-            JDelete(rsp);
-            rsp = NULL;
-        }
-        NoteResetRequired();
-        J *errRsp = errDoc(id, errStr);
-        if (lockNotecard) {
-            _UnlockNote();
-        }
-        _TransactionStop();
-        return errRsp;
-    }
+#ifndef NOTE_C_LOW_MEM
+    // Request processing complete, regardless of success or error.
+    // Now, advance the request sequence number.
+    seqNo++;
+#endif // !NOTE_C_LOW_MEM
 
-    // Exit with a blank object (with no err field) if no response expected
-    if (noResponseExpected) {
+    // Return an empty object (with no err field) when no response is expected
+    if (cmdFound) {
         if (lockNotecard) {
             _UnlockNote();
         }
@@ -715,23 +802,38 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         return JCreateObject();
     }
 
-    // Debug
-    if (suppressShowTransactions == 0) {
-        NOTE_C_LOG_INFO(responseJSON);
+    // Handle error condition
+    if (errStr != NULL) {
+        if (rsp != NULL) {
+            JDelete(rsp);
+            rsp = NULL;
+        }
+        NoteResetRequired(); // queue up a reset
+        J *errRsp = _errDoc(id, errStr);
+        if (lockNotecard) {
+            _UnlockNote();
+        }
+        _TransactionStop();
+        return errRsp;
     }
 
-    // Discard the buffer now that it has been logged
-    JFree(responseJSON);
+    // Log and discard the response JSON
+    if (suppressShowTransactions == 0) {
+        NOTE_C_LOG_INFO(rspJsonStr);
+    }
+    _Free(rspJsonStr);
 
+    // Release the Notecard lock
     if (lockNotecard) {
         _UnlockNote();
     }
 
+    // Inform the Notecard that the transaction is complete.
+    // This allows the Notecard (ESP) to drop into low power mode.
     _TransactionStop();
 
     // Done
     return rsp;
-
 }
 
 /*!
@@ -744,7 +846,7 @@ void NoteResetRequired(void)
 }
 
 /*!
- @brief Initialize or re-initialize the module.
+ @brief Initialize or re-initialize the I/O inferface (I2C/UART).
 
  @returns True if the reset was successful and false if not.
  */
@@ -946,6 +1048,9 @@ NOTE_C_STATIC char *_crcAdd(char *json, uint16_t seqno)
  @param shouldBeSeqno The expected sequence number.
 
  @returns `true` if there's an error and `false` otherwise.
+
+ @note The CRC is stripped from the input JSON regardless of whether or not
+        there was an error.
  */
 NOTE_C_STATIC bool _crcError(char *json, uint16_t shouldBeSeqno)
 {

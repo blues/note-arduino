@@ -207,25 +207,25 @@ NOTE_C_STATIC void _noteSetActiveInterface(int interface)
     hookActiveInterface = interface;
 
     switch (interface) {
-        case NOTE_C_INTERFACE_SERIAL:
-            notecardReset = _serialNoteReset;
-            notecardTransaction = _serialNoteTransaction;
-            notecardChunkedReceive = _serialChunkedReceive;
-            notecardChunkedTransmit = _serialChunkedTransmit;
-            break;
-        case NOTE_C_INTERFACE_I2C:
-            notecardReset = _i2cNoteReset;
-            notecardTransaction = _i2cNoteTransaction;
-            notecardChunkedReceive = _i2cNoteChunkedReceive;
-            notecardChunkedTransmit = _i2cNoteChunkedTransmit;
-            break;
-        default:
-            hookActiveInterface = NOTE_C_INTERFACE_NONE; // unrecognized interfaces are disabled
-            notecardReset = NULL;
-            notecardTransaction = NULL;
-            notecardChunkedReceive = NULL;
-            notecardChunkedTransmit = NULL;
-            break;
+    case NOTE_C_INTERFACE_SERIAL:
+        notecardReset = _serialNoteReset;
+        notecardTransaction = _serialNoteTransaction;
+        notecardChunkedReceive = _serialChunkedReceive;
+        notecardChunkedTransmit = _serialChunkedTransmit;
+        break;
+    case NOTE_C_INTERFACE_I2C:
+        notecardReset = _i2cNoteReset;
+        notecardTransaction = _i2cNoteTransaction;
+        notecardChunkedReceive = _i2cNoteChunkedReceive;
+        notecardChunkedTransmit = _i2cNoteChunkedTransmit;
+        break;
+    default:
+        hookActiveInterface = NOTE_C_INTERFACE_NONE; // unrecognized interfaces are disabled
+        notecardReset = NULL;
+        notecardTransaction = NULL;
+        notecardChunkedReceive = NULL;
+        notecardChunkedTransmit = NULL;
+        break;
     }
 }
 
@@ -405,6 +405,38 @@ void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
 }
 
 /*!
+ * @brief Set the default Serial hooks if they aren't already set
+ * @param   resetFn The platform-specific serial reset function.
+ * @param   transmitFn The platform-specific serial transmit function.
+ * @param   availFn The platform-specific serial available function.
+ * @param   receiveFn The platform-specific serial receive function.
+ */
+void NoteSetFnSerialDefault(serialResetFn resetFn, serialTransmitFn transmitFn,
+                            serialAvailableFn availFn, serialReceiveFn receiveFn)
+{
+    _LockNote();
+
+    if (hookSerialReset == NULL) {
+        hookSerialReset = resetFn;
+    }
+    if (hookSerialTransmit == NULL) {
+        hookSerialTransmit = transmitFn;
+    }
+    if (hookSerialAvailable == NULL) {
+        hookSerialAvailable = availFn;
+    }
+    if (hookSerialReceive == NULL) {
+        hookSerialReceive = receiveFn;
+    }
+
+    if (hookActiveInterface == NOTE_C_INTERFACE_NONE) {
+        _noteSetActiveInterface(NOTE_C_INTERFACE_SERIAL);
+    }
+
+    _UnlockNote();
+}
+
+/*!
  @brief Set the platform-specific hooks for communicating with the Notecard over
         I2C, as well as the I2C address of the Notecard and maximum transmission
         size.
@@ -432,6 +464,46 @@ void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
     hookI2CReceive = receiveFn;
 
     _noteSetActiveInterface(NOTE_C_INTERFACE_I2C);
+
+    _UnlockNote();
+}
+
+/*!
+ * @brief Set the default I2C hooks if they aren't already set
+ * @param   notecardAddr The I2C address of the Notecard. Pass 0 to use the default
+ *         address.
+ * @param   maxTransmitSize The max number of bytes to send to the Notecard in a
+ *         single I2C segment. Pass 0 to use the default maximum transmission
+ *         size.
+ * @param   resetFn The platform-specific I2C reset function.
+ * @param   transmitFn The platform-specific I2C transmit function.
+ * @param   receiveFn The platform-specific I2C receive function.
+ */
+void NoteSetFnI2cDefault(uint32_t notecardAddr, uint32_t maxTransmitSize,
+                         i2cResetFn resetFn, i2cTransmitFn transmitFn,
+                         i2cReceiveFn receiveFn)
+{
+    _LockNote();
+
+    if (i2cAddress == 0) {
+        i2cAddress = notecardAddr;
+    }
+    if (i2cMax == 0) {
+        i2cMax = maxTransmitSize;
+    }
+    if (hookI2CReset == NULL) {
+        hookI2CReset = resetFn;
+    }
+    if (hookI2CTransmit == NULL) {
+        hookI2CTransmit = transmitFn;
+    }
+    if (hookI2CReceive == NULL) {
+        hookI2CReceive = receiveFn;
+    }
+
+    if (hookActiveInterface == NOTE_C_INTERFACE_NONE) {
+        _noteSetActiveInterface(NOTE_C_INTERFACE_I2C);
+    }
 
     _UnlockNote();
 }
