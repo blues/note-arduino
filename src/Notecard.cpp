@@ -288,16 +288,26 @@ void Notecard::deleteResponse(J *rsp) const
 /**************************************************************************/
 void Notecard::end(void)
 {
-    // Clear Communication Interfaces
-    NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
-    NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+    // Clear I2C Interface
+    i2cTransmitFn i2c_is_set = nullptr;
+    NoteGetFnI2C(nullptr, nullptr, nullptr, &i2c_is_set, nullptr);
+    if (i2c_is_set) {
+        // Delete Singletons
+        noteI2c = make_note_i2c(nullptr);
+        NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
+    }
+
+    // Clear Serial Interface
+    serialTransmitFn serial_is_set = nullptr;
+    NoteGetFnSerial(nullptr, &serial_is_set, nullptr, nullptr);
+    if (serial_is_set) {
+        // Delete Singletons
+        noteSerial = make_note_serial(nullptr);
+        NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+    }
 
     // Clear Platform Callbacks
     platformInit(false);
-
-    // Delete Singletons
-    noteI2c = make_note_i2c(nullptr);
-    noteSerial = make_note_serial(nullptr);
 }
 
 /**************************************************************************/

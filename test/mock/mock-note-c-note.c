@@ -4,6 +4,8 @@ JAddIntToObject_Parameters jAddIntToObject_Parameters;
 NoteDebug_Parameters noteDebug_Parameters;
 NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
+NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
 NoteNewCommand_Parameters noteNewCommand_Parameters;
 NoteNewRequest_Parameters noteNewRequest_Parameters;
 NoteRequest_Parameters noteRequest_Parameters;
@@ -95,6 +97,65 @@ NoteDebugSyncStatus(
 
     // Return user-supplied result
     return noteDebugSyncStatus_Parameters.result;
+}
+
+void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
+                  i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
+                  i2cReceiveFn *receiveFn
+) {
+    // Record invocation(s)
+    ++noteGetFnI2C_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteGetFnI2C_Parameters.notecardAddr = notecardAddr;
+    noteGetFnI2C_Parameters.maxTransmitSize = maxTransmitSize;
+    noteGetFnI2C_Parameters.resetFn = resetFn;
+    noteGetFnI2C_Parameters.transmitFn = transmitFn;
+    noteGetFnI2C_Parameters.receiveFn = receiveFn;
+
+    // Return user-supplied result
+    if (notecardAddr) {
+        *notecardAddr = noteGetFnI2C_Parameters.notecardAddr_result;
+    }
+    if (maxTransmitSize) {
+        *maxTransmitSize = noteGetFnI2C_Parameters.maxTransmitSize_result;
+    }
+    if (resetFn) {
+        *resetFn = noteGetFnI2C_Parameters.resetFn_result;
+    }
+    if (transmitFn) {
+        *transmitFn = noteGetFnI2C_Parameters.transmitFn_result;
+    }
+    if (receiveFn) {
+        *receiveFn = noteGetFnI2C_Parameters.receiveFn_result;
+    }
+}
+
+void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
+                     serialAvailableFn *availFn, serialReceiveFn *receiveFn
+) {
+    // Record invocation(s)
+    ++noteGetFnSerial_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteGetFnSerial_Parameters.resetFn = resetFn;
+    noteGetFnSerial_Parameters.transmitFn = transmitFn;
+    noteGetFnSerial_Parameters.availFn = availFn;
+    noteGetFnSerial_Parameters.receiveFn = receiveFn;
+
+    // Return user-supplied result
+    if (resetFn) {
+        *resetFn = noteGetFnSerial_Parameters.resetFn_result;
+    }
+    if (transmitFn) {
+        *transmitFn = noteGetFnSerial_Parameters.transmitFn_result;
+    }
+    if (availFn) {
+        *availFn = noteGetFnSerial_Parameters.availFn_result;
+    }
+    if (receiveFn) {
+        *receiveFn = noteGetFnSerial_Parameters.receiveFn_result;
+    }
 }
 
 J *
