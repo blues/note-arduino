@@ -1,6 +1,7 @@
 #ifndef MOCK_PARAMETERS_HPP
 #define MOCK_PARAMETERS_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -109,6 +110,90 @@ struct NoteDeleteResponse_Parameters {
     }
     size_t invoked;
     J *response;
+};
+
+struct NoteGetFnI2C_Parameters {
+    NoteGetFnI2C_Parameters(
+        void
+    ) :
+        invoked(0),
+        notecardAddr(nullptr),
+        maxTransmitSize(nullptr),
+        resetFn(nullptr),
+        transmitFn(nullptr),
+        receiveFn(nullptr),
+        notecardAddr_result(0),
+        maxTransmitSize_result(0),
+        resetFn_result(nullptr),
+        transmitFn_result(nullptr),
+        receiveFn_result(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        notecardAddr = nullptr;
+        maxTransmitSize = nullptr;
+        resetFn = nullptr;
+        transmitFn = nullptr;
+        receiveFn = nullptr;
+        notecardAddr_result = 0;
+        maxTransmitSize_result = 0;
+        resetFn_result = nullptr;
+        transmitFn_result = nullptr;
+        receiveFn_result = nullptr;
+    }
+    size_t invoked;
+    uint32_t * notecardAddr;
+    uint32_t * maxTransmitSize;
+    i2cResetFn * resetFn;
+    i2cTransmitFn * transmitFn;
+    i2cReceiveFn * receiveFn;
+    uint32_t notecardAddr_result;
+    uint32_t maxTransmitSize_result;
+    i2cResetFn resetFn_result;
+    i2cTransmitFn transmitFn_result;
+    i2cReceiveFn receiveFn_result;
+};
+
+struct NoteGetFnSerial_Parameters {
+    NoteGetFnSerial_Parameters(
+        void
+    ) :
+        invoked(0),
+        resetFn(nullptr),
+        transmitFn(nullptr),
+        availFn(nullptr),
+        receiveFn(nullptr),
+        resetFn_result(nullptr),
+        transmitFn_result(nullptr),
+        availFn_result(nullptr),
+        receiveFn_result(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        resetFn = nullptr;
+        transmitFn = nullptr;
+        availFn = nullptr;
+        receiveFn = nullptr;
+        resetFn_result = nullptr;
+        transmitFn_result = nullptr;
+        availFn_result = nullptr;
+        receiveFn_result = nullptr;
+    }
+    size_t invoked;
+    serialResetFn * resetFn;
+    serialTransmitFn * transmitFn;
+    serialAvailableFn * availFn;
+    serialReceiveFn * receiveFn;
+    serialResetFn resetFn_result;
+    serialTransmitFn transmitFn_result;
+    serialAvailableFn availFn_result;
+    serialReceiveFn receiveFn_result;
 };
 
 struct NoteNewCommand_Parameters {
@@ -457,6 +542,8 @@ extern JAddIntToObject_Parameters jAddIntToObject_Parameters;
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+extern NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
+extern NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
 extern NoteNewCommand_Parameters noteNewCommand_Parameters;
 extern NoteNewRequest_Parameters noteNewRequest_Parameters;
 extern NoteRequest_Parameters noteRequest_Parameters;
