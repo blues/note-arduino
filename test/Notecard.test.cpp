@@ -1758,6 +1758,146 @@ int test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer()
   return result;
 }
 
+int test_notecard_setFn_shares_a_memory_allocation_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const mallocFn mockMallocFn = reinterpret_cast<mallocFn>(0x19790917);
+
+  Notecard notecard;
+  noteSetFn_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFn(mockMallocFn, nullptr, nullptr, nullptr);
+
+   // Assert
+  ///////////
+
+  if (noteSetFn_Parameters.mallocfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.mallocfn == " << !!noteSetFn_Parameters.mallocfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFn_shares_a_memory_deallocation_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const freeFn mockFreeFn = reinterpret_cast<freeFn>(0x19790917);
+
+  Notecard notecard;
+  noteSetFn_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFn(nullptr, mockFreeFn, nullptr, nullptr);
+
+   // Assert
+  ///////////
+
+  if (noteSetFn_Parameters.freefn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.freefn == " << !!noteSetFn_Parameters.freefn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFn_shares_a_delay_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const delayMsFn mockDelayFn = reinterpret_cast<delayMsFn>(0x19790917);
+
+  Notecard notecard;
+  noteSetFn_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFn(nullptr, nullptr, mockDelayFn, nullptr);
+
+   // Assert
+  ///////////
+
+  if (noteSetFn_Parameters.delayfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.delayfn == " << !!noteSetFn_Parameters.delayfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_setFn_shares_a_millis_function_pointer()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  const getMsFn mockMillisFn = reinterpret_cast<getMsFn>(0x19790917);
+
+  Notecard notecard;
+  noteSetFn_Parameters.reset();
+
+   // Action
+  ///////////
+
+  notecard.setFn(nullptr, nullptr, nullptr, mockMillisFn);
+
+   // Assert
+  ///////////
+
+  if (noteSetFn_Parameters.millisfn)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.millisfn == " << !!noteSetFn_Parameters.millisfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c()
 {
   int result;
@@ -4928,6 +5068,10 @@ int main(void)
       {test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer, "test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer"},
       {test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided, "test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided"},
       {test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer, "test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer"},
+      {test_notecard_setFn_shares_a_memory_allocation_function_pointer, "test_notecard_setFn_shares_a_memory_allocation_function_pointer"},
+      {test_notecard_setFn_shares_a_memory_deallocation_function_pointer, "test_notecard_setFn_shares_a_memory_deallocation_function_pointer"},
+      {test_notecard_setFn_shares_a_delay_function_pointer, "test_notecard_setFn_shares_a_delay_function_pointer"},
+      {test_notecard_setFn_shares_a_millis_function_pointer, "test_notecard_setFn_shares_a_millis_function_pointer"},
       {test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c"},
       {test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c"},
       {test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c, "test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c"},

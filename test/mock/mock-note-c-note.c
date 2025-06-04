@@ -14,6 +14,7 @@ NoteRequestResponse_Parameters noteRequestResponse_Parameters;
 NoteRequestResponseWithRetry_Parameters noteRequestResponseWithRetry_Parameters;
 NoteResponseError_Parameters noteResponseError_Parameters;
 NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
+NoteSetFn_Parameters noteSetFn_Parameters;
 NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
 NoteSetFnI2CMutex_Parameters noteSetFnI2CMutex_Parameters;
@@ -261,6 +262,23 @@ NoteSetFnDebugOutput(
 
     // Stash parameter(s)
     noteSetFnDebugOutput_Parameters.fn = fn_;
+}
+
+void
+NoteSetFn(
+    mallocFn malloc_fn_,
+    freeFn free_fn_,
+    delayMsFn delay_fn_,
+    getMsFn millis_fn_
+) {
+    // Record invocation(s)
+    ++noteSetFn_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteSetFn_Parameters.mallocfn = malloc_fn_;
+    noteSetFn_Parameters.freefn = free_fn_;
+    noteSetFn_Parameters.delayfn = delay_fn_;
+    noteSetFn_Parameters.millisfn = millis_fn_;
 }
 
 void
