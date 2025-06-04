@@ -156,6 +156,7 @@ struct StreamPrint_Parameters {
 };
 
 struct HardwareSerial : public Stream {
+    operator bool();
     unsigned int available (void);
     void begin(unsigned int baud);
     void end(void);
@@ -230,6 +231,23 @@ struct HardwareSerialFlush_Parameters {
     size_t invoked;
 };
 
+struct HardwareSerialOperatorBool_Parameters {
+    HardwareSerialOperatorBool_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(true)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = true;
+    }
+    size_t invoked;
+    bool result;
+};
 
 struct HardwareSerialRead_Parameters {
     HardwareSerialRead_Parameters(
@@ -276,6 +294,7 @@ struct HardwareSerialWrite_Parameters {
 };
 
 struct SoftwareSerial : public Stream {
+    operator bool();
     unsigned int available (void);
     void begin(unsigned int baud);
     void end(void);
@@ -350,6 +369,23 @@ struct SoftwareSerialFlush_Parameters {
     size_t invoked;
 };
 
+struct SoftwareSerialOperatorBool_Parameters {
+    SoftwareSerialOperatorBool_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(true)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = true;
+    }
+    size_t invoked;
+    bool result;
+};
 
 struct SoftwareSerialRead_Parameters {
     SoftwareSerialRead_Parameters(
@@ -564,6 +600,7 @@ extern HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 extern HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 extern HardwareSerialEnd_Parameters hardwareSerialEnd_Parameters;
 extern HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
+extern HardwareSerialOperatorBool_Parameters hardwareSerialOperatorBool_Parameters;
 extern HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 extern HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
 
@@ -572,6 +609,7 @@ extern SoftwareSerialAvailable_Parameters softwareSerialAvailable_Parameters;
 extern SoftwareSerialBegin_Parameters softwareSerialBegin_Parameters;
 extern SoftwareSerialEnd_Parameters softwareSerialEnd_Parameters;
 extern SoftwareSerialFlush_Parameters softwareSerialFlush_Parameters;
+extern SoftwareSerialOperatorBool_Parameters softwareSerialOperatorBool_Parameters;
 extern SoftwareSerialRead_Parameters softwareSerialRead_Parameters;
 extern SoftwareSerialWrite_Parameters softwareSerialWrite_Parameters;
 

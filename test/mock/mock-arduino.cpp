@@ -10,6 +10,7 @@ HardwareSerialAvailable_Parameters hardwareSerialAvailable_Parameters;
 HardwareSerialBegin_Parameters hardwareSerialBegin_Parameters;
 HardwareSerialEnd_Parameters hardwareSerialEnd_Parameters;
 HardwareSerialFlush_Parameters hardwareSerialFlush_Parameters;
+HardwareSerialOperatorBool_Parameters hardwareSerialOperatorBool_Parameters;
 HardwareSerialRead_Parameters hardwareSerialRead_Parameters;
 HardwareSerialWrite_Parameters hardwareSerialWrite_Parameters;
 
@@ -17,6 +18,7 @@ SoftwareSerialAvailable_Parameters softwareSerialAvailable_Parameters;
 SoftwareSerialBegin_Parameters softwareSerialBegin_Parameters;
 SoftwareSerialEnd_Parameters softwareSerialEnd_Parameters;
 SoftwareSerialFlush_Parameters softwareSerialFlush_Parameters;
+SoftwareSerialOperatorBool_Parameters softwareSerialOperatorBool_Parameters;
 SoftwareSerialRead_Parameters softwareSerialRead_Parameters;
 SoftwareSerialWrite_Parameters softwareSerialWrite_Parameters;
 
@@ -109,6 +111,16 @@ pinMode (
     pinMode_Parameters.pin_mode[pin].push_back(mode);
 }
 
+HardwareSerial::operator bool (
+    void
+) {
+    // Record invocation(s)
+    ++hardwareSerialOperatorBool_Parameters.invoked;
+
+    // Return user-supplied result
+    return hardwareSerialOperatorBool_Parameters.result;
+}
+
 unsigned int
 HardwareSerial::available (
     void
@@ -173,6 +185,16 @@ HardwareSerial::write (
 
     // Return user-supplied result
     return hardwareSerialWrite_Parameters.result;
+}
+
+SoftwareSerial::operator bool (
+    void
+) {
+    // Record invocation(s)
+    ++softwareSerialOperatorBool_Parameters.invoked;
+
+    // Return user-supplied result
+    return softwareSerialOperatorBool_Parameters.result;
 }
 
 unsigned int

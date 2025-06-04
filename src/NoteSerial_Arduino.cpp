@@ -10,6 +10,8 @@
 #include "mock/mock-arduino.hpp"
 #endif
 
+#define NOTE_C_SERIAL_TIMEOUT_MS 3500
+
 // Template Meta-Programming (TMP) to extract the nested template type
 template <typename nested_type>
 struct ExtractNestedTemplateType {
@@ -64,6 +66,9 @@ NoteSerial_Arduino<T>::NoteSerial_Arduino
     _notecardSerialSpeed(baud_rate_)
 {
     _notecardSerial.begin(_notecardSerialSpeed);
+
+    // Wait for the serial port to be ready
+    for (const size_t startMs = ::millis() ; !_notecardSerial && ((::millis() - startMs) < NOTE_C_SERIAL_TIMEOUT_MS) ;);
 }
 
 template <typename T>
