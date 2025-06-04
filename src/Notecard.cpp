@@ -485,6 +485,23 @@ void Notecard::setDebugOutputStream(NoteLog * noteLog_)
 
 /**************************************************************************/
 /*!
+    @brief  Override default memory management and timing functions.
+    @param    mallocHook
+              A memory allocation hook.
+    @param    freeHook
+              A memory deallocation hook.
+    @param    delayMsHook
+              A delay execution hook.
+    @param    getMsHook
+              A get current time hook.
+*/
+/**************************************************************************/
+void Notecard::setFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook, getMsFn getMsHook) {
+    NoteSetFn(mallocHook, freeHook, delayMsHook, getMsHook);
+}
+
+/**************************************************************************/
+/*!
     @brief  Set the lock/unlock functions the Notecard uses for I2C access.
     @param    lockI2cFn
               A user-defined callback that blocks until access to the I2C

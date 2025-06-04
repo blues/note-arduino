@@ -371,6 +371,33 @@ struct NoteSetFnDebugOutput_Parameters {
     debugOutputFn fn;
 };
 
+struct NoteSetFn_Parameters {
+    NoteSetFn_Parameters(
+        void
+    ) :
+        invoked(0),
+        mallocfn(nullptr),
+        freefn(nullptr),
+        delayfn(nullptr),
+        millisfn(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        mallocfn = nullptr;
+        freefn = nullptr;
+        delayfn = nullptr;
+        millisfn = nullptr;
+    }
+    size_t invoked;
+    mallocFn mallocfn;
+    freeFn freefn;
+    delayMsFn delayfn;
+    getMsFn millisfn;
+};
+
 struct NoteSetFnDefault_Parameters {
     NoteSetFnDefault_Parameters(
         void
@@ -552,6 +579,7 @@ extern NoteRequestResponse_Parameters noteRequestResponse_Parameters;
 extern NoteRequestResponseWithRetry_Parameters noteRequestResponseWithRetry_Parameters;
 extern NoteResponseError_Parameters noteResponseError_Parameters;
 extern NoteSetFnDebugOutput_Parameters noteSetFnDebugOutput_Parameters;
+extern NoteSetFn_Parameters noteSetFn_Parameters;
 extern NoteSetFnDefault_Parameters noteSetFnDefault_Parameters;
 extern NoteSetFnI2C_Parameters noteSetFnI2C_Parameters;
 extern NoteSetFnI2CMutex_Parameters noteSetFnI2CMutex_Parameters;

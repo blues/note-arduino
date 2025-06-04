@@ -106,6 +106,7 @@ public:
     bool sendRequest(J *req) const;
     bool sendRequestWithRetry(J *req, uint32_t timeoutSeconds) const;
     void setDebugOutputStream(NoteLog * noteLog);
+    void setFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook, getMsFn getMsHook);
     void setFnI2cMutex(mutexFn lockI2cFn, mutexFn unlockI2cFn);
     void setFnNoteMutex(mutexFn lockNoteFn, mutexFn unlockNoteFn);
     void setTransactionPins(NoteTxn * noteTxn);
