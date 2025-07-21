@@ -141,8 +141,8 @@ jobs:
                           --workdir /note-arduino/ \
                           --entrypoint ./examples/build_example.sh \
                           ghcr.io/blues/note_arduino_ci:latest \
-                          ${{ matrix.fully-qualified-board-name }} \
-                          ${{ matrix.example-sketch }}
+                          --fqbn ${{ matrix.fully-qualified-board-name }} \
+                          --sketch-dir ./examples/${{ matrix.example-sketch }}
 
   publish_ci_image:
     runs-on: ubuntu-latest
