@@ -56,8 +56,13 @@ NoteTxn_Arduino::NoteTxn_Arduino
     _rtx_pin(rtx_pin_)
 {
     // Float CTX/RTX to conserve energy
+#ifdef ARDUINO_ARCH_STM32
+    ::pinMode(_ctx_pin, INPUT_ANALOG);
+    ::pinMode(_rtx_pin, INPUT_ANALOG);
+#else
     ::pinMode(_ctx_pin, INPUT);
     ::pinMode(_rtx_pin, INPUT);
+#endif
 }
 
 bool
@@ -84,7 +89,11 @@ NoteTxn_Arduino::start (
     }
 
     // Float CTX to conserve energy
+#ifdef ARDUINO_ARCH_STM32
+    ::pinMode(_ctx_pin, INPUT_ANALOG);
+#else
     ::pinMode(_ctx_pin, INPUT);
+#endif
 
     // Abandon request on timeout
     if (!result) {
@@ -100,7 +109,11 @@ NoteTxn_Arduino::stop (
 )
 {
     // Float RTX pin
+#ifdef ARDUINO_ARCH_STM32
+    ::pinMode(_rtx_pin, INPUT_ANALOG);
+#else
     ::pinMode(_rtx_pin, INPUT);
+#endif
 }
 
 // Explicitly instantiate the template function for array types
