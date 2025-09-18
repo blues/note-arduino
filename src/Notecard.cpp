@@ -169,12 +169,6 @@ void noteTransactionStop (void) {
     @param    assignCallbacks
               When `true` the system callbacks will be assigned,
               when `false` the system callbacks will be cleared.
-    @param    i2cmax
-              The max length of each message to send from the host to
-              the Notecard. Used to ensure the messages are sized appropriately
-              for the host.
-    @param    wirePort
-              The TwoWire implementation to use for I2C communication.
 */
 /**************************************************************************/
 void Notecard::platformInit (bool assignCallbacks)
@@ -183,7 +177,7 @@ void Notecard::platformInit (bool assignCallbacks)
     if (assignCallbacks) {
         NoteSetFnDefault(malloc, free, noteDelay, noteMillis);
     } else {
-        NoteSetFnDefault(nullptr, nullptr, nullptr, nullptr);
+        NoteSetFn(nullptr, nullptr, nullptr, nullptr);  // Force clear
     }
 }
 
@@ -210,21 +204,23 @@ Notecard::~Notecard (void)
               communicating with the Notecard from the host.
     @param    i2cAddress
               The I2C Address to use for the Notecard.
-    @param    i2cMax
+    @param    i2cMtu
               The max length of each message to send from the host
               to the Notecard. Used to ensure the messages are sized
               appropriately for the host.
 */
 /**************************************************************************/
-void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMax_)
+void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMtu_)
 {
     noteI2c = noteI2c_;
     platformInit(noteI2c);
     if (noteI2c) {
-        NoteSetFnI2C(i2cAddress_, i2cMax_, noteI2cReset,
-                    noteI2cTransmit, noteI2cReceive);
+        NoteSetI2CAddress(i2cAddress_); // Force set user supplied address
+        NoteSetI2CMtu(i2cMtu_);         // Force set user supplied MTU
+        NoteSetFnI2CDefault(i2cAddress_, i2cMtu_, noteI2cReset,
+                            noteI2cTransmit, noteI2cReceive);
     } else {
-        NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr);
+        NoteSetFnI2C(0, 0, nullptr, nullptr, nullptr); // Force clear
     }
 }
 
@@ -243,10 +239,10 @@ void Notecard::begin(NoteSerial * noteSerial_)
     noteSerial = noteSerial_;
     platformInit(noteSerial);
     if (noteSerial) {
-        NoteSetFnSerial(noteSerialReset, noteSerialTransmit,
-                        noteSerialAvailable, noteSerialReceive);
+        NoteSetFnSerialDefault(noteSerialReset, noteSerialTransmit,
+                               noteSerialAvailable, noteSerialReceive);
     } else {
-        NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr);
+        NoteSetFnSerial(nullptr, nullptr, nullptr, nullptr); // Force clear
     }
 }
 
