@@ -43,6 +43,8 @@ void NoteDebugf(const char *format, ...)
         va_end(args);
         hookDebugOutput(line);
     }
+#else
+    (void)format;
 #endif
 }
 

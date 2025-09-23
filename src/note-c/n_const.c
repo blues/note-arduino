@@ -13,18 +13,20 @@
 
 #include "n_lib.h"
 
-const char *c_null = "null";
-const char *c_false = "false";
-const char *c_true = "true";
-const char *c_nullstring = "";
-const char *c_newline = "\r\n";
-const char *c_mem = "mem";
-const char *c_iotimeout = "timeout {io}";
-const char *c_err = "err";
-const char *c_req = "req";
-const char *c_cmd = "cmd";
 const char *c_bad = "bad";
+const char *c_badbinerr = "{bad-bin}";
+const char *c_cmd = "cmd";
+const char *c_err = "err";
+const char *c_false = "false";
+const char *c_heartbeat = "{heartbeat}";
 const char *c_iobad = "bad {io}";
 const char *c_ioerr = "{io}";
+const char *c_iotimeout = "timeout {io}";
+const char *c_mem = "mem";
+const char *c_newline = "\r\n";
+const char *c_null = "null";
+const char *c_nullstring = "";
+const char *c_req = "req";
+const char *c_status = "status";
+const char *c_true = "true";
 const char *c_unsupported = "{not-supported}";
-const char *c_badbinerr = "{bad-bin}";

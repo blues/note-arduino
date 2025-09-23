@@ -40,7 +40,9 @@ NOTE_C_STATIC void _delayIO(void)
 
   @details  It is necessary to send a priming I2C transaction to understand
              the amount of data the Notecard is prepared to send before an
-             I2C read request can be issued.
+             I2C read request can be issued. This function will continue to
+             query the Notecard until data becomes available (_I2CReceive()
+             returns a value greater than 0) or the timeout has elapsed.
 */
 /**************************************************************************/
 NOTE_C_STATIC const char * _i2cNoteQueryLength(uint32_t * available,
@@ -73,9 +75,9 @@ NOTE_C_STATIC const char * _i2cNoteQueryLength(uint32_t * available,
   @param   request A string containing the JSON request object, which MUST BE
             terminated with a newline character.
   @param   reqLen the string length of the JSON request.
-  @param   response [out] A c-string buffer that will contain the newline ('\n')
-            terminated JSON response from the Notercard. If NULL, no response
-            will be captured.
+  @param   response [out] A pointer to a c-string buffer that will contain the
+            newline ('\n') terminated JSON response from the Notercard. If NULL,
+            no response will be captured.
   @param   timeoutMs The maximum amount of time, in milliseconds, to wait
             for data to arrive. Passing zero (0) disables the timeout.
 
@@ -89,10 +91,14 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
     // Lock over the entire transaction
     _LockI2C();
 
-    err = _i2cChunkedTransmit((uint8_t *)request, reqLen, true);
-    if (err) {
-        _UnlockI2C();
-        return err;
+    // Do not attempt to send a zero-length request
+    if (reqLen > 0) {
+        err = _i2cChunkedTransmit((uint8_t *)request, reqLen, true);
+        if (err) {
+            NOTE_C_LOG_ERROR(err);
+            _UnlockI2C();
+            return err;
+        }
     }
 
     // If no reply expected, we're done
@@ -101,6 +107,7 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
         return NULL;
     }
 
+    // Wait for something to become available
     _delayIO();
 
     // Allocate a buffer for input, noting that we always put the +1 in the
@@ -118,7 +125,7 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
     if (jsonbufAllocLen) {
         jsonbuf = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
         if (jsonbuf == NULL) {
-            const char *err = ERRSTR("transaction: jsonbuf malloc failed", c_mem);
+            err = ERRSTR("transaction: jsonbuf malloc failed", c_mem);
             NOTE_C_LOG_ERROR(err);
             _UnlockI2C();
             return err;
@@ -131,16 +138,17 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
         uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
 
         // Append into the json buffer
-        const char *err = _i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
+        err = _i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
         if (err) {
             if (jsonbuf) {
                 _Free(jsonbuf);
             }
-            NOTE_C_LOG_ERROR(ERRSTR("error occured during receive", c_iobad));
+            NOTE_C_LOG_ERROR(ERRSTR(err, c_iobad));
             _UnlockI2C();
             return err;
         }
         jsonbufLen += jsonbufAvailLen;
+        jsonbuf[jsonbufLen] = '\0';
 
         if (available) {
             // When more bytes are available than we have buffer to accommodate
@@ -152,7 +160,7 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
             jsonbufAllocLen += (ALLOC_CHUNK * ((available / ALLOC_CHUNK) + ((available % ALLOC_CHUNK) > 0)));
             uint8_t *jsonbufNew = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
             if (jsonbufNew == NULL) {
-                const char *err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
+                err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
                 NOTE_C_LOG_ERROR(err);
                 if (jsonbuf) {
                     _Free(jsonbuf);

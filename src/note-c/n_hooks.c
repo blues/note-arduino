@@ -168,12 +168,21 @@ NOTE_C_STATIC i2cTransmitFn hookI2CTransmit = NULL;
 */
 /**************************************************************************/
 NOTE_C_STATIC i2cReceiveFn hookI2CReceive = NULL;
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
+//**************************************************************************/
+/*!
+  @brief  Hook for a heartbeat notification
+*/
+/**************************************************************************/
+NOTE_C_STATIC heartbeatFn hookHeartbeat = NULL;
+NOTE_C_STATIC void *hookHeartbeatContext = NULL;
+#endif
+#ifndef NOTE_NODEBUG
 //**************************************************************************/
 /*!
   @brief Variable used to determine the runtime logging level
 */
 /**************************************************************************/
-#ifndef NOTE_NODEBUG
 NOTE_C_STATIC int noteLogLevel = NOTE_C_LOG_LEVEL;
 #endif
 
@@ -229,15 +238,6 @@ NOTE_C_STATIC void _noteSetActiveInterface(int interface)
     }
 }
 
-//**************************************************************************/
-/*!
- @brief  Set the desired, platform-specific communications method
- @param   interface  The desired interface to use. One of:
-   - NOTE_C_INTERFACE_NONE (default)
-   - NOTE_C_INTERFACE_SERIAL
-   - NOTE_C_INTERFACE_I2C
- */
-/**************************************************************************/
 void NoteSetActiveInterface(int interface)
 {
     _LockNote();
@@ -245,17 +245,6 @@ void NoteSetActiveInterface(int interface)
     _UnlockNote();
 }
 
-//**************************************************************************/
-/*!
- @brief  Set the default memory and timing hooks if they aren't already set
- @param   mallocfn  The default memory allocation `malloc`
- function to use.
- @param   freefn  The default memory free
- function to use.
- @param   delayfn  The default delay function to use.
- @param   millisfn  The default 'millis' function to use.
- */
-//**************************************************************************/
 void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMsFn millisfn)
 {
     _LockNote();
@@ -274,17 +263,6 @@ void NoteSetFnDefault(mallocFn mallocfn, freeFn freefn, delayMsFn delayfn, getMs
     _UnlockNote();
 }
 
-//**************************************************************************/
-/*!
- @brief Set the platform-specific memory and timing hooks.
-
- @param mallocHook The platform-specific memory allocation function (i.e.
-        `malloc`).
- @param freeHook The platform-specific memory free function (i.e. `free`).
- @param delayMsHook The platform-specific millisecond delay function.
- @param getMsHook The platform-specific millisecond counter function.
-*/
-//**************************************************************************/
 void NoteSetFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook,
                getMsFn getMsHook)
 {
@@ -296,12 +274,23 @@ void NoteSetFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook,
     _UnlockNote();
 }
 
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
 //**************************************************************************/
 /*!
-  @brief  Set the platform-specific debug output function.
-  @param   fn  A function pointer to call for debug output.
+  @brief  Set the heartbeat function
+  @param   fn  A function pointer to call for heart beat notifications.
+  @param   context  User context to pass to the heartbeat function.
 */
 /**************************************************************************/
+void NoteSetFnHeartbeat(heartbeatFn fn, void *context)
+{
+    _LockNote();
+    hookHeartbeat = fn;
+    hookHeartbeatContext = context;
+    _UnlockNote();
+}
+#endif
+
 void NoteSetFnDebugOutput(debugOutputFn fn)
 {
     _LockNote();
@@ -321,14 +310,6 @@ bool _noteIsDebugOutputActive(void)
     return hookDebugOutput != NULL;
 }
 
-//**************************************************************************/
-/*!
-  @brief  Set the platform-specific transaction initiation/completion fn's
-  @param   startFn  The platform-specific transaction initiation function to use.
-  @param   stopFn  The platform-specific transaction completion function to use.
-  to use.
-*/
-/**************************************************************************/
 void NoteSetFnTransaction(txnStartFn startFn, txnStopFn stopFn)
 {
     _LockNote();
@@ -337,17 +318,6 @@ void NoteSetFnTransaction(txnStartFn startFn, txnStopFn stopFn)
     _UnlockNote();
 }
 
-//**************************************************************************/
-/*!
-  @brief  Set the platform-specific mutex functions for I2C and the
-  Notecard.
-  @param   lockI2Cfn  The platform-specific I2C lock function to use.
-  @param   unlockI2Cfn  The platform-specific I2C unlock function to use.
-  @param   lockNotefn  The platform-specific Notecard lock function to use.
-  @param   unlockNotefn  The platform-specific Notecard unlock function
-  to use.
-*/
-/**************************************************************************/
 void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn, mutexFn unlockNotefn)
 {
     hookLockI2C = lockI2Cfn;
@@ -356,39 +326,18 @@ void NoteSetFnMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn, mutexFn lockNotefn, 
     hookUnlockNote = unlockNotefn;
 }
 
-/*!
- @brief Set the platform-specific mutex functions for I2C.
-
- @param lockI2Cfn The platform-specific I2C lock function.
- @param unlockI2Cfn The platform-specific I2C unlock function.
- */
 void NoteSetFnI2CMutex(mutexFn lockI2Cfn, mutexFn unlockI2Cfn)
 {
     hookLockI2C = lockI2Cfn;
     hookUnlockI2C = unlockI2Cfn;
 }
 
-/*!
- @brief  Set the platform-specific mutex functions for the Notecard.
-
- @param lockFn The platform-specific Notecard lock function.
- @param unlockFn The platform-specific Notecard unlock function.
- */
 void NoteSetFnNoteMutex(mutexFn lockFn, mutexFn unlockFn)
 {
     hookLockNote = lockFn;
     hookUnlockNote = unlockFn;
 }
 
-/*!
- @brief Set the platform-specific hooks for communicating with the Notecard over
-        serial.
-
- @param resetFn The platform-specific serial reset function.
- @param transmitFn The platform-specific serial transmit function.
- @param availFn The platform-specific serial available function.
- @param receiveFn The platform-specific serial receive function.
-*/
 void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
                      serialAvailableFn availFn, serialReceiveFn receiveFn)
 {
@@ -404,13 +353,6 @@ void NoteSetFnSerial(serialResetFn resetFn, serialTransmitFn transmitFn,
     _UnlockNote();
 }
 
-/*!
- * @brief Set the default Serial hooks if they aren't already set
- * @param   resetFn The platform-specific serial reset function.
- * @param   transmitFn The platform-specific serial transmit function.
- * @param   availFn The platform-specific serial available function.
- * @param   receiveFn The platform-specific serial receive function.
- */
 void NoteSetFnSerialDefault(serialResetFn resetFn, serialTransmitFn transmitFn,
                             serialAvailableFn availFn, serialReceiveFn receiveFn)
 {
@@ -436,20 +378,6 @@ void NoteSetFnSerialDefault(serialResetFn resetFn, serialTransmitFn transmitFn,
     _UnlockNote();
 }
 
-/*!
- @brief Set the platform-specific hooks for communicating with the Notecard over
-        I2C, as well as the I2C address of the Notecard and maximum transmission
-        size.
-
-  @param notecardAddr The I2C address of the Notecard. Pass 0 to use the default
-         address.
-  @param maxTransmitSize The max number of bytes to send to the Notecard in a
-         single I2C segment. Pass 0 to use the default maximum transmission
-         size.
-  @param resetFn The platform-specific I2C reset function.
-  @param transmitFn The platform-specific I2C transmit function.
-  @param receiveFn The platform-specific I2C receive function.
- */
 void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
                   i2cResetFn resetFn, i2cTransmitFn transmitFn,
                   i2cReceiveFn receiveFn)
@@ -468,18 +396,7 @@ void NoteSetFnI2C(uint32_t notecardAddr, uint32_t maxTransmitSize,
     _UnlockNote();
 }
 
-/*!
- * @brief Set the default I2C hooks if they aren't already set
- * @param   notecardAddr The I2C address of the Notecard. Pass 0 to use the default
- *         address.
- * @param   maxTransmitSize The max number of bytes to send to the Notecard in a
- *         single I2C segment. Pass 0 to use the default maximum transmission
- *         size.
- * @param   resetFn The platform-specific I2C reset function.
- * @param   transmitFn The platform-specific I2C transmit function.
- * @param   receiveFn The platform-specific I2C receive function.
- */
-void NoteSetFnI2cDefault(uint32_t notecardAddr, uint32_t maxTransmitSize,
+void NoteSetFnI2CDefault(uint32_t notecardAddr, uint32_t maxTransmitSize,
                          i2cResetFn resetFn, i2cTransmitFn transmitFn,
                          i2cReceiveFn receiveFn)
 {
@@ -524,12 +441,6 @@ void NoteSetFnDisabled(void)
 
 // Runtime hook wrappers
 
-//**************************************************************************/
-/*!
-  @brief  Set the log level for the _DebugWithLevel function.
-  @param   level  The log level to set.
-*/
-/**************************************************************************/
 void NoteSetLogLevel(int level)
 {
 #ifndef NOTE_NODEBUG
@@ -539,17 +450,10 @@ void NoteSetLogLevel(int level)
 #endif
 }
 
-//**************************************************************************/
-/*!
-  @brief  Write a number to the debug stream and output a newline.
-  @param   line  A debug string for output.
-  @param n The number to write.
-*/
-/**************************************************************************/
-void NoteDebugIntln(const char *line, int n)
+void NoteDebugIntln(const char *msg, int n)
 {
-    if (line != NULL) {
-        _Debug(line);
+    if (msg != NULL) {
+        _Debug(msg);
     }
     char str[16];
     JItoA(n, str);
@@ -557,44 +461,27 @@ void NoteDebugIntln(const char *line, int n)
     _Debug(c_newline);
 }
 
-//**************************************************************************/
-/*!
-  @brief  Write text to the debug stream and output a newline.
-  @param   line  A debug string for output.
-*/
-/**************************************************************************/
-void NoteDebugln(const char *line)
-{
-    _Debug(line);
-    _Debug(c_newline);
-}
-
-//**************************************************************************/
-/*!
-  @brief  Write to the debug stream.
-  @param   line  A debug string for output.
-*/
-/**************************************************************************/
-void NoteDebug(const char *line)
+void NoteDebugln(const char *msg)
 {
 #ifndef NOTE_NODEBUG
-    if (_noteIsDebugOutputActive()) {
-        hookDebugOutput(line);
-    }
+    _Debug(msg);
+    _Debug(c_newline);
 #else
-    (void)line;
+    (void)msg;
 #endif // !NOTE_NODEBUG
 }
 
-//**************************************************************************/
-/*!
-  @brief       Write the message to the debug stream, if the level is less than
-               or equal to NOTE_C_LOG_LEVEL. Otherwise, the message is dropped.
-  @param level The log level of the message. See the NOTE_C_LOG_LEVEL_* macros
-               in note.h for possible values.
-  @param msg   The debug message.
-*/
-/**************************************************************************/
+void NoteDebug(const char *msg)
+{
+#ifndef NOTE_NODEBUG
+    if (_noteIsDebugOutputActive()) {
+        hookDebugOutput(msg);
+    }
+#else
+    (void)msg;
+#endif // !NOTE_NODEBUG
+}
+
 void NoteDebugWithLevel(uint8_t level, const char *msg)
 {
 #ifndef NOTE_NODEBUG
@@ -609,18 +496,18 @@ void NoteDebugWithLevel(uint8_t level, const char *msg)
 #endif // !NOTE_NODEBUG
 }
 
-//**************************************************************************/
-/*!
-  @brief       Same as NoteDebugWithLevel, but add a newline at the end.
-  @param level The log level of the message. See the NOTE_C_LOG_LEVEL_* macros
-               in note.h for possible values.
-  @param msg   The debug message.
-*/
-/**************************************************************************/
 void NoteDebugWithLevelLn(uint8_t level, const char *msg)
 {
+#ifndef NOTE_NODEBUG
+    if (level > noteLogLevel) {
+        return;
+    }
     _DebugWithLevel(level, msg);
     _DebugWithLevel(level, c_newline);
+#else
+    (void)level;
+    (void)msg;
+#endif // !NOTE_NODEBUG
 }
 
 //**************************************************************************/
@@ -638,12 +525,6 @@ uint32_t NoteGetMs(void)
     return hookGetMs();
 }
 
-//**************************************************************************/
-/*!
-  @brief  Delay milliseconds using the platform-specific hook.
-  @param   ms the milliseconds delay value.
-*/
-/**************************************************************************/
 void NoteDelayMs(uint32_t ms)
 {
     if (hookDelayMs != NULL) {
@@ -685,12 +566,6 @@ NOTE_C_STATIC void _n_ptoa32(void *ptr, char *str)
 #endif  // NOTE_C_SHOW_MALLOC
 #endif  // !NOTE_C_LOW_MEM
 
-//**************************************************************************/
-/*!
-  @brief  Allocate a memory chunk using the platform-specific hook.
-  @param   size the number of bytes to allocate.
-*/
-/**************************************************************************/
 void *NoteMalloc(size_t size)
 {
     if (hookMalloc == NULL) {
@@ -717,13 +592,7 @@ void *NoteMalloc(size_t size)
     return p;
 }
 
-//**************************************************************************/
-/*!
-  @brief  Free memory using the platform-specific hook.
-  @param   p A pointer to the memory address to free.
-*/
-/**************************************************************************/
-void NoteFree(void *p)
+void NoteFree(void *ptr)
 {
     if (hookFree != NULL) {
 #if NOTE_C_SHOW_MALLOC && !defined(NOTE_C_LOW_MEM)
@@ -735,7 +604,7 @@ void NoteFree(void *p)
             hookDebugOutput(str);
         }
 #endif // NOTE_C_SHOW_MALLOC && !defined(NOTE_C_LOW_MEM)
-        hookFree(p);
+        hookFree(ptr);
     }
 }
 
@@ -762,6 +631,23 @@ void NoteUnlockI2C(void)
         hookUnlockI2C();
     }
 }
+
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
+//**************************************************************************/
+/*!
+  @brief  Call a heartbeat function if registered
+  @param   heartbeatJson Pointer to null-terminated heartbeat JSON string.
+  @returns  `true` if the heartbeat callback wishes to abandon the transaction.
+*/
+/**************************************************************************/
+bool _noteHeartbeat(const char *heartbeatJson)
+{
+    if (hookHeartbeat != NULL) {
+        return hookHeartbeat(heartbeatJson, hookHeartbeatContext);
+    }
+    return false;
+}
+#endif
 
 //**************************************************************************/
 /*!
@@ -812,10 +698,6 @@ void _noteTransactionStop(void)
     }
 }
 
-/*!
- @brief Get the platform-specific debug output function.
- @param fn Pointer to store the debug output function pointer.
-*/
 void NoteGetFnDebugOutput(debugOutputFn *fn)
 {
     if (fn != NULL) {
@@ -823,11 +705,23 @@ void NoteGetFnDebugOutput(debugOutputFn *fn)
     }
 }
 
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
 /*!
- @brief Get the platform-specific transaction functions.
- @param startFn Pointer to store the transaction start function pointer.
- @param stopFn Pointer to store the transaction stop function pointer.
-*/
+ @brief Get the user-defined heartbeat function.
+ @param fn Pointer to store the heartbeat function pointer.
+ @param context Pointer to store the heartbeat function context.
+ */
+void NoteGetFnHeartbeat(heartbeatFn *fn, void **context)
+{
+    if (fn != NULL) {
+        *fn = hookHeartbeat;
+    }
+    if (context != NULL) {
+        *context = hookHeartbeatContext;
+    }
+}
+#endif
+
 void NoteGetFnTransaction(txnStartFn *startFn, txnStopFn *stopFn)
 {
     _LockNote();
@@ -840,13 +734,6 @@ void NoteGetFnTransaction(txnStartFn *startFn, txnStopFn *stopFn)
     _UnlockNote();
 }
 
-/*!
- @brief Get the platform-specific mutex functions for I2C and Notecard.
- @param lockI2Cfn Pointer to store the I2C lock function pointer.
- @param unlockI2Cfn Pointer to store the I2C unlock function pointer.
- @param lockNotefn Pointer to store the Notecard lock function pointer.
- @param unlockNotefn Pointer to store the Notecard unlock function pointer.
-*/
 void NoteGetFnMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn, mutexFn *lockNotefn,
                     mutexFn *unlockNotefn)
 {
@@ -864,11 +751,6 @@ void NoteGetFnMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn, mutexFn *lockNotef
     }
 }
 
-/*!
- @brief Get the platform-specific mutex functions for I2C.
- @param lockI2Cfn Pointer to store the I2C lock function pointer.
- @param unlockI2Cfn Pointer to store the I2C unlock function pointer.
-*/
 void NoteGetFnI2CMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn)
 {
     if (lockI2Cfn != NULL) {
@@ -879,11 +761,6 @@ void NoteGetFnI2CMutex(mutexFn *lockI2Cfn, mutexFn *unlockI2Cfn)
     }
 }
 
-/*!
- @brief Get the platform-specific mutex functions for the Notecard.
- @param lockFn Pointer to store the Notecard lock function pointer.
- @param unlockFn Pointer to store the Notecard unlock function pointer.
-*/
 void NoteGetFnNoteMutex(mutexFn *lockFn, mutexFn *unlockFn)
 {
     if (lockFn != NULL) {
@@ -894,13 +771,6 @@ void NoteGetFnNoteMutex(mutexFn *lockFn, mutexFn *unlockFn)
     }
 }
 
-/*!
- @brief Get the platform-specific memory and timing hooks.
- @param mallocHook Pointer to store the memory allocation function pointer.
- @param freeHook Pointer to store the memory free function pointer.
- @param delayMsHook Pointer to store the delay function pointer.
- @param getMsHook Pointer to store the millis function pointer.
-*/
 void NoteGetFn(mallocFn *mallocHook, freeFn *freeHook, delayMsFn *delayMsHook,
                getMsFn *getMsHook)
 {
@@ -920,13 +790,6 @@ void NoteGetFn(mallocFn *mallocHook, freeFn *freeHook, delayMsFn *delayMsHook,
     _UnlockNote();
 }
 
-/*!
- @brief Get the platform-specific hooks for serial communication.
- @param resetFn Pointer to store the serial reset function pointer.
- @param transmitFn Pointer to store the serial transmit function pointer.
- @param availFn Pointer to store the serial available function pointer.
- @param receiveFn Pointer to store the serial receive function pointer.
-*/
 void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
                      serialAvailableFn *availFn, serialReceiveFn *receiveFn)
 {
@@ -946,14 +809,6 @@ void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
     _UnlockNote();
 }
 
-/*!
- @brief Get the platform-specific hooks for I2C communication.
- @param notecardAddr Pointer to store the I2C address.
- @param maxTransmitSize Pointer to store the I2C maximum segment size.
- @param resetFn Pointer to store the I2C reset function pointer.
- @param transmitFn Pointer to store the I2C transmit function pointer.
- @param receiveFn Pointer to store the I2C receive function pointer.
-*/
 void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
                   i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
                   i2cReceiveFn *receiveFn)
@@ -977,14 +832,17 @@ void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
     _UnlockNote();
 }
 
-/*!
- @brief Get the I2C address of the Notecard.
- @param i2cAddr Pointer to store the I2C address.
-*/
 void NoteGetI2CAddress(uint32_t *i2cAddr)
 {
     if (i2cAddr != NULL) {
         *i2cAddr = i2cAddress;
+    }
+}
+
+void NoteGetI2CMtu(uint32_t *i2cMtu)
+{
+    if (i2cMtu != NULL) {
+        *i2cMtu = i2cMax;
     }
 }
 
@@ -1112,15 +970,14 @@ uint32_t NoteI2CAddress(void)
     return i2cAddress;
 }
 
-//**************************************************************************/
-/*!
-  @brief  Set the I2C address for communication with the Notecard.
-  @param   i2cAddr the I2C address to use for the Notecard.
-*/
-/**************************************************************************/
 void NoteSetI2CAddress(uint32_t i2cAddr)
 {
     i2cAddress = i2cAddr;
+}
+
+void NoteSetI2CMtu(uint32_t i2cMtu)
+{
+    i2cMax = i2cMtu;
 }
 
 //**************************************************************************/
@@ -1135,11 +992,11 @@ uint32_t NoteI2CMax(void)
     // Many Arduino libraries (such as ESP32) have a limit less than 32, so if the max isn't specified
     // we must assume the worst and segment the I2C messages into very tiny chunks.
     if (i2cMax == 0) {
-        return NOTE_I2C_MAX_DEFAULT;
+        return NOTE_I2C_MTU_DEFAULT;
     }
     // Note design specs
-    if (i2cMax > NOTE_I2C_MAX_MAX) {
-        i2cMax = NOTE_I2C_MAX_MAX;
+    if (i2cMax > NOTE_I2C_MTU_MAX) {
+        i2cMax = NOTE_I2C_MTU_MAX;
     }
     return i2cMax;
 }

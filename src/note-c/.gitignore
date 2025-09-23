@@ -13,3 +13,5 @@ settings.json
 CMakeFiles/
 CMakeCache.txt
 cppcheck_output.txt
+
+.claude/

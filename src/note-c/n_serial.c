@@ -12,6 +12,7 @@
  */
 
 #include <stdlib.h>
+#include <limits.h>
 
 #include "n_lib.h"
 
@@ -22,9 +23,9 @@
   @param   request A string containing the JSON request object, which MUST BE
             terminated with a newline character.
   @param   reqLen the string length of the JSON request.
-  @param   response [out] A c-string buffer that will contain the newline ('\n')
-            terminated JSON response from the Notercard. If NULL, no response
-            will be captured.
+  @param   response [out] A pointer to a c-string buffer that will contain the
+            newline ('\n') terminated JSON response from the Notercard. If NULL,
+            no response will be captured.
   @param   timeoutMs The maximum amount of time, in milliseconds, to wait
             for data to arrive. Passing zero (0) disables the timeout.
 
@@ -33,21 +34,26 @@
 /**************************************************************************/
 const char *_serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs)
 {
-    // Strip off the newline and optional carriage return characters. This
-    // allows for standardized output to be reapplied.
-    reqLen--;  // remove newline
-    if (request[reqLen - 1] == '\r') {
-        reqLen--; // remove carriage return if it exists
-    }
+    const char *err = NULL;
 
-    const char *err = _serialChunkedTransmit((uint8_t *)request, reqLen, true);
-    if (err) {
-        NOTE_C_LOG_ERROR(err);
-        return err;
-    }
+    // Do not attempt to send a zero-length request
+    if (reqLen > 0) {
+        // Strip off the newline and optional carriage return characters. This
+        // allows for standardized output to be reapplied.
+        reqLen--;  // remove newline
+        if (request[reqLen - 1] == '\r') {
+            reqLen--; // remove carriage return if it exists
+        }
 
-    // Append the carriage return and newline to the transaction.
-    _SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
+        err = _serialChunkedTransmit((uint8_t *)request, reqLen, true);
+        if (err) {
+            NOTE_C_LOG_ERROR(err);
+            return err;
+        }
+
+        // Append the carriage return and newline to the transaction.
+        _SerialTransmit((uint8_t *)c_newline, c_newline_len, true);
+    }
 
     // If no reply expected, we're done
     if (response == NULL) {
@@ -75,7 +81,7 @@ const char *_serialNoteTransaction(const char *request, size_t reqLen, char **re
     uint32_t jsonbufAllocLen = ALLOC_CHUNK;
     uint8_t *jsonbuf = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
     if (jsonbuf == NULL) {
-        const char *err = ERRSTR("transaction: jsonbuf malloc failed", c_mem);
+        err = ERRSTR("transaction: jsonbuf malloc failed", c_mem);
         NOTE_C_LOG_ERROR(err);
         return err;
     }
@@ -86,13 +92,16 @@ const char *_serialNoteTransaction(const char *request, size_t reqLen, char **re
         uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
 
         // Append into the json buffer
-        const char *err = _serialChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
+        err = _serialChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
         if (err) {
-            _Free(jsonbuf);
-            NOTE_C_LOG_ERROR(ERRSTR("error occured during receive", c_iobad));
+            if (jsonbuf) {
+                _Free(jsonbuf);
+            }
+            NOTE_C_LOG_ERROR(ERRSTR(err, c_iobad));
             return err;
         }
         jsonbufLen += jsonbufAvailLen;
+        jsonbuf[jsonbufLen] = '\0';
 
         if (available) {
             // When more bytes are available than we have buffer to accommodate
@@ -104,20 +113,26 @@ const char *_serialNoteTransaction(const char *request, size_t reqLen, char **re
             jsonbufAllocLen += (ALLOC_CHUNK * ((available / ALLOC_CHUNK) + ((available % ALLOC_CHUNK) > 0)));
             uint8_t *jsonbufNew = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
             if (jsonbufNew == NULL) {
-                const char *err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
+                err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
                 NOTE_C_LOG_ERROR(err);
-                _Free(jsonbuf);
+                if (jsonbuf) {
+                    _Free(jsonbuf);
+                }
                 return err;
             }
-            memcpy(jsonbufNew, jsonbuf, jsonbufLen);
-            _Free(jsonbuf);
+            if (jsonbuf) {
+                memcpy(jsonbufNew, jsonbuf, jsonbufLen);
+                _Free(jsonbuf);
+            }
             jsonbuf = jsonbufNew;
             NOTE_C_LOG_DEBUG("additional receive buffer chunk allocated");
         }
     } while (available);
 
     // Null-terminate it, using the +1 space that we'd allocated in the buffer
-    jsonbuf[jsonbufLen] = '\0';
+    if (jsonbuf) {
+        jsonbuf[jsonbufLen] = '\0';
+    }
 
     // Return it
     *response = (char *)jsonbuf;
@@ -281,30 +296,28 @@ const char *_serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, u
 /**************************************************************************/
 const char *_serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
 {
+#if CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN > SIZE_MAX
+#  error "CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN exceeds SIZE_MAX. Use I2C interface instead."
+#endif
+
     // Transmit the request in segments so as not to overwhelm the Notecard's
     // interrupt buffers
-    uint32_t segOff = 0;
-    uint32_t segLeft = size;
+    for (uint32_t segRem = size, segOff = 0; segRem > 0; ) {
+        size_t segLen;
 
-    if (sizeof(size_t) != 4) { // Give the compiler a hint to eliminate the code
-        // Ensure truncation does not occur on 16-bit microcontrollers
-        const size_t castSize = (size_t)size;
-        if (castSize != size) {
-            const char *err = ERRSTR("Cannot transmit provided size; limit to `size_t`", c_iobad);
-            NOTE_C_LOG_ERROR(err);
-            return err;
-        }
-    }
-
-    while (true) {
-        size_t segLen = segLeft;
-        if (segLen > CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN) {
+        // Set the segment length to the max or the remainder, whichever is less
+        if (segRem > CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN) {
             segLen = CARD_REQUEST_SERIAL_SEGMENT_MAX_LEN;
+        } else {
+            segLen = (size_t)segRem;
         }
+
         _SerialTransmit(&buffer[segOff], segLen, false);
         segOff += segLen;
-        segLeft -= segLen;
-        if (segLeft == 0) {
+
+        // Check here to avoid an unnecessary delay at the end of the last segment
+        segRem -= segLen;
+        if (segRem == 0) {
             break;
         }
         if (delay) {

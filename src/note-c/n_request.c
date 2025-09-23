@@ -16,6 +16,9 @@
 
 static const int RETRY_DELAY_MS = 500;
 
+// A value that optionally overrides CARD_INTER_TRANSACTION_TIMEOUT_SEC
+uint32_t cardTransactionTimeoutOverrideSecs = 0;
+
 // For flow tracing
 static int suppressShowTransactions = 0;
 
@@ -110,7 +113,7 @@ void _noteSuspendTransactionDebug(void)
  @param isReq Whether the request is a regular request or a command.
 
  @returns The timeout in milliseconds.
-*/
+ */
 NOTE_C_STATIC uint32_t _noteTransaction_calculateTimeoutMs(J *req, bool isReq)
 {
     uint32_t result = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
@@ -160,16 +163,13 @@ void NoteResumeTransactionDebug(void)
     _noteResumeTransactionDebug();
 }
 
-/*!
- @brief Create a new JSON request.
+uint32_t NoteSetRequestTimeout(uint32_t overrideSecs)
+{
+    uint32_t previous = CARD_INTER_TRANSACTION_TIMEOUT_SEC;
+    cardTransactionTimeoutOverrideSecs = overrideSecs;
+    return previous;
+}
 
- Creates a dynamically allocated `J` object with one field `"req"` whose value
- is the passed in request string.
-
- @param request The name of the request, for example `hub.set`.
-
- @returns A `J` object with the "req" field populated.
- */
 J *NoteNewRequest(const char *request)
 {
     J *reqdoc = JCreateObject();
@@ -179,18 +179,6 @@ J *NoteNewRequest(const char *request)
     return reqdoc;
 }
 
-/*!
- @brief Create a new JSON command.
-
- Create a dynamically allocated `J` object with one field `"cmd"` whose value is
- the passed in request string. The difference between a command and a request is
- that the Notecard does not send a response to commands, only to requests.
-
- @param request The name of the command (e.g. `card.attn`).
-
- @returns A `J` object with the "cmd" field populated.
-
- */
 J *NoteNewCommand(const char *request)
 {
     J *reqdoc = JCreateObject();
@@ -200,24 +188,6 @@ J *NoteNewCommand(const char *request)
     return reqdoc;
 }
 
-/*!
- @brief Send a request to the Notecard.
-
- The passed in request object is always freed, regardless of if the request was
- successful or not. The response from the Notecard, if any, is freed and not
- returned to the caller.
-
- @param req Pointer to a `J` request object.
-
- @returns `true` if successful and `false` if an error occurs (e.g. out of
-          memory or the response from the Notecard has an "err" field). If req
-          is a command rather than a request, a `true` return value indicates
-          that the command was sent without error. However, since the Notecard
-          sends no response to commands, it does not guarantee that the
-          command was received and processed by the Notecard.
-
- @see `NoteRequestResponse` if you need to work with the response.
- */
 bool NoteRequest(J *req)
 {
     J *rsp = NoteRequestResponse(req);
@@ -232,23 +202,6 @@ bool NoteRequest(J *req)
     return success;
 }
 
-/*!
- @brief Send a request to the Notecard, retrying it until it succeeds or it
-        times out.
-
- The passed in request object is always freed, regardless of if the request was
- successful or not. The response from the Notecard, if any, is freed and not
- returned to the caller.
-
- @param req Pointer to a `J` request object.
- @param timeoutSeconds Time limit for retires, in seconds, if there is no
-        response, or if the response contains an I/O error.
-
- @returns `true` if successful and `false` if an error occurs (e.g. out of
-          memory or the response from the Notecard has an "err" field).
-
- @see `NoteRequestResponseWithRetry` if you need to work with the response.
- */
 bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds)
 {
     J *rsp = NoteRequestResponseWithRetry(req, timeoutSeconds);
@@ -264,19 +217,6 @@ bool NoteRequestWithRetry(J *req, uint32_t timeoutSeconds)
     return success;
 }
 
-/*!
- @brief Send a request to the Notecard and return the response.
-
- The passed in request object is always freed, regardless of if the request was
- successful or not.
-
- @param req Pointer to a `J` request object.
-
- @returns A `J` object with the response or NULL if there was an error sending
-          the request.
-
- @see `NoteResponseError` to check the response for errors.
- */
 J *NoteRequestResponse(J *req)
 {
     // Exit if null request. This allows safe execution of the form
@@ -291,22 +231,6 @@ J *NoteRequestResponse(J *req)
     return rsp;
 }
 
-/*!
- @brief Send a request to the Notecard, retrying it until it succeeds or it
-        times out, and return the response.
-
- The passed in request object is always freed, regardless of if the request was
- successful or not.
-
- @param req Pointer to a `J` request object.
- @param timeoutSeconds Time limit for retires, in seconds, if there is no
-        response, or if the response contains an I/O error.
-
- @returns A `J` object with the response or NULL if there was an error sending
-          the request.
-
- @see `NoteResponseError` to check the response for errors.
- */
 J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
 {
     // Exit if null request. This allows safe execution of the form
@@ -352,30 +276,6 @@ J *NoteRequestResponseWithRetry(J *req, uint32_t timeoutSeconds)
     return rsp;
 }
 
-/*!
- @brief Send a request to the Notecard and return the response.
-
- Unlike `NoteRequestResponse`, this function expects the request to be a valid
- JSON C-string, rather than a `J` object. The string is expected to be
- newline-terminated, otherwise the call produces undefined behavior. The
- response is returned as a dynamically allocated JSON C-string. The response
- string is verbatim what was sent by the Notecard, which IS newline-terminated.
- The caller is responsible for freeing the response string. If the request was a
- command (i.e. it uses "cmd" instead of "req"), this function returns NULL,
- because the Notecard does not send a response to commands.
-
- @param reqJSON A valid newline-terminated JSON C-string containing the request.
-
- @returns A newline-terminated JSON C-string with the response, or NULL
-          if there was no response or if there was an error.
-
- @note When a "cmd" is sent, it is not possible to determine if an error occurred.
-
- @note Unlike the `NoteRequest*` functions, this function does not automatically
-       free the request JSON string. It is not possible to know if the parameter
-       is a string literal. As such, it is the caller's responsibility to manage
-       the memory associated with the request string.
-*/
 char * NoteRequestResponseJSON(const char *reqJSON)
 {
     const uint32_t transactionTimeoutMs = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
@@ -508,19 +408,6 @@ char * NoteRequestResponseJSON(const char *reqJSON)
     return rspJSON;
 }
 
-/*!
- @brief Send a request to the Notecard and return the response.
-
- This function doesn't free the passed in request object. The caller is
- responsible for freeing it.
-
- @param req Pointer to a `J` request object.
-
- @returns A `J` object with the response or NULL if there was an error sending
-          the request.
-
- @see `NoteResponseError` to check the response for errors.
- */
 J *NoteTransaction(J *req)
 {
     return _noteTransactionShouldLock(req, true);
@@ -665,6 +552,7 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
     const char *errStr = NULL;
     char *rspJsonStr = NULL;
     J *rsp = NULL;
+    bool isHeartbeat = false;
     for (uint8_t lastRequestRetries = 0; lastRequestRetries <= CARD_REQUEST_RETRIES_ALLOWED; ++lastRequestRetries) {
         // free on retry
         if (rsp != NULL) {
@@ -677,7 +565,7 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         rsp = NULL;
 
         // Trace request unless suppressed
-        if (suppressShowTransactions == 0) {
+        if (!isHeartbeat && suppressShowTransactions == 0) {
             NOTE_C_LOG_INFO(json);
         }
 
@@ -687,12 +575,20 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         const size_t jsonLen = strlen(json);
         json[jsonLen] = '\n';
 
+        size_t jsonTxLen;
+        if (isHeartbeat) {
+            // Heartbeat responses have no request
+            jsonTxLen = 0;
+        } else {
+            jsonTxLen = (jsonLen + 1);
+        }
+
         // Perform the transaction
         if (cmdFound) {
-            errStr = _Transaction(json, (jsonLen + 1), NULL, transactionTimeoutMs);
+            errStr = _Transaction(json, jsonTxLen, NULL, transactionTimeoutMs);
             // break;  // No response expected for commands and no ability to retry.
         } else {
-            errStr = _Transaction(json, (jsonLen + 1), &rspJsonStr, transactionTimeoutMs);
+            errStr = _Transaction(json, jsonTxLen, &rspJsonStr, transactionTimeoutMs);
         }
 
         // Restore NULL-terminator
@@ -745,12 +641,14 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         // Error types
         bool isBadBin = false;
         bool isIoError = false;
+        isHeartbeat = false;
 
         // Error detection / classification
         rsp = JParse(rspJsonStr);
         if (rsp != NULL) {
             isBadBin = JContainsString(rsp, c_err, c_badbinerr);
             isIoError = JContainsString(rsp, c_err, c_ioerr) && !JContainsString(rsp, c_err, c_unsupported);
+            isHeartbeat = JContainsString(rsp, c_err, c_heartbeat);
         } else {
             // Failed to parse response as JSON
             isIoError = true;
@@ -764,7 +662,23 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         }
 
         // Error handling
-        if (isIoError || isBadBin) {
+        if (isHeartbeat) {
+            // Heartbeat responses are not traditional errors, log and resume waiting
+            _Free(rspJsonStr);
+            const char * const status = JGetString(rsp, c_status);
+            NOTE_C_LOG_DEBUG(ERRSTR(status, c_heartbeat));
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
+            if (_noteHeartbeat(status)) {
+                errStr = ERRSTR("host abandoned transaction {heartbeat}", c_heartbeat);
+                NoteResetRequired();
+                break;
+            }
+#else
+            (void)status; // avoid unused variable warning when NOTE_C_LOW_MEM defined
+#endif
+            --lastRequestRetries; // Heartbeats do not count against retry limit
+            continue;
+        } else if (isIoError || isBadBin) {
             if (rsp != NULL) {
                 NOTE_C_LOG_ERROR(JGetString(rsp, c_err));
             }
@@ -858,41 +772,20 @@ bool NoteReset(void)
     return !resetRequired;
 }
 
-/*!
- @brief Check to see if a Notecard error is present in a JSON string.
-
- Only Notecard errors enclosed in `{}` (e.g. `{io}` for an I/O error) are
- guaranteed by the API.
-
- @param errstr The string to check for errors.
- @param errtype The error substring to search for in errstr.
-
- @returns `true` if errstr contains errtype and `false` otherwise.
- */
 bool NoteErrorContains(const char *errstr, const char *errtype)
 {
     return (strstr(errstr, errtype) != NULL);
 }
 
-/*!
- @brief Clean error strings out of the specified buffer.
-
- Notecard errors are enclosed in {} (e.g. {io} for an I/O error). This
- function takes the input string and removes all errors from it, meaning it
- removes any substrings matching the pattern {some error string}, including the
- braces.
-
- @param begin A C-string to to clean of errors.
- */
-void NoteErrorClean(char *begin)
+void NoteErrorClean(char *errbuf)
 {
     while (true) {
-        char *end = &begin[strlen(begin)+1];
-        char *beginBrace = strchr(begin, '{');
+        char *end = &errbuf[strlen(errbuf)+1];
+        char *beginBrace = strchr(errbuf, '{');
         if (beginBrace == NULL) {
             break;
         }
-        if (beginBrace>begin && *(beginBrace-1) == ' ') {
+        if (beginBrace>errbuf && *(beginBrace-1) == ' ') {
             beginBrace--;
         }
         char *endBrace = strchr(beginBrace, '}');

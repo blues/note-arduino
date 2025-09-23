@@ -40,7 +40,8 @@ extern "C" {
     @brief  How long to wait for the card for any given transaction.
 */
 /**************************************************************************/
-#define CARD_INTER_TRANSACTION_TIMEOUT_SEC 30
+extern uint32_t cardTransactionTimeoutOverrideSecs;
+#define CARD_INTER_TRANSACTION_TIMEOUT_SEC (cardTransactionTimeoutOverrideSecs == 0 ? 30 : cardTransactionTimeoutOverrideSecs)
 #define CARD_INTRA_TRANSACTION_TIMEOUT_SEC  1
 
 // The notecard is a real-time device that has a fixed size interrupt buffer.
@@ -149,6 +150,9 @@ const char *_noteJSONTransaction(const char *request, size_t reqLen, char **resp
 const char *_noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
 const char *_noteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
 bool _noteIsDebugOutputActive(void);
+#ifdef NOTE_C_HEARTBEAT_CALLBACK
+bool _noteHeartbeat(const char *heartbeatJson);
+#endif
 
 // Utilities
 void _n_htoa32(uint32_t n, char *p);
@@ -166,38 +170,23 @@ uint32_t _cobsGuaranteedFit(uint32_t bufLen);
 extern bool cardTurboIO;
 
 // Constants, a global optimization to save static string memory
-extern const char *c_null;
-#define c_null_len 4
+extern const char *c_bad;
+#define c_bad_len 3
 
-extern const char *c_false;
-#define c_false_len 5
-
-extern const char *c_true;
-#define c_true_len 4
-
-extern const char *c_nullstring;
-#define c_nullstring_len 0
-
-extern const char *c_newline;
-#define c_newline_len 2
-
-extern const char *c_mem;
-#define c_mem_len 3
-
-extern const char *c_iotimeout;
-#define c_iotimeout_len 12
-
-extern const char *c_err;
-#define c_err_len 3
-
-extern const char *c_req;
-#define c_req_len 3
+extern const char *c_badbinerr;
+#define c_badbinerr_len 9
 
 extern const char *c_cmd;
 #define c_cmd_len 3
 
-extern const char *c_bad;
-#define c_bad_len 3
+extern const char *c_err;
+#define c_err_len 3
+
+extern const char *c_false;
+#define c_false_len 5
+
+extern const char *c_heartbeat;
+#define c_heartbeat_len 11
 
 extern const char *c_iobad;
 #define c_iobad_len 8
@@ -205,11 +194,32 @@ extern const char *c_iobad;
 extern const char *c_ioerr;
 #define c_ioerr_len 4
 
+extern const char *c_iotimeout;
+#define c_iotimeout_len 12
+
+extern const char *c_mem;
+#define c_mem_len 3
+
+extern const char *c_newline;
+#define c_newline_len 2
+
+extern const char *c_null;
+#define c_null_len 4
+
+extern const char *c_nullstring;
+#define c_nullstring_len 0
+
+extern const char *c_req;
+#define c_req_len 3
+
+extern const char *c_status;
+#define c_status_len 6
+
+extern const char *c_true;
+#define c_true_len 4
+
 extern const char *c_unsupported;
 #define c_unsupported_len 15
-
-extern const char *c_badbinerr;
-#define c_badbinerr_len 9
 
 // Readability wrappers.  Anything starting with _ is simply calling the wrapper
 // function.
