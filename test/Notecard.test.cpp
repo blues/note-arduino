@@ -364,7 +364,7 @@ int test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -374,7 +374,7 @@ int test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing
    // Assert
   ///////////
 
-  if (EXPECTED_ADDRESS == noteSetFnI2C_Parameters.i2caddr)
+  if (EXPECTED_ADDRESS == noteSetFnI2CDefault_Parameters.i2caddr)
   {
     result = 0;
   }
@@ -382,7 +382,7 @@ int test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.i2caddr == 0x" << std::hex << noteSetFnI2C_Parameters.i2caddr << ", EXPECTED: " << EXPECTED_ADDRESS << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.i2caddr == 0x" << std::hex << noteSetFnI2CDefault_Parameters.i2caddr << ", EXPECTED: " << EXPECTED_ADDRESS << std::endl;
     std::cout << "[";
   }
 
@@ -401,6 +401,7 @@ int test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to
 
   Notecard notecard;
   noteSetFnI2C_Parameters.reset();
+  noteSetFnI2C_Parameters.i2caddr = NOTE_I2C_ADDR_DEFAULT;
 
    // Action
   ///////////
@@ -425,7 +426,7 @@ int test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to
   return result;
 }
 
-int test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_note_c()
+int test_notecard_begin_i2c_does_not_modify_i2c_mtu_parameter_before_passing_to_note_c()
 {
   int result;
 
@@ -436,7 +437,7 @@ int test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -446,7 +447,7 @@ int test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_
    // Assert
   ///////////
 
-  if (EXPECTED_RESULT == noteSetFnI2C_Parameters.i2cmax)
+  if (EXPECTED_RESULT == noteSetFnI2CDefault_Parameters.i2cmtu)
   {
     result = 0;
   }
@@ -454,14 +455,14 @@ int test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.i2cmax == " << noteSetFnI2C_Parameters.i2cmax << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.i2cmtu == " << noteSetFnI2CDefault_Parameters.i2cmtu << ", EXPECTED: " << EXPECTED_RESULT << std::endl;
     std::cout << "[";
   }
 
   return result;
 }
 
-int test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated()
+int test_notecard_begin_i2c_sets_i2c_mtu_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated()
 {
   int result;
 
@@ -472,6 +473,7 @@ int test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_not
 
   Notecard notecard;
   noteSetFnI2C_Parameters.reset();
+  noteSetFnI2C_Parameters.i2cmtu = NOTE_I2C_MAX_DEFAULT;
 
    // Action
   ///////////
@@ -481,7 +483,7 @@ int test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_not
    // Assert
   ///////////
 
-  if (!noteSetFnI2C_Parameters.i2cmax)
+  if (!noteSetFnI2C_Parameters.i2cmtu)
   {
     result = 0;
   }
@@ -489,7 +491,7 @@ int test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_not
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.i2cmax == " << noteSetFnI2C_Parameters.i2cmax << ", EXPECTED: 0" << std::endl;
+    std::cout << "\tnoteSetFnI2C_Parameters.i2cmtu == " << noteSetFnI2C_Parameters.i2cmtu << ", EXPECTED: 0" << std::endl;
     std::cout << "[";
   }
 
@@ -505,7 +507,7 @@ int test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer()
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -515,7 +517,7 @@ int test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnI2C_Parameters.resetfn)
+  if (noteSetFnI2CDefault_Parameters.resetfn)
   {
     result = 0;
   }
@@ -523,7 +525,7 @@ int test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.resetfn == 0x" << std::hex << !!noteSetFnI2C_Parameters.resetfn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.resetfn == 0x" << std::hex << !!noteSetFnI2CDefault_Parameters.resetfn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -539,6 +541,7 @@ int test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_inte
 
   Notecard notecard;
   noteSetFnI2C_Parameters.reset();
+  noteSetFnI2C_Parameters.resetfn = reinterpret_cast<i2cResetFn>(0x19790917);
 
    // Action
   ///////////
@@ -572,7 +575,7 @@ int test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer()
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -582,7 +585,7 @@ int test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnI2C_Parameters.transmitfn)
+  if (noteSetFnI2CDefault_Parameters.transmitfn)
   {
     result = 0;
   }
@@ -590,7 +593,7 @@ int test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.transmitfn == 0x" << std::hex << !!noteSetFnI2C_Parameters.transmitfn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.transmitfn == 0x" << std::hex << !!noteSetFnI2CDefault_Parameters.transmitfn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -606,6 +609,7 @@ int test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_i
 
   Notecard notecard;
   noteSetFnI2C_Parameters.reset();
+  noteSetFnI2C_Parameters.transmitfn = reinterpret_cast<i2cTransmitFn>(0x19790917);
 
    // Action
   ///////////
@@ -639,7 +643,7 @@ int test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer()
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -649,7 +653,7 @@ int test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnI2C_Parameters.receivefn)
+  if (noteSetFnI2CDefault_Parameters.receivefn)
   {
     result = 0;
   }
@@ -657,7 +661,7 @@ int test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.receivefn == 0x" << std::hex << !!noteSetFnI2C_Parameters.receivefn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.receivefn == 0x" << std::hex << !!noteSetFnI2CDefault_Parameters.receivefn << ", EXPECTED: not 0x0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -673,6 +677,7 @@ int test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_in
 
   Notecard notecard;
   noteSetFnI2C_Parameters.reset();
+  noteSetFnI2C_Parameters.receivefn = reinterpret_cast<i2cReceiveFn>(0x19790917);
 
    // Action
   ///////////
@@ -706,8 +711,8 @@ int test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c()
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
-  noteSetFnI2C_Parameters.i2cmax = (NOTE_I2C_MAX_DEFAULT - 1);
+  noteSetFnI2CDefault_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.i2cmtu = (NOTE_I2C_MAX_DEFAULT - 1);
 
    // Action
   ///////////
@@ -717,7 +722,7 @@ int test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c()
    // Assert
   ///////////
 
-  if (NOTE_I2C_MAX_DEFAULT == noteSetFnI2C_Parameters.i2cmax)
+  if (NOTE_I2C_MAX_DEFAULT == noteSetFnI2CDefault_Parameters.i2cmtu)
   {
     result = 0;
   }
@@ -725,7 +730,7 @@ int test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.i2cmax == " << noteSetFnI2C_Parameters.i2cmax << ", EXPECTED: " << NOTE_I2C_MAX_DEFAULT << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.i2cmtu == " << noteSetFnI2CDefault_Parameters.i2cmtu << ", EXPECTED: " << NOTE_I2C_MAX_DEFAULT << std::endl;
     std::cout << "[";
   }
 
@@ -741,8 +746,8 @@ int test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnI2C_Parameters.reset();
-  noteSetFnI2C_Parameters.i2caddr = (NOTE_I2C_ADDR_DEFAULT - 1);
+  noteSetFnI2CDefault_Parameters.reset();
+  noteSetFnI2CDefault_Parameters.i2caddr = (NOTE_I2C_ADDR_DEFAULT - 1);
 
    // Action
   ///////////
@@ -752,7 +757,7 @@ int test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c
    // Assert
   ///////////
 
-  if (NOTE_I2C_ADDR_DEFAULT == noteSetFnI2C_Parameters.i2caddr)
+  if (NOTE_I2C_ADDR_DEFAULT == noteSetFnI2CDefault_Parameters.i2caddr)
   {
     result = 0;
   }
@@ -760,7 +765,7 @@ int test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnI2C_Parameters.i2caddr == 0x" << std::hex << noteSetFnI2C_Parameters.i2caddr << ", EXPECTED: 0x" << std::hex << NOTE_I2C_ADDR_DEFAULT << std::endl;
+    std::cout << "\tnoteSetFnI2CDefault_Parameters.i2caddr == 0x" << std::hex << noteSetFnI2CDefault_Parameters.i2caddr << ", EXPECTED: 0x" << std::hex << NOTE_I2C_ADDR_DEFAULT << std::endl;
     std::cout << "[";
   }
 
@@ -1113,7 +1118,7 @@ int test_notecard_begin_serial_shares_a_serial_reset_function_pointer()
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerialDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -1123,7 +1128,7 @@ int test_notecard_begin_serial_shares_a_serial_reset_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnSerial_Parameters.resetfn)
+  if (noteSetFnSerialDefault_Parameters.resetfn)
   {
     result = 0;
   }
@@ -1131,7 +1136,7 @@ int test_notecard_begin_serial_shares_a_serial_reset_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnSerial_Parameters.resetfn == " << !!noteSetFnSerial_Parameters.resetfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerialDefault_Parameters.resetfn == " << !!noteSetFnSerialDefault_Parameters.resetfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -1147,6 +1152,7 @@ int test_notecard_begin_serial_sets_serial_reset_function_pointer_to_nullptr_whe
 
   Notecard notecard;
   noteSetFnSerial_Parameters.reset();
+  noteSetFnSerial_Parameters.resetfn = reinterpret_cast<serialResetFn>(0x19790917);
 
    // Action
   ///////////
@@ -1180,7 +1186,7 @@ int test_notecard_begin_serial_shares_a_serial_transmit_function_pointer()
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerialDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -1190,7 +1196,7 @@ int test_notecard_begin_serial_shares_a_serial_transmit_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnSerial_Parameters.writefn)
+  if (noteSetFnSerialDefault_Parameters.writefn)
   {
     result = 0;
   }
@@ -1198,7 +1204,7 @@ int test_notecard_begin_serial_shares_a_serial_transmit_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnSerial_Parameters.writefn == " << !!noteSetFnSerial_Parameters.writefn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerialDefault_Parameters.writefn == " << !!noteSetFnSerialDefault_Parameters.writefn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -1213,7 +1219,8 @@ int test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_when_in
   ////////////
 
   Notecard notecard;
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerial_Parameters.reset();
+  noteSetFnSerial_Parameters.writefn = reinterpret_cast<serialTransmitFn>(0x19790917);
 
    // Action
   ///////////
@@ -1247,7 +1254,7 @@ int test_notecard_begin_serial_shares_a_serial_available_function_pointer()
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerialDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -1257,7 +1264,7 @@ int test_notecard_begin_serial_shares_a_serial_available_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnSerial_Parameters.availfn)
+  if (noteSetFnSerialDefault_Parameters.availfn)
   {
     result = 0;
   }
@@ -1265,7 +1272,7 @@ int test_notecard_begin_serial_shares_a_serial_available_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnSerial_Parameters.availfn == " << !!noteSetFnSerial_Parameters.availfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerialDefault_Parameters.availfn == " << !!noteSetFnSerialDefault_Parameters.availfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -1280,7 +1287,8 @@ int test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr
   ////////////
 
   Notecard notecard;
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerial_Parameters.reset();
+  noteSetFnSerial_Parameters.availfn = reinterpret_cast<serialAvailableFn>(0x19790917);
 
    // Action
   ///////////
@@ -1314,7 +1322,7 @@ int test_notecard_begin_serial_shares_a_serial_receive_function_pointer()
 
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerialDefault_Parameters.reset();
 
    // Action
   ///////////
@@ -1324,7 +1332,7 @@ int test_notecard_begin_serial_shares_a_serial_receive_function_pointer()
    // Assert
   ///////////
 
-  if (noteSetFnSerial_Parameters.readfn)
+  if (noteSetFnSerialDefault_Parameters.readfn)
   {
     result = 0;
   }
@@ -1332,7 +1340,7 @@ int test_notecard_begin_serial_shares_a_serial_receive_function_pointer()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnSerial_Parameters.readfn == " << !!noteSetFnSerial_Parameters.readfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFnSerialDefault_Parameters.readfn == " << !!noteSetFnSerialDefault_Parameters.readfn << ", EXPECTED: not 0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -1347,7 +1355,8 @@ int test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_w
   ////////////
 
   Notecard notecard;
-  noteSetFnDefault_Parameters.reset();
+  noteSetFnSerial_Parameters.reset();
+  noteSetFnSerial_Parameters.readfn = reinterpret_cast<serialReceiveFn>(0x19790917);
 
    // Action
   ///////////
@@ -1545,7 +1554,7 @@ int test_notecard_end_clears_all_platform_interface_function_pointers()
 
   Notecard notecard;
   NoteI2c_Mock mockI2c;
-  noteSetFnDefault_Parameters.reset();
+  noteSetFn_Parameters.reset();
   notecard.begin(&mockI2c);
 
    // Action
@@ -1556,10 +1565,10 @@ int test_notecard_end_clears_all_platform_interface_function_pointers()
    // Assert
   ///////////
 
-  if (!noteSetFnDefault_Parameters.mallocfn
-   && !noteSetFnDefault_Parameters.freefn
-   && !noteSetFnDefault_Parameters.delayfn
-   && !noteSetFnDefault_Parameters.millisfn)
+  if (!noteSetFn_Parameters.mallocfn
+   && !noteSetFn_Parameters.freefn
+   && !noteSetFn_Parameters.delayfn
+   && !noteSetFn_Parameters.millisfn)
   {
     result = 0;
   }
@@ -1567,10 +1576,10 @@ int test_notecard_end_clears_all_platform_interface_function_pointers()
   {
     result = static_cast<int>('n' + 'o' + 't' + 'e' + 'c' + 'a' + 'r' + 'd');
     std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
-    std::cout << "\tnoteSetFnDefault_Parameters.mallocfn == 0x" << std::hex << noteSetFnDefault_Parameters.mallocfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
-    std::cout << "\tnoteSetFnDefault_Parameters.freefn   == 0x" << std::hex << noteSetFnDefault_Parameters.freefn   << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
-    std::cout << "\tnoteSetFnDefault_Parameters.delayfn  == 0x" << std::hex << noteSetFnDefault_Parameters.delayfn  << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
-    std::cout << "\tnoteSetFnDefault_Parameters.millisfn == 0x" << std::hex << noteSetFnDefault_Parameters.millisfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.mallocfn == 0x" << std::hex << noteSetFn_Parameters.mallocfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.freefn   == 0x" << std::hex << noteSetFn_Parameters.freefn   << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.delayfn  == 0x" << std::hex << noteSetFn_Parameters.delayfn  << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
+    std::cout << "\tnoteSetFn_Parameters.millisfn == 0x" << std::hex << noteSetFn_Parameters.millisfn << ", EXPECTED: 0x0 (`nullptr`)" << std::endl;
     std::cout << "[";
   }
 
@@ -3041,7 +3050,7 @@ int test_static_callback_note_i2c_receive_invokes_notei2c_receive()
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3083,7 +3092,7 @@ int test_static_callback_note_i2c_receive_does_not_modify_device_address_paramet
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3124,7 +3133,7 @@ int test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_addre
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3165,7 +3174,7 @@ int test_static_callback_note_i2c_receive_does_not_modify_size_parameter_before_
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3206,7 +3215,7 @@ int test_static_callback_note_i2c_receive_does_not_modify_available_parameter_ad
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3247,7 +3256,7 @@ int test_static_callback_note_i2c_receive_does_not_modify_interface_method_retur
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
   noteI2cReceive_Parameters.reset();  // Clear the structure for testing results
   noteI2cReceive_Parameters.result = "i2c: fake test error!";
 
@@ -3289,7 +3298,7 @@ int test_static_callback_note_i2c_receive_does_not_call_interface_method_when_in
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -3334,7 +3343,7 @@ int test_static_callback_note_i2c_receive_returns_error_message_when_interface_h
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cReceiveFn noteI2cReceive = noteSetFnI2C_Parameters.receivefn;
+  i2cReceiveFn noteI2cReceive = noteSetFnI2CDefault_Parameters.receivefn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -3375,7 +3384,7 @@ int test_static_callback_note_i2c_reset_invokes_notei2c_reset()
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cResetFn noteI2cReset = noteSetFnI2C_Parameters.resetfn;
+  i2cResetFn noteI2cReset = noteSetFnI2CDefault_Parameters.resetfn;
   noteI2cReset_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3414,7 +3423,7 @@ int test_static_callback_note_i2c_reset_does_not_modify_device_address_parameter
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cResetFn noteI2cReset = noteSetFnI2C_Parameters.resetfn;
+  i2cResetFn noteI2cReset = noteSetFnI2CDefault_Parameters.resetfn;
   noteI2cReset_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3452,7 +3461,7 @@ int test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cResetFn noteI2cReset = noteSetFnI2C_Parameters.resetfn;
+  i2cResetFn noteI2cReset = noteSetFnI2CDefault_Parameters.resetfn;
   noteI2cReset_Parameters.reset();  // Clear the structure for testing results
   noteI2cReset_Parameters.result = true;
 
@@ -3491,7 +3500,7 @@ int test_static_callback_note_i2c_reset_does_not_call_interface_method_when_inte
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cResetFn noteI2cReset = noteSetFnI2C_Parameters.resetfn;
+  i2cResetFn noteI2cReset = noteSetFnI2CDefault_Parameters.resetfn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -3532,7 +3541,7 @@ int test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_bee
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cResetFn noteI2cReset = noteSetFnI2C_Parameters.resetfn;
+  i2cResetFn noteI2cReset = noteSetFnI2CDefault_Parameters.resetfn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -3576,7 +3585,7 @@ int test_static_callback_note_i2c_transmit_invokes_notei2c_transmit()
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
   noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3617,7 +3626,7 @@ int test_static_callback_note_i2c_transmit_does_not_modify_device_address_parame
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
   noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3657,7 +3666,7 @@ int test_static_callback_note_i2c_transmit_does_not_modify_buffer_parameter_befo
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
   noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3697,7 +3706,7 @@ int test_static_callback_note_i2c_transmit_does_not_modify_size_parameter_before
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
   noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -3737,7 +3746,7 @@ int test_static_callback_note_i2c_transmit_does_not_modify_interface_method_retu
   Notecard notecard;
   NoteI2c_Mock mockI2c;  // Instantiate NoteI2c (mocked)
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
   noteI2cTransmit_Parameters.reset();  // Clear the structure for testing results
   noteI2cTransmit_Parameters.result = "i2c: fake test error!";
 
@@ -3778,7 +3787,7 @@ int test_static_callback_note_i2c_transmit_does_not_call_interface_method_when_i
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -3822,7 +3831,7 @@ int test_static_callback_note_i2c_transmit_returns_error_message_when_interface_
   Notecard notecard;
   NoteI2c_Mock mockI2c;
   notecard.begin(&mockI2c);  // Provides access to the hidden static callback methods through `note-c` mocks
-  i2cTransmitFn noteI2cTransmit = noteSetFnI2C_Parameters.transmitfn;
+  i2cTransmitFn noteI2cTransmit = noteSetFnI2CDefault_Parameters.transmitfn;
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteI2c *>(nullptr));
@@ -4063,7 +4072,7 @@ int test_static_callback_note_serial_available_invokes_noteserial_available()
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+  serialAvailableFn noteSerialAvailable = noteSetFnSerialDefault_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4099,7 +4108,7 @@ int test_static_callback_note_serial_available_does_not_modify_interface_method_
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+  serialAvailableFn noteSerialAvailable = noteSetFnSerialDefault_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
   noteSerialAvailable_Parameters.reset();  // Clear the structure for testing results
   noteSerialAvailable_Parameters.result = true;
 
@@ -4138,7 +4147,7 @@ int test_static_callback_note_serial_available_does_not_call_interface_method_wh
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+  serialAvailableFn noteSerialAvailable = noteSetFnSerialDefault_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4179,7 +4188,7 @@ int test_static_callback_note_serial_available_returns_false_when_interface_has_
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialAvailableFn noteSerialAvailable = noteSetFnSerial_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
+  serialAvailableFn noteSerialAvailable = noteSetFnSerialDefault_Parameters.availfn;  // Capture the internal Notecard serial function, `noteSerialAvailable`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4219,7 +4228,7 @@ int test_static_callback_note_serial_receive_invokes_noteserial_receive()
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+  serialReceiveFn noteSerialReceive = noteSetFnSerialDefault_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4255,7 +4264,7 @@ int test_static_callback_note_serial_receive_does_not_modify_interface_method_re
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+  serialReceiveFn noteSerialReceive = noteSetFnSerialDefault_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
   noteSerialReceive_Parameters.reset();  // Clear the structure for testing results
   noteSerialReceive_Parameters.result = 'Z';
 
@@ -4294,7 +4303,7 @@ int test_static_callback_note_serial_receive_does_not_call_interface_method_when
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+  serialReceiveFn noteSerialReceive = noteSetFnSerialDefault_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4336,7 +4345,7 @@ int test_static_callback_note_serial_receive_returns_false_when_interface_has_no
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialReceiveFn noteSerialReceive = noteSetFnSerial_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
+  serialReceiveFn noteSerialReceive = noteSetFnSerialDefault_Parameters.readfn;  // Capture the internal Notecard serial function, `noteSerialReceive`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4376,7 +4385,7 @@ int test_static_callback_note_serial_reset_invokes_noteserial_reset()
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+  serialResetFn noteSerialReset = noteSetFnSerialDefault_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4412,7 +4421,7 @@ int test_static_callback_note_serial_reset_does_not_modify_interface_method_retu
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+  serialResetFn noteSerialReset = noteSetFnSerialDefault_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
   noteSerialReset_Parameters.reset();  // Clear the structure for testing results
   noteSerialReset_Parameters.result = true;
 
@@ -4451,7 +4460,7 @@ int test_static_callback_note_serial_reset_does_not_call_interface_method_when_i
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+  serialResetFn noteSerialReset = noteSetFnSerialDefault_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4492,7 +4501,7 @@ int test_static_callback_note_serial_reset_returns_false_when_interface_has_not_
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialResetFn noteSerialReset = noteSetFnSerial_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
+  serialResetFn noteSerialReset = noteSetFnSerialDefault_Parameters.resetfn;  // Capture the internal Notecard serial function, `noteSerialReset`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -4536,7 +4545,7 @@ int test_static_callback_note_serial_transmit_invokes_noteserial_transmit()
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+  serialTransmitFn noteSerialTransmit = noteSetFnSerialDefault_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4576,7 +4585,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_text_parameter_bef
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+  serialTransmitFn noteSerialTransmit = noteSetFnSerialDefault_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4616,7 +4625,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_length_parameter_b
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+  serialTransmitFn noteSerialTransmit = noteSetFnSerialDefault_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4656,7 +4665,7 @@ int test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_be
   Notecard notecard;
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+  serialTransmitFn noteSerialTransmit = noteSetFnSerialDefault_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
   noteSerialTransmit_Parameters.reset();  // Clear the structure for testing results
 
    // Action
@@ -4698,7 +4707,7 @@ int test_static_callback_note_serial_transmit_does_not_call_interface_method_whe
   // Capture the internal Notecard log function, `noteSerialAvailable`
   NoteSerial_Mock mockSerial;  // Instantiate NoteSerial (mocked)
   notecard.begin(&mockSerial);  // Provides access to the hidden static callback methods through `note-c` mocks
-  serialTransmitFn noteSerialTransmit = noteSetFnSerial_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
+  serialTransmitFn noteSerialTransmit = noteSetFnSerialDefault_Parameters.writefn;  // Capture the internal Notecard serial function, `noteSerialTransmit`
 
   // Reset to ensure the interface is not instantiated
   notecard.begin(static_cast<NoteSerial *>(nullptr));
@@ -5030,15 +5039,15 @@ int main(void)
       {test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing_to_note_c, "test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing_to_note_c"},
       {test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_note_c, "test_notecard_begin_i2c_does_not_modify_i2c_max_parameter_before_passing_to_note_c"},
-      {test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_max_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated"},
+      {test_notecard_begin_i2c_does_not_modify_i2c_mtu_parameter_before_passing_to_note_c, "test_notecard_begin_i2c_does_not_modify_i2c_mtu_parameter_before_passing_to_note_c"},
+      {test_notecard_begin_i2c_sets_i2c_mtu_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_mtu_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer"},
       {test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer"},
       {test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
       {test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer, "test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer"},
       {test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated, "test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated"},
-      {test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_max_is_passed_to_note_c"},
+      {test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_mtu_is_passed_to_note_c"},
       {test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c, "test_notecard_begin_i2c_default_parameter_for_i2c_address_is_passed_to_note_c"},
       {test_notecard_begin_serial_sets_user_agent_to_note_arduino, "test_notecard_begin_serial_sets_user_agent_to_note_arduino"},
       {test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated, "test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated"},
@@ -5100,8 +5109,8 @@ int main(void)
       {test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
       {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
-      {test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c"},
-      {test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c"},
+      {test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_static_callback_note_i2c_receive_invokes_notei2c_receive, "test_static_callback_note_i2c_receive_invokes_notei2c_receive"},
       {test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method"},
       {test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method, "test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method"},

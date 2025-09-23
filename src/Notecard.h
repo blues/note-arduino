@@ -61,9 +61,9 @@ public:
     ~Notecard(void);
 #ifdef ARDUINO
     inline void begin(uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-                      uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT,
+                      uint32_t i2cMtu = NOTE_I2C_MTU_DEFAULT,
                       TwoWire &wirePort = Wire) {
-        begin(make_note_i2c(wirePort), i2cAddress, i2cMax);
+        begin(make_note_i2c(wirePort), i2cAddress, i2cMtu);
     }
     inline void begin(HardwareSerial &serial, uint32_t speed = 9600) {
         MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(serial, speed);
@@ -85,7 +85,7 @@ public:
 #endif
     void begin(NoteI2c * noteI2c,
                uint32_t i2cAddress = NOTE_I2C_ADDR_DEFAULT,
-               uint32_t i2cMax = NOTE_I2C_MAX_DEFAULT);
+               uint32_t i2cMtu = NOTE_I2C_MTU_DEFAULT);
     void begin(NoteSerial * noteSerial);
     inline void clearDebugOutputStream(void) {
         setDebugOutputStream(nullptr);
