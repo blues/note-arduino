@@ -1,5 +1,7 @@
 #include "NoteI2c_Arduino.hpp"
 
+#include "Notecard.h"
+
 #if defined(NOTE_C_LOW_MEM)
 static const char *i2cerr = "i2c {io}";
 #endif
@@ -105,7 +107,7 @@ NoteI2c_Arduino::receive (
         if (!transmission_error) {
             // Delay briefly ensuring that the Notecard can
             // deliver the data in real-time to the I2C ISR
-            ::delay(2);
+            NoteDelayMs(2);
 
             const int request_length = requested_byte_count_ + NoteI2c::REQUEST_HEADER_SIZE;
             const int response_length = _i2cPort.requestFrom((int)device_address_, request_length);
@@ -139,7 +141,7 @@ NoteI2c_Arduino::receive (
         // Flash stalls have been observed on the Notecard ESP. Delaying
         // between retries provides time for the Notecard to recover from
         // the resource contention.
-        ::delay(1000);
+        NoteDelayMs(1000);
         NOTE_C_LOG_ERROR(result);
         NOTE_C_LOG_WARN("serial-over-i2c: reattempting to read Notecard response");
     } while (result && (i++ < retry_count));

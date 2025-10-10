@@ -3,8 +3,6 @@
 
 #include "NoteI2c.hpp"
 
-#include "Notecard.h"
-
 #ifndef NOTE_MOCK
 #include <Wire.h>
 #else
