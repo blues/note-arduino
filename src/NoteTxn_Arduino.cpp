@@ -1,5 +1,7 @@
 #include "NoteTxn_Arduino.hpp"
 
+#include "Notecard.h"
+
 #ifndef NOTE_MOCK
   #include <Arduino.h>
 #else
@@ -78,9 +80,9 @@ NoteTxn_Arduino::start (
 
     // Await Clear To Transact Signal
     ::pinMode(_ctx_pin, INPUT_PULLUP);
-    for (uint32_t timeout = (::millis() + timeout_ms_)
-       ; ::millis() < timeout
-       ; ::delay(1)
+    for (uint32_t timeout = (NoteGetMs() + timeout_ms_)
+       ; NoteGetMs() < timeout
+       ; NoteDelayMs(1)
     ) {
         if (HIGH == ::digitalRead(_ctx_pin)) {
             result = true;

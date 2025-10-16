@@ -1,6 +1,6 @@
 #include "NoteSerial_Arduino.hpp"
 
-#include "NoteDefines.h"
+#include "Notecard.h"
 
 #ifndef NOTE_MOCK
 #ifdef NOTE_ARDUINO_SOFTWARE_SERIAL_SUPPORT
@@ -8,6 +8,7 @@
 #endif
 #else
 #include "mock/mock-arduino.hpp"
+#include "mock/mock-parameters.hpp"
 #endif
 
 #define NOTE_C_SERIAL_TIMEOUT_MS 3500
@@ -68,7 +69,10 @@ NoteSerial_Arduino<T>::NoteSerial_Arduino
     _notecardSerial.begin(_notecardSerialSpeed);
 
     // Wait for the serial port to be ready
-    for (const size_t startMs = ::millis() ; !_notecardSerial && ((::millis() - startMs) < NOTE_C_SERIAL_TIMEOUT_MS) ;);
+    for (const size_t startMs = NoteGetMs()
+       ; !_notecardSerial && ((NoteGetMs() - startMs) < NOTE_C_SERIAL_TIMEOUT_MS)
+       ;
+    );
 }
 
 template <typename T>

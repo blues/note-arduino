@@ -39,6 +39,7 @@ struct Delay_Parameters {
         void
     ) {
         invoked = 0;
+        mock_time = false;
         ms = 0;
     }
     size_t invoked;

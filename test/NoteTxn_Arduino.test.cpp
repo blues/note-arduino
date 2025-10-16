@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-// Compile command: g++ -std=c++11 -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteTxn_Arduino.cpp NoteTxn_Arduino.test.cpp -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteTxn_arduino.tests && ./noteTxn_arduino.tests || echo "Tests Result: $?"
+// Compile command: g++ -std=c++11 -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/NoteTxn_Arduino.cpp NoteTxn_Arduino.test.cpp -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteTxn_arduino.tests && ./noteTxn_arduino.tests || echo "Tests Result: $?"
 
 int test_make_note_txn_instantiates_notetxn_object()
 {
@@ -288,8 +288,8 @@ int test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high()
   digitalRead_Parameters.result[CTX_PIN].push_back(LOW);
   digitalRead_Parameters.result[CTX_PIN].push_back(LOW);
   digitalRead_Parameters.result[CTX_PIN].push_back(HIGH);
-  millis_Parameters.reset();
-  millis_Parameters.default_result = (TIMEOUT_MS - 1);
+  noteGetMs_Parameters.reset();
+  noteGetMs_Parameters.default_result = (TIMEOUT_MS - 1);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -298,7 +298,7 @@ int test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high()
   if (
       digitalRead_Parameters.invoked[CTX_PIN] == digitalRead_Parameters.result[CTX_PIN].size()
    && digitalRead_Parameters.result[CTX_PIN][(digitalRead_Parameters.invoked[CTX_PIN] - 1)] == HIGH
-   && millis_Parameters.result.empty()  // Only returns value less than `TIMEOUT_MS`
+   && noteGetMs_Parameters.result.empty()  // Only returns value less than `TIMEOUT_MS`
   ) {
     result = 0;
   }
@@ -330,12 +330,13 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
-  millis_Parameters.reset();
-  millis_Parameters.result.push_back(36);
-  millis_Parameters.result.push_back(274);
-  millis_Parameters.result.push_back(515);
-  millis_Parameters.result.push_back(801);
-  millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
+  noteDelayMs_Parameters.reset();
+  noteGetMs_Parameters.reset();
+  noteGetMs_Parameters.result.push_back(36);
+  noteGetMs_Parameters.result.push_back(274);
+  noteGetMs_Parameters.result.push_back(515);
+  noteGetMs_Parameters.result.push_back(801);
+  noteGetMs_Parameters.result.push_back(TIMEOUT_MS + noteGetMs_Parameters.result[0]);
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -344,7 +345,7 @@ int test_notetxn_arduino_start_blocks_until_timeout_ms()
   if (
       digitalRead_Parameters.invoked[CTX_PIN] // Called at least once
    && digitalRead_Parameters.result[CTX_PIN].empty() // Only returns `LOW`
-   && millis_Parameters.invoked == millis_Parameters.result.size()
+   && noteGetMs_Parameters.invoked == noteGetMs_Parameters.result.size()
   ) {
     result = 0;
   }
@@ -412,7 +413,7 @@ int test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high()
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = HIGH;
   digitalWrite_Parameters.reset();
-  millis_Parameters.reset();
+  noteGetMs_Parameters.reset();
 
   // Action
   notetxn.start(TIMEOUT_MS);
@@ -486,12 +487,12 @@ int test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout()
   NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
-  millis_Parameters.reset();
-  millis_Parameters.result.push_back(36);
-  millis_Parameters.result.push_back(274);
-  millis_Parameters.result.push_back(515);
-  millis_Parameters.result.push_back(801);
-  millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
+  noteGetMs_Parameters.reset();
+  noteGetMs_Parameters.result.push_back(36);
+  noteGetMs_Parameters.result.push_back(274);
+  noteGetMs_Parameters.result.push_back(515);
+  noteGetMs_Parameters.result.push_back(801);
+  noteGetMs_Parameters.result.push_back(TIMEOUT_MS + noteGetMs_Parameters.result[0]);
   pinMode_Parameters.reset();
 
   // Action
@@ -501,7 +502,7 @@ int test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout()
   if (
       digitalRead_Parameters.invoked[CTX_PIN] // Called at least once
    && digitalRead_Parameters.result[CTX_PIN].empty() // Only returns `LOW`
-   && millis_Parameters.invoked == millis_Parameters.result.size()
+   && noteGetMs_Parameters.invoked == noteGetMs_Parameters.result.size()
    && pinMode_Parameters.invoked[CTX_PIN] > 1 // Called at least twice
    && pinMode_Parameters.pin_mode[CTX_PIN][(pinMode_Parameters.invoked[CTX_PIN] - 1)] == INPUT
   ) {
@@ -532,12 +533,12 @@ int test_notetxn_arduino_start_floats_rtx_pin_on_timeout()
   NoteTxn_Arduino notetxn(CTX_PIN, RTX_PIN);
   digitalRead_Parameters.reset();
   digitalRead_Parameters.default_result[CTX_PIN] = LOW;
-  millis_Parameters.reset();
-  millis_Parameters.result.push_back(36);
-  millis_Parameters.result.push_back(274);
-  millis_Parameters.result.push_back(515);
-  millis_Parameters.result.push_back(801);
-  millis_Parameters.result.push_back(TIMEOUT_MS + millis_Parameters.result[0]);
+  noteGetMs_Parameters.reset();
+  noteGetMs_Parameters.result.push_back(36);
+  noteGetMs_Parameters.result.push_back(274);
+  noteGetMs_Parameters.result.push_back(515);
+  noteGetMs_Parameters.result.push_back(801);
+  noteGetMs_Parameters.result.push_back(TIMEOUT_MS + noteGetMs_Parameters.result[0]);
   pinMode_Parameters.reset();
 
   // Action
@@ -547,7 +548,7 @@ int test_notetxn_arduino_start_floats_rtx_pin_on_timeout()
   if (
       digitalRead_Parameters.invoked[CTX_PIN] // Called at least once
    && digitalRead_Parameters.result[CTX_PIN].empty() // Only returns `LOW`
-   && millis_Parameters.invoked == millis_Parameters.result.size()
+   && noteGetMs_Parameters.invoked == noteGetMs_Parameters.result.size()
    && pinMode_Parameters.pin_mode[RTX_PIN][(pinMode_Parameters.invoked[RTX_PIN] - 1)] == INPUT
   ) {
     result = 0;

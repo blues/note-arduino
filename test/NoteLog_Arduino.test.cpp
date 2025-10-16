@@ -1,10 +1,9 @@
 #include "NoteLog_Arduino.hpp"
 #include "TestFunction.hpp"
-#include "mock/mock-arduino.hpp"
-#include "mock/mock-parameters.hpp"
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 // Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteLog_Arduino.cpp NoteLog_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteLog_arduino.tests && ./noteLog_arduino.tests || echo "Tests Result: $?"
 

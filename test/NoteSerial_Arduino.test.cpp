@@ -1,13 +1,11 @@
 #include "NoteSerial_Arduino.hpp"
 #include "TestFunction.hpp"
-#include "mock/mock-arduino.hpp"
-#include "mock/mock-parameters.hpp"
 
 #include <cassert>
 #include <cstring>
 #include <iostream>
 
-// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteSerial_arduino.tests && ./noteSerial_arduino.tests || echo "Tests Result: $?"
+// Compile command: g++ -Wall -Wextra -Wpedantic mock/mock-arduino.cpp mock/mock-note-c-note.c ../src/NoteSerial_Arduino.cpp NoteSerial_Arduino.test.cpp -std=c++11 -I. -I../src -DNOTE_MOCK -ggdb -O0 -o noteSerial_arduino.tests && ./noteSerial_arduino.tests || echo "Tests Result: $?"
 
 int test_make_note_serial_instantiates_noteserial_object()
 {

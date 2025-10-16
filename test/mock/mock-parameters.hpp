@@ -94,6 +94,27 @@ struct NoteDebugSyncStatus_Parameters {
     bool result;
 };
 
+struct NoteDelayMs_Parameters {
+    NoteDelayMs_Parameters(
+        void
+    ) :
+        invoked(0),
+        mock_time(false),
+        ms(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        mock_time = false;
+        ms = 0;
+    }
+    size_t invoked;
+    bool mock_time;
+    uint32_t ms;
+};
+
 struct NoteDeleteResponse_Parameters {
     NoteDeleteResponse_Parameters(
         void
@@ -194,6 +215,27 @@ struct NoteGetFnSerial_Parameters {
     serialTransmitFn transmitFn_result;
     serialAvailableFn availFn_result;
     serialReceiveFn receiveFn_result;
+};
+
+struct NoteGetMs_Parameters {
+    NoteGetMs_Parameters(
+        void
+    ) :
+        invoked(0),
+        default_result(0),
+        result(0)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        default_result = 0;
+        result.clear();
+    }
+    size_t invoked;
+    uint32_t default_result;
+    std::vector<uint32_t> result;
 };
 
 struct NoteNewCommand_Parameters {
@@ -661,9 +703,11 @@ struct NoteSetUserAgent_Parameters {
 extern JAddIntToObject_Parameters jAddIntToObject_Parameters;
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
+extern NoteDelayMs_Parameters noteDelayMs_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
 extern NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
 extern NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
+extern NoteGetMs_Parameters noteGetMs_Parameters;
 extern NoteNewCommand_Parameters noteNewCommand_Parameters;
 extern NoteNewRequest_Parameters noteNewRequest_Parameters;
 extern NoteRequest_Parameters noteRequest_Parameters;
