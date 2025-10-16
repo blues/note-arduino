@@ -996,7 +996,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmi
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c|rx: unknown error encounter during I2C transmission {io}{i2c}";
+  const char * EXPECTED_RESULT = "i2c|rx: unknown error encountered during I2C transmission {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1658,7 +1658,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_unexpected_i2c_transm
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c|tx: unknown error encounter during I2C transmission {io}{i2c}";
+  const char * EXPECTED_RESULT = "i2c|tx: unknown error encountered during I2C transmission {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();

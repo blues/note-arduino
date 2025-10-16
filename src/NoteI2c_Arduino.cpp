@@ -98,7 +98,7 @@ NoteI2c_Arduino::receive (
             result = ERRSTR("i2c|rx: timeout {io}{i2c}",i2cerr);
             break;
         default:
-            result = ERRSTR("i2c|rx: unknown error encounter during I2C transmission {io}{i2c}",i2cerr);
+            result = ERRSTR("i2c|rx: unknown error encountered during I2C transmission {io}{i2c}",i2cerr);
         }
 
         // Read and cache response from Notecard
@@ -196,7 +196,7 @@ NoteI2c_Arduino::transmit (
         result = ERRSTR("i2c|tx: timeout {io}{i2c}",i2cerr);
         break;
     default:
-        result = ERRSTR("i2c|tx: unknown error encounter during I2C transmission {io}{i2c}",i2cerr);
+        result = ERRSTR("i2c|tx: unknown error encountered during I2C transmission {io}{i2c}",i2cerr);
     }
 
     return result;
