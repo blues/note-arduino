@@ -756,7 +756,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: data too long to fit in transmit buffer {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: data too long to fit in transmit buffer {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -804,7 +804,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: received NACK on transmit of address {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: received NACK on transmit of address {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -852,7 +852,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: received NACK on transmit of data {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: received NACK on transmit of data {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -900,7 +900,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: unknown error on TwoWire::endTransmission() {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: unknown error on TwoWire::endTransmission() {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -948,7 +948,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failu
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: timeout {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: timeout {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -996,7 +996,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmi
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "i2c: unknown error encounter during I2C transmission {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: unknown error encounter during I2C transmission {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1037,14 +1037,14 @@ int test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmi
   return result;
 }
 
-int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_failure_to_respond()
+int test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_failure_to_respond()
 {
   int result;
 
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "serial-over-i2c: no response to read request {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: no response to read request {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1083,14 +1083,14 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   return result;
 }
 
-int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_raw_byte_count()
+int test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_unexpected_raw_byte_count()
 {
   int result;
 
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "serial-over-i2c: unexpected raw byte count {io}";
+  const char * EXPECTED_RESULT = "i2c|rx: unexpected raw byte count {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1138,7 +1138,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   const uint8_t AVAILABLE_SIZE = ((NoteI2c_Arduino::REQUEST_MAX_SIZE - NoteI2c_Arduino::REQUEST_HEADER_SIZE) + 1);
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "serial-over-i2c: available byte count greater than max allowed {io}";
+  const char * EXPECTED_RESULT = "serial-over-i2c|rx: available byte count greater than max allowed {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1185,7 +1185,7 @@ int test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protoc
   // Arrange
   const uint16_t EXPECTED_ADDRESS = 0x17;
   const uint8_t REQUEST_SIZE = 13;
-  const char * EXPECTED_RESULT = "serial-over-i2c: unexpected protocol byte count {io}";
+  const char * EXPECTED_RESULT = "serial-over-i2c|rx: unexpected protocol byte count {io}{i2c}";
   uint8_t response_buffer[32];
   uint32_t bytes_remaining;
 
@@ -1443,7 +1443,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_i2c_transmission_fail
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: data too long to fit in transmit buffer {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: data too long to fit in transmit buffer {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1486,7 +1486,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_i2c_transmission_fail
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: received NACK on transmit of address {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: received NACK on transmit of address {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1529,7 +1529,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_i2c_transmission_fail
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: received NACK on transmit of data {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: received NACK on transmit of data {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1572,7 +1572,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_i2c_transmission_fail
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: unknown error on TwoWire::endTransmission() {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: unknown error on TwoWire::endTransmission() {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1615,7 +1615,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_i2c_transmission_fail
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: timeout {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: timeout {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1658,7 +1658,7 @@ int test_notei2c_arduino_transmit_returns_error_message_on_unexpected_i2c_transm
   const uint16_t EXPECTED_ADDRESS = 0x17;
   uint8_t write_buffer[17] = {'H','e','l','l','o',',',' ','N','o','t','e','c','a','r','d','!','\0'};
   const uint8_t REQUEST_SIZE = sizeof(write_buffer);
-  const char * EXPECTED_RESULT = "i2c: unknown error encounter during I2C transmission {io}";
+  const char * EXPECTED_RESULT = "i2c|tx: unknown error encounter during I2C transmission {io}{i2c}";
 
   twoWireBeginTransmission_Parameters.reset();
   twoWireWriteByte_Parameters.reset();
@@ -1723,8 +1723,8 @@ int main(void)
       {test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failure_4, "test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failure_4"},
       {test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failure_5, "test_notei2c_arduino_receive_returns_error_message_on_i2c_transmission_failure_5"},
       {test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmission_failure, "test_notei2c_arduino_receive_returns_error_message_on_unexpected_i2c_transmission_failure"},
-      {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_failure_to_respond, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_failure_to_respond"},
-      {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_raw_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_raw_byte_count"},
+      {test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_failure_to_respond, "test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_failure_to_respond"},
+      {test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_unexpected_raw_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_i2c_protocol_unexpected_raw_byte_count"},
       {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_available_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_available_byte_count"},
       {test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_protocol_byte_count, "test_notei2c_arduino_receive_returns_error_message_on_serial_over_i2c_protocol_unexpected_protocol_byte_count"},
       {test_notei2c_arduino_reset_invokes_begin_method_on_constructor_twowire_parameter, "test_notei2c_arduino_reset_invokes_begin_method_on_constructor_twowire_parameter"},
