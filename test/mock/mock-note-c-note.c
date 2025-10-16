@@ -3,9 +3,11 @@
 JAddIntToObject_Parameters jAddIntToObject_Parameters;
 NoteDebug_Parameters noteDebug_Parameters;
 NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
+NoteDelayMs_Parameters noteDelayMs_Parameters;
 NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
 NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
 NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
+NoteGetMs_Parameters noteGetMs_Parameters;
 NoteNewCommand_Parameters noteNewCommand_Parameters;
 NoteNewRequest_Parameters noteNewRequest_Parameters;
 NoteRequest_Parameters noteRequest_Parameters;
@@ -104,6 +106,22 @@ NoteDebugSyncStatus(
     return noteDebugSyncStatus_Parameters.result;
 }
 
+void
+NoteDelayMs (
+    uint32_t ms_
+) {
+    // Record invocation(s)
+    ++noteDelayMs_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteDelayMs_Parameters.ms = ms_;
+
+    // Emulate the passing time for timeout loops
+    if (noteDelayMs_Parameters.mock_time) {
+        noteGetMs_Parameters.default_result += ms_;
+    }
+}
+
 void NoteGetFnI2C(uint32_t *notecardAddr, uint32_t *maxTransmitSize,
                   i2cResetFn *resetFn, i2cTransmitFn *transmitFn,
                   i2cReceiveFn *receiveFn
@@ -160,6 +178,21 @@ void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
     }
     if (receiveFn) {
         *receiveFn = noteGetFnSerial_Parameters.receiveFn_result;
+    }
+}
+
+uint32_t
+NoteGetMs(
+    void
+) {
+    // Record invocation(s)
+    ++noteGetMs_Parameters.invoked;
+
+    // Return user-supplied result
+    if (noteGetMs_Parameters.result.size() < noteGetMs_Parameters.invoked) {
+        return noteGetMs_Parameters.default_result;
+    } else {
+        return noteGetMs_Parameters.result[(noteGetMs_Parameters.invoked - 1)];
     }
 }
 

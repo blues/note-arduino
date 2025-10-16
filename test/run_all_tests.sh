@@ -51,6 +51,7 @@ if [ 0 -eq $all_tests_result ]; then
     src/NoteI2c_Arduino.cpp \
     test/NoteI2c_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
     -Isrc \
     -Itest \
     -DNOTE_MOCK \
@@ -75,6 +76,7 @@ if [ 0 -eq $all_tests_result ]; then
     src/NoteI2c_Arduino.cpp \
     test/NoteI2c_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
     -Isrc \
     -Itest \
     -DNOTE_MOCK \
@@ -124,6 +126,7 @@ if [ 0 -eq $all_tests_result ]; then
     src/NoteSerial_Arduino.cpp \
     test/NoteSerial_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
     -Isrc \
     -Itest \
     -DNOTE_MOCK \
@@ -148,6 +151,7 @@ if [ 0 -eq $all_tests_result ]; then
     src/NoteTxn_Arduino.cpp \
     test/NoteTxn_Arduino.test.cpp \
     test/mock/mock-arduino.cpp \
+    test/mock/mock-note-c-note.c \
     -Isrc \
     -Itest \
     -DNOTE_MOCK \

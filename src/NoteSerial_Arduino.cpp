@@ -8,6 +8,7 @@
 #endif
 #else
 #include "mock/mock-arduino.hpp"
+#include "mock/mock-parameters.hpp"
 #endif
 
 #define NOTE_C_SERIAL_TIMEOUT_MS 3500
