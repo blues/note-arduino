@@ -36,7 +36,7 @@ public:
 
     /**************************************************************************/
     /*!
-        @brief  Writes a message to the Notecard Serial port.
+        @brief  Writes a buffer to the Notecard Serial port.
         @param    buffer
                   The bytes to write.
         @param    size
@@ -51,9 +51,12 @@ public:
 
 /******************************************************************************/
 /*!
-    @brief  Helper function to abstract, create and maintain a single instance
+    @brief Creates a NoteSerial instance
+
+    Helper function to abstract, create and maintain a single instance
     of the NoteSerial interface implementation, as required by the underlying
     `note-c` library.
+
     @param[in] serial_parameters
                Pointer to the parameters required to instantiate
                the platform specific UART implementation.

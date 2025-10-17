@@ -12,11 +12,19 @@ public:
 
     /**************************************************************************/
     /*!
-        @brief  Receives an amount of data from the Notecard in blocking mode.
+        @brief  The Serial-over-I2C protocol receive callback implementation
+
+        A blocking transaction filling the provided buffer with the requested
+        number of bytes from the Notecard at the provided address. Upon success,
+        a `nullptr` is returned, and `available` will populated with the number
+        of bytes the Notecard is waiting to send. Otherwise, an error string
+        describing the failure will be returned.
+
         @param[in]  device_address
                 The I2C address.
         @param[out] buffer
-                A buffer to hold the data read from the I2C controller.
+                A buffer to hold the data read from the I2C controller. The
+                buffer must be at least `requested_byte_count` bytes long.
         @param[in]  requested_byte_count
                 The number of bytes requested.
         @param[out] available
@@ -25,11 +33,11 @@ public:
         successful.
     */
     /**************************************************************************/
-    virtual const char * receive(uint16_t device_address, uint8_t * buffer, uint16_t size, uint32_t * available) = 0;
+    virtual const char * receive(uint16_t device_address, uint8_t * buffer, uint16_t requested_byte_count, uint32_t * available) = 0;
 
     /**************************************************************************/
     /*!
-        @brief  Resets the I2C port. Required by note-c.
+        @brief  The Serial-over-I2C protocol reset callback implementation
         @return `true`.
     */
     /**************************************************************************/
@@ -37,12 +45,17 @@ public:
 
     /**************************************************************************/
     /*!
-        @brief  Transmits an amount of data from the host in blocking mode.
+        @brief  The Serial-over-I2C protocol transmit callback implementation
+
+        A blocking transaction sending the provided buffer to the Notecard at
+        the provided address. Upon success, a `nullptr` is returned, otherwise
+        an error string describing the failure will be returned.
+
         @param[in] device_address
                 The I2C address.
         @param[in] buffer
-                The data to transmit over I2C. The caller should have shifted
-                it right so that the low bit is NOT the read/write bit.
+                The data to transmit over I2C. The caller should have already
+                shifted it right so that the low bit is NOT the read/write bit.
         @param[in] size
                 The number of bytes to transmit.
         @returns A string with an error, or `nullptr` if the transmission was
@@ -56,8 +69,7 @@ public:
         @brief  Size of the header for Serial-Over-I2C requests.
 
         @details The request made to the low-level I2C controller should be
-                 for REQUEST_HEADER_SIZE + the `size` parameter supplied to the
-                 `receive` method.
+                 for the `size` parameter supplied to the `receive` method.
 
         @see NoteI2c::receive
     */
@@ -80,9 +92,12 @@ public:
 
 /******************************************************************************/
 /*!
-    @brief  Helper function to abstract, create and maintain a single instance
+    @brief Creates a NoteI2c instance
+
+    Helper function to abstract, create and maintain a single instance
     of the NoteI2c interface implementation, as required by the underlying
     `note-c` library.
+
     @param[in] i2c_parameters
                Pointer to the parameters required to instantiate
                the platform specific I2C implementation.
