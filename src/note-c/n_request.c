@@ -116,7 +116,7 @@ void _noteSuspendTransactionDebug(void)
  */
 NOTE_C_STATIC uint32_t _noteTransaction_calculateTimeoutMs(J *req, bool isReq)
 {
-    uint32_t result = (CARD_INTER_TRANSACTION_TIMEOUT_SEC * 1000);
+    uint32_t result = ((CARD_INTER_TRANSACTION_TIMEOUT_SEC - 1) * 1000);
 
     // Interrogate the request
     if (JContainsString(req, (isReq ? "req" : "cmd"), "note.add")) {
@@ -137,12 +137,12 @@ NOTE_C_STATIC uint32_t _noteTransaction_calculateTimeoutMs(J *req, bool isReq)
         } else if (JIsPresent(req, "seconds")) {
             NOTE_C_LOG_DEBUG("Using `seconds` parameter value for timeout.");
             result = (JGetInt(req, "seconds") * 1000);
-        } else {
-            NOTE_C_LOG_DEBUG("No `milliseconds` or `seconds` parameter "
-                             "provided. Defaulting to 90-second timeout.");
-            result = (90 * 1000);
         }
     }
+
+    // Add one second to the timeout, to provide time for the Notecard to
+    // timeout first, then report the timeout to the host, when applicable.
+    result += 1000;
 
     return result;
 }
@@ -436,9 +436,6 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
     // Serialize the JSON request
     char *json = JPrintUnformatted(req); // `json` allocated, must be freed
     if (json == NULL) {
-        if (lockNotecard) {
-            _UnlockNote();
-        }
         _TransactionStop();
         NOTE_C_LOG_ERROR(ERRSTR("failed to serialize JSON request", c_mem));
         return NULL;
@@ -492,28 +489,6 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
     }
 #endif
 
-    // If a reset of the I/O interface is required for any reason, do it now.
-    // We must do this before acquiring lock.
-    if (resetRequired) {
-        NOTE_C_LOG_DEBUG("Resetting Notecard I/O Interface...");
-        if (!NoteReset()) {
-            _Free(json);
-            _TransactionStop();
-            const char *errStr = ERRSTR("failed to reset Notecard interface {io}", c_iobad);
-            if (cmdFound) {
-                NOTE_C_LOG_ERROR(errStr);
-                return NULL;
-            }
-            return _errDoc(id, errStr);
-        }
-    }
-
-    // Take the lock on the Notecard.  This is required to ensure that we don't
-    // have multiple threads trying to access the Notecard at the same time.
-    if (lockNotecard) {
-        _LockNote();
-    }
-
     // Calculate the transaction timeout based on the parameters in the request.
     const uint32_t transactionTimeoutMs = _noteTransaction_calculateTimeoutMs(req, reqFound);
 
@@ -546,6 +521,30 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
         }
     }
 #endif // !NOTE_C_LOW_MEM
+
+    // Take the lock on the Notecard.  This is required to ensure that we don't
+    // have multiple threads trying to access the Notecard at the same time.
+    if (lockNotecard) {
+        _LockNote();
+    }
+
+    // If a reset of the I/O interface is required for any reason, do it now.
+    if (resetRequired) {
+        NOTE_C_LOG_DEBUG("Resetting Notecard I/O Interface...");
+        if ((resetRequired = !_Reset())) {
+            if (lockNotecard) {
+                _UnlockNote();
+            }
+            _Free(json);
+            _TransactionStop();
+            const char *errStr = ERRSTR("failed to reset Notecard interface {io}", c_iobad);
+            if (cmdFound) {
+                NOTE_C_LOG_ERROR(errStr);
+                return NULL;
+            }
+            return _errDoc(id, errStr);
+        }
+    }
 
     // If we're performing retries, this is where we come back to
     // after a failed transaction.
