@@ -220,7 +220,7 @@ public:
 
     /**************************************************************************/
     /*!
-        @brief Poll for Notecard sync status
+        @brief Poll for Notecard sync status.
 
         @param [in] pollFrequencyMs
                 The minimum frequency to poll the Notecard for sync status.
@@ -250,8 +250,8 @@ public:
     /*!
         @brief  Deinitialize the Notecard object
 
-                This function clears the Notecard object's communication
-                interfaces, and frees all associated memory.
+        This function clears the Notecard object's communication
+        interfaces, and frees all associated memory.
     */
     /**************************************************************************/
     void end(void);
