@@ -164,8 +164,10 @@ void noteTransactionStop (void) {
 /**************************************************************************/
 /*!
     @brief  Platform Initialization for the Notecard.
-            This function configures system functions to be used
-            by the Notecard.
+
+    This function configures the user agent information and optionally
+    the default system functions to be used by the Notecard.
+
     @param    assignCallbacks
               When `true` the system callbacks will be assigned,
               when `false` the system callbacks will be cleared.
@@ -194,22 +196,6 @@ Notecard::~Notecard (void)
     noteTxn = make_note_txn(nullptr);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Initialize the Notecard for I2C.
-            This function configures the Notecard to use the I2C
-            bus for communication with the host.
-    @param    noteI2c
-              A platform specific I2C implementation to use for
-              communicating with the Notecard from the host.
-    @param    i2cAddress
-              The I2C Address to use for the Notecard.
-    @param    i2cMtu
-              The max length of each message to send from the host
-              to the Notecard. Used to ensure the messages are sized
-              appropriately for the host.
-*/
-/**************************************************************************/
 void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMtu_)
 {
     noteI2c = noteI2c_;
@@ -224,16 +210,6 @@ void Notecard::begin(NoteI2c * noteI2c_, uint32_t i2cAddress_, uint32_t i2cMtu_)
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief  Initialize the Notecard for Serial communication.
-            This function configures the Notecard to use Serial
-            for communication with the host.
-    @param    noteSerial
-              A platform specific serial implementation to use for
-              communicating with the Notecard from the host.
-*/
-/**************************************************************************/
 void Notecard::begin(NoteSerial * noteSerial_)
 {
     noteSerial = noteSerial_;
@@ -246,42 +222,16 @@ void Notecard::begin(NoteSerial * noteSerial_)
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief  Periodically show Notecard sync status, returning `TRUE`
-            if something was displayed to the debug stream.
-    @param    pollFrequencyMs
-              The frequency to poll the Notecard for sync status.
-    @param    maxLevel
-              The maximum log level to output to the debug console. Pass
-              -1 for all.
-    @return `true` if a pending response was displayed to the debug stream.
-*/
-/**************************************************************************/
 bool Notecard::debugSyncStatus(int pollFrequencyMs, int maxLevel)
 {
     return NoteDebugSyncStatus(pollFrequencyMs, maxLevel);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Deletes a `J` JSON response object from memory.
-    @param    rsp
-              A `J` JSON response object.
-*/
-/**************************************************************************/
 void Notecard::deleteResponse(J *rsp) const
 {
     NoteDeleteResponse(rsp);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Deinitialize the Notecard object communication.
-            This function clears the Notecard object's communication
-            interfaces, and frees all associated memory.
-*/
-/**************************************************************************/
 void Notecard::end(void)
 {
     // Clear I2C Interface
@@ -306,16 +256,6 @@ void Notecard::end(void)
     platformInit(false);
 }
 
-/**************************************************************************/
-/*!
-    @deprecated NoteDebug, which this function wraps, should be treated as an
-    internal Notecard logging function, used only by the library itself
-    (note-arduino and note-c) and not its users.
-    @brief  Write a message to the serial debug stream.
-    @param    message
-              A string to log to the serial debug stream.
-*/
-/**************************************************************************/
 NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message) const
 {
 #ifdef NOTE_ARDUINO_NO_DEPRECATED_ATTR
@@ -324,17 +264,6 @@ NOTE_ARDUINO_DEPRECATED void Notecard::logDebug(const char *message) const
     NoteDebug(message);
 }
 
-/**************************************************************************/
-/*!
-    @deprecated NoteDebug, which this function wraps, should be treated as an
-    internal Notecard logging function, used only by the library itself
-    (note-arduino and note-c) and not its users.
-    @brief  Write a formatted message to the serial debug stream.
-    @param    format
-              A format string to log to the serial debug stream.
-    @param    ... one or more values to interpolate into the format string.
-*/
-/**************************************************************************/
 NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...) const
 {
     char message[256];
@@ -349,125 +278,41 @@ NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...) const
     NoteDebug(message);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Creates a new command object for population by the host.
-            This function accepts a command string (for example, `"note.add"`)
-            and initializes a JSON Object to return to the host.
-    @param    request
-              The command name, for example, `note.add`.
-    @return A `J` JSON Object populated with the request name.
-*/
-/**************************************************************************/
 J *Notecard::newCommand(const char *request) const
 {
     return NoteNewCommand(request);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Creates a new request object for population by the host.
-            This function accepts a request string (for example, `"note.add"`)
-            and initializes a JSON Object to return to the host.
-    @param    request
-              The request name, for example, `note.add`.
-    @return A `J` JSON Object populated with the request name.
-*/
-/**************************************************************************/
 J *Notecard::newRequest(const char *request) const
 {
     return NoteNewRequest(request);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard and returns the JSON Response.
-            This function takes a populated `J` JSON request object
-            and sends it to the Notecard.
-    @param    req
-              A `J` JSON request object.
-    @return `J` JSON Object with the response from the Notecard.
-*/
-/**************************************************************************/
 J *Notecard::requestAndResponse(J *req) const
 {
     return NoteRequestResponse(req);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard, retrying it on failure until the
-            provided timeout interval lapses, and returns the JSON response.
-    @param    req
-              A `J` JSON request object.
-    @param    timeoutSeconds
-              The timeout interval, in seconds.
-    @return `J` JSON Object with the response from the Notecard.
-*/
-/**************************************************************************/
 J *Notecard::requestAndResponseWithRetry(J *req, uint32_t timeoutSeconds) const
 {
     return NoteRequestResponseWithRetry(req, timeoutSeconds);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Determines if there is an error string present in a response object.
-    @param    rsp
-              A `J` JSON Response object.
-    @return `true` if the response object contains an error.
-*/
-/**************************************************************************/
 bool Notecard::responseError(J *rsp) const
 {
     return NoteResponseError(rsp);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard.
-            This function takes a populated `J` JSON request object
-            and sends it to the Notecard.
-    @param    req
-              A `J` JSON request object.
-    @return `True` if the message was successfully sent to the Notecard,
-            `False` if there was an error.
-*/
-/**************************************************************************/
 bool Notecard::sendRequest(J *req) const
 {
     return NoteRequest(req);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Sends a request to the Notecard, retrying it on failure until the
-            provided timeout interval lapses.
-    @param    req
-              A `J` JSON request object.
-    @param    timeoutSeconds
-              The timeout interval, in seconds.
-    @return `True` if the message was successfully sent to the Notecard,
-            `False` if the message couldn't be sent.
-*/
-/**************************************************************************/
 bool Notecard::sendRequestWithRetry(J *req, uint32_t timeoutSeconds) const
 {
     return NoteRequestWithRetry(req, timeoutSeconds);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Set the debug output source.
-            A NoteLog object will be constructed via `make_note_log()`
-            using a platform specific logging channel (for example, `Serial`
-            on Arduino). The specified channel will be configured as the
-            source for debug messages provided to `notecard.logDebug()`.
-    @param    noteLog
-              A platform specific log implementation to be used for
-              debug output.
-*/
-/**************************************************************************/
 void Notecard::setDebugOutputStream(NoteLog * noteLog_)
 {
     noteLog = noteLog_;
@@ -479,71 +324,18 @@ void Notecard::setDebugOutputStream(NoteLog * noteLog_)
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief  Override default memory management and timing functions.
-    @param    mallocHook
-              A memory allocation hook.
-    @param    freeHook
-              A memory deallocation hook.
-    @param    delayMsHook
-              A delay execution hook.
-    @param    getMsHook
-              A get current time hook.
-*/
-/**************************************************************************/
 void Notecard::setFn(mallocFn mallocHook, freeFn freeHook, delayMsFn delayMsHook, getMsFn getMsHook) {
     NoteSetFn(mallocHook, freeHook, delayMsHook, getMsHook);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Set the lock/unlock functions the Notecard uses for I2C access.
-    @param    lockI2cFn
-              A user-defined callback that blocks until access to the I2C
-              bus has become available, then returns with ownership of the
-              I2C bus.
-    @param    unlockI2cFn
-              A user-defined callback that releases ownership of the
-              I2C bus taken during the call to `lockI2cFn()`.
-*/
-/**************************************************************************/
 void Notecard::setFnI2cMutex(mutexFn lockI2cFn_, mutexFn unlockI2cFn_) {
     NoteSetFnI2CMutex(lockI2cFn_, unlockI2cFn_);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Set the lock/unlock functions the host MCU uses to ensure
-            a complete transaction with the Notecard.
-    @param    lockNoteFn
-              A user-defined callback that blocks until the Notecard has
-              completed any previous transactions, then returns with
-              ownership of the next Notecard transaction.
-    @param    unlockNoteFn
-              A user-defined callback that releases ownership of the
-              Notecard transaction taken during the call to `lockNoteFn()`.
-*/
-/**************************************************************************/
 void Notecard::setFnNoteMutex(mutexFn lockNoteFn_, mutexFn unlockNoteFn_) {
     NoteSetFnNoteMutex(lockNoteFn_, unlockNoteFn_);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Set the transaction pins.
-            A NoteTxn object will be constructed via `make_note_txn()`
-            using a platform specific tuple of digital I/O pins. The
-            pins are used to send a request to transact and to listen
-            for the clear to transact signal. Transaction pins are not
-            necessary on any legacy Notecards, and are only necessary
-            for certain Notecard SKUs. The pins allow the Notecard to
-            inform the host it has had time to awaken from deep sleep
-            and is ready to process commands.
-    @param    noteTxn
-              A platform specific tuple of digital I/O pins.
-*/
-/**************************************************************************/
 void Notecard::setTransactionPins(NoteTxn * noteTxn_) {
     noteTxn = noteTxn_;  // Set global interface
     if (noteTxn_) {
