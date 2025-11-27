@@ -3,27 +3,49 @@
 {
     "name": "Arduino Development Environment Dockerfile",
 
-    // Sets the run context to one level up instead of the .devcontainer folder.
-    "context": "..",
+    // Use 'dockerComposeFile' to specify a docker-compose.yml file.
+    "dockerComposeFile": "docker-compose.yaml",
 
-    // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-    "image": "ghcr.io/blues/note_arduino_ci:latest",
-    // "dockerFile": "../Dockerfile",
+    // Set the service to use for the container.
+    "service": "devcontainer",
+
+    // Use 'workspaceFolder' to specify the folder to open in the container.
+    "workspaceFolder": "/workspace",
+
+    // Set environment variables inside the container(s)
+    "containerEnv": {},
 
     // Set *default* container specific settings.json values on container create.
-    "settings": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "marus25.cortex-debug",
+                "marus25.cortex-debug-dp-stm32l4",
+                "mcu-debug.debug-tracker-vscode",
+                "mcu-debug.memory-view",
+                "mcu-debug.rtos-views",
+                "mcu-debug.peripheral-viewer",
+                "ms-vscode.cpptools",
+                "shardulm94.trailing-spaces",
+                "${containerWorkspaceFolder}/.vscode/extensions/notestation-2.0.0.vsix"
+            ],
+            "settings": {}
+        }
+    },
 
-    // Add the IDs of extensions you want installed when the container is created.
-    "extensions": [
-        "ms-vscode.cpptools",
-        "shardulm94.trailing-spaces"
-    ]
+    // Set environment variables for the container(s)
+    "remoteEnv": {
+        "BLUES": "${localEnv:BLUES}"
+    },
+
+    // Inject unique hostname into tailnet
+    "initializeCommand": "printf 'TS_HOSTNAME=vscode-client-%s\\n' \"${localEnv:USER}\" | tr '[:upper:]' '[:lower:]' | sed 's/^ts_hostname/TS_HOSTNAME/' > .devcontainer/ts_config.env",
+
+    // Run commands after the container is created -> setup the execution environment
+    // "postCreateCommand": "code-server --install-extension ${containerWorkspaceFolder}/.vscode/extensions/notestation-0.3.0.vsix",
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
-
-    // Uncomment the next line to run commands after the container is created - for example installing curl.
-    // "postCreateCommand": "apt-get update && apt-get install -y curl",
 
     // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
     // "runArgs": [
@@ -34,5 +56,5 @@
     // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
 
     // Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
-    // "remoteUser": "blues"
+    "remoteUser": "blues"
 }

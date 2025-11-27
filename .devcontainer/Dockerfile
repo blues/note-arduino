@@ -3,19 +3,20 @@
 # copyright holder including that found in the LICENSE file.
 
 # Build development environment
-# docker build --file Dockerfile.arduino-cli --tag arduino-cli .
+# docker build --tag arduino-cli .
 
 # Launch development environment
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
-ARG ARDUINO_CLI_VERSION=1.1.1
+ARG ARDUINO_CLI_VERSION=1.4.0
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UID=1000
 ARG USER="blues"
 
-# POSIX compatible (Linux/Unix) base image
-FROM debian:bookworm-slim
+# Debian-based, POSIX compatible (Linux/Unix) base image
+FROM ghcr.io/blues/notestation-client:latest
+# FROM notestation-client:latest
 
 # Import global arguments
 ARG ARDUINO_CLI_VERSION
@@ -30,23 +31,6 @@ ARG ECHO_BC_FILE='$bcfile'
 # Define environment variables
 ENV ARDUINO_UPDATER_ENABLE_NOTIFICATION=false
 
-# Create Non-Root User
-RUN ["dash", "-c", "\
-    addgroup \
-     --gid ${UID} \
-     \"${USER}\" \
- && adduser \
-     --disabled-password \
-     --gecos \"\" \
-     --ingroup \"${USER}\" \
-     --uid ${UID} \
-     \"${USER}\" \
- && usermod \
-     --append \
-     --groups \"dialout,plugdev\" \
-     \"${USER}\" \
-"]
-
 # Establish development environment
 RUN ["dash", "-c", "\
     apt-get update --quiet \
@@ -60,6 +44,7 @@ RUN ["dash", "-c", "\
      git \
      gzip \
      lcov \
+     libjson-xs-perl \
      nano \
      python-is-python3 \
      python3 \
@@ -67,9 +52,6 @@ RUN ["dash", "-c", "\
      ssh \
      tree \
      valgrind \
- && pip install --break-system-packages \
-     adafruit-nrfutil \
-     pyserial \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
@@ -81,18 +63,16 @@ RUN ["dash", "-c", "\
  && mkdir -p /etc/bash_completion.d/ \
  && arduino-cli completion bash > /etc/bash_completion.d/arduino-cli.sh \
  && echo >> /etc/bash.bashrc \
- && echo \"for bcfile in /etc/bash_completion.d/* ; do\" >> /etc/bash.bashrc \
- && echo \"    [ -f \\\"${ECHO_BC_FILE}\\\" ] && . \\\"${ECHO_BC_FILE}\\\"\" >> /etc/bash.bashrc \
- && echo \"done\" >> /etc/bash.bashrc \
- && echo \"if [ -f /etc/bash_completion ]; then\" >> /etc/bash.bashrc \
- && echo \"    . /etc/bash_completion\" >> /etc/bash.bashrc \
- && echo \"fi\" >> /etc/bash.bashrc \
+ && echo '# Load bash completion scripts' >> /etc/bash.bashrc \
+ && echo '[ -f /etc/bash_completion ] && . /etc/bash_completion' >> /etc/bash.bashrc \
+ && echo 'for f in /etc/bash_completion.d/*; do [ -f \\\"$f\\\" ] && . \\\"$f\\\"; done' >> /etc/bash.bashrc \
 "]
 
 # Configure Arduino CLI
 USER ${USER}
 RUN ["dash", "-c", "\
     arduino-cli config init \
+ && arduino-cli config set network.connection_timeout 300s \
  && arduino-cli config add board_manager.additional_urls \
      https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json \
      https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json \

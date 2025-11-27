@@ -220,5 +220,46 @@
                 "$gcc"
             ],
         },
+        {
+        "label": "Note Arduino: Build Example",
+        "type": "shell",
+        "command": "arduino-cli compile ${input:example} --fqbn STMicroelectronics:stm32:Blues:pnum=${input:board},opt=ogstd,dbg=enable_sym --output-dir ./build/${input:board} --log-level trace --verbose --warnings all",
+        "group": "none",
+        "presentation": {
+            "reveal": "always",
+            "panel": "shared"
+        },
+        "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+        "id": "board",
+        "type": "pickString",
+        "description": "Select the board",
+        "options": [
+            "SWAN_R5",
+            "CYGNET"
+        ],
+        "default": "SWAN_R5"
+        },
+        {
+        "id": "example",
+        "type": "pickString",
+        "description": "Select the example to compile",
+        "options": [
+            "./examples/Example0_LibrarylessCommunication/Example0_LibrarylessCommunication.ino",
+            "./examples/Example1_NotecardBasics/Example1_NotecardBasics.ino",
+            "./examples/Example2_PeriodicCommunications/Example2_PeriodicCommunications.ino",
+            "./examples/Example3_InboundPolling/Example3_InboundPolling.ino",
+            "./examples/Example4_InboundInterrupts/Example4_InboundInterrupts.ino",
+            "./examples/Example5_UsingTemplates/Example5_UsingTemplates.ino",
+            "./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino",
+            "./examples/Example7_PowerControl/Example7_PowerControl.ino",
+            "./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino",
+            "./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino",
+        ],
+        "default": "./examples/Example6_SensorTutorial/Example6_SensorTutorial.ino"
+        }
     ]
 }

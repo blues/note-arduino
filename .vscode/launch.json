@@ -85,6 +85,6 @@
             "postDebugTask": "Clear Test Binaries",
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb"
-        },
+        }
     ]
 }
