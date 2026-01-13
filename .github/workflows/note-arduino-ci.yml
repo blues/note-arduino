@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   check_dockerfile_changed:
     runs-on: ubuntu-latest
@@ -25,7 +29,7 @@ jobs:
           base: 'master'
           filters: |
             changed:
-              - 'Dockerfile'
+              - '.devcontainer/Dockerfile'
 
   build_ci_docker_image:
     runs-on: ubuntu-latest
@@ -50,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: .devcontainer/Dockerfile
           load: true
           tags: ghcr.io/blues/note_arduino_ci:latest
           outputs: type=docker,dest=/tmp/note_arduino_ci_image.tar
@@ -62,7 +67,6 @@ jobs:
 
   run_tests:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
     needs: [build_ci_docker_image]
 
     steps:
@@ -94,7 +98,6 @@ jobs:
 
   build_examples:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
     needs: [build_ci_docker_image]
     strategy:
       fail-fast: false
@@ -110,21 +113,37 @@ jobs:
           - ./examples/Example7_PowerControl/Example7_PowerControl.ino
           - ./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino
           - ./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino
-        fully-qualified-board-name:
-          - adafruit:nrf52:feather52840:softdevice=s140v6
-          - adafruit:samd:adafruit_feather_m4
-          # The binary examples don't fit in the Uno's flash.
-          # - arduino:avr:uno
-          # The mbed_nano platform generates compiler warning.
-          # https://github.com/arduino/ArduinoCore-mbed/issues/1024
-          # - arduino:mbed_nano:nano33ble
-          - esp32:esp32:featheresp32
-          - rp2040:rp2040:rpipico
-          - SparkFun:apollo3:sfe_artemis_thing_plus
-          - STMicroelectronics:stm32:Blues:pnum=CYGNET
-          - STMicroelectronics:stm32:Blues:pnum=SWAN_R5
-          - STMicroelectronics:stm32:GenF4:pnum=FEATHER_F405
-          - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
+        board:
+          # Order: fqbn, extra-flags (matches build_example.sh parameter order)
+          # Note: index URLs are pre-configured in Dockerfile, no need to specify here
+          # adafruit: https://raw.githubusercontent.com/adafruit/arduino-board-index/gh-pages/package_adafruit_index.json
+          - fqbn: adafruit:nrf52:feather52840:softdevice=s140v6
+          - fqbn: adafruit:samd:adafruit_feather_m4
+          # arduino: (built-in, no additional index needed)
+          - fqbn: arduino:avr:uno
+          - fqbn: arduino:mbed_nano:nano33ble
+            # The mbed_nano platform generates compiler warning.
+            # https://github.com/arduino/ArduinoCore-mbed/issues/1024
+            extra-flags: "-DMBED_CONF_NORDIC_NRF_LF_CLOCK_SRC=NRF_LF_SRC_XTAL"
+          # esp32: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          - fqbn: esp32:esp32:featheresp32
+          # rp2040: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+          - fqbn: rp2040:rp2040:rpipico
+          # SparkFun: https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/main/package_sparkfun_apollo3_index.json
+          - fqbn: SparkFun:apollo3:sfe_artemis_thing_plus
+          # STMicroelectronics: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
+          - fqbn: STMicroelectronics:stm32:Blues:pnum=CYGNET
+          - fqbn: STMicroelectronics:stm32:Blues:pnum=SWAN_R5
+          - fqbn: STMicroelectronics:stm32:GenF4:pnum=FEATHER_F405
+          - fqbn: STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
+        exclude:
+          # Binary examples don't fit in AVR Uno's flash
+          - board:
+              fqbn: arduino:avr:uno
+            example-sketch: ./examples/Example8_BinarySendReceive/Example8_BinarySendReceive.ino
+          - board:
+              fqbn: arduino:avr:uno
+            example-sketch: ./examples/Example9_BinarySendReceiveChunked/Example9_BinarySendReceiveChunked.ino
 
     steps:
       - name: Checkout code
@@ -139,10 +158,11 @@ jobs:
         run: |
           docker run --rm --volume $(pwd):/note-arduino/ \
                           --workdir /note-arduino/ \
-                          --entrypoint ./examples/build_example.sh \
+                          --entrypoint ./scripts/build_example.sh \
                           ghcr.io/blues/note_arduino_ci:latest \
-                          ${{ matrix.fully-qualified-board-name }} \
-                          ${{ matrix.example-sketch }}
+                          "${{ matrix.board.fqbn }}" \
+                          "${{ matrix.example-sketch }}" \
+                          "${{ matrix.board.extra-flags }}"
 
   publish_ci_image:
     runs-on: ubuntu-latest
@@ -152,6 +172,9 @@ jobs:
     if: ${{ github.event_name == 'push' && needs.build_ci_docker_image.result == 'success' }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -165,5 +188,7 @@ jobs:
       - name: Push image to registry
         uses: docker/build-push-action@v6
         with:
+          context: .
+          file: .devcontainer/Dockerfile
           push: true
           tags: ghcr.io/blues/note_arduino_ci:latest

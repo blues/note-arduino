@@ -52,6 +52,8 @@ RUN ["dash", "-c", "\
      ssh \
      tree \
      valgrind \
+ && pip install --break-system-packages \
+     adafruit-nrfutil \
  && apt-get clean \
  && apt-get purge \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
@@ -80,14 +82,18 @@ RUN ["dash", "-c", "\
      https://raw.githubusercontent.com/adafruit/arduino-board-index/gh-pages/package_adafruit_index.json \
      https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json \
  && arduino-cli core update-index \
- && arduino-cli core install adafruit:nrf52 \
- && arduino-cli core install adafruit:samd \
- && arduino-cli core install arduino:avr \
- && arduino-cli core install arduino:mbed_nano \
- && arduino-cli core install arduino:samd \
- && arduino-cli core install esp32:esp32 \
- && arduino-cli core install rp2040:rp2040 \
- && arduino-cli core install SparkFun:apollo3 \
- && arduino-cli core install STMicroelectronics:stm32 \
  && arduino-cli lib install \"Blues Wireless Notecard Pseudo Sensor\" \
 "]
+
+# Install Platform Support in Development Container
+# RUN ["dash", "-c", "\
+#     arduino-cli core install adafruit:nrf52 \
+#  && arduino-cli core install adafruit:samd \
+#  && arduino-cli core install arduino:avr \
+#  && arduino-cli core install arduino:mbed_nano \
+#  && arduino-cli core install arduino:samd \
+#  && arduino-cli core install esp32:esp32 \
+#  && arduino-cli core install rp2040:rp2040 \
+#  && arduino-cli core install SparkFun:apollo3 \
+#  && arduino-cli core install STMicroelectronics:stm32 \
+# "]
