@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/docker-existing-dockerfile
 {
-    "name": "Arduino Development Environment Dockerfile",
+    "name": "Notestation Development Environment",
 
     // Use 'dockerComposeFile' to specify a docker-compose.yml file.
     "dockerComposeFile": "docker-compose.yaml",
@@ -27,7 +27,7 @@
                 "mcu-debug.peripheral-viewer",
                 "ms-vscode.cpptools",
                 "shardulm94.trailing-spaces",
-                "${containerWorkspaceFolder}/.vscode/extensions/notestation-2.0.0.vsix"
+                "${containerWorkspaceFolder}/.vscode/extensions/notestation-2.0.1.vsix"
             ],
             "settings": {}
         }
@@ -39,7 +39,7 @@
     },
 
     // Inject unique hostname into tailnet
-    "initializeCommand": "printf 'TS_HOSTNAME=vscode-client-%s\\n' \"${localEnv:USER}\" | tr '[:upper:]' '[:lower:]' | sed 's/^ts_hostname/TS_HOSTNAME/' > .devcontainer/ts_config.env",
+    "initializeCommand": "printf 'TS_HOSTNAME=vscode-client-%s\\n' \"${localEnv:USER}\" | tr '[:upper:]' '[:lower:]' | sed 's/^ts_hostname/TS_HOSTNAME/' > .devcontainer/notestation/ts_config.env",
 
     // Run commands after the container is created -> setup the execution environment
     // "postCreateCommand": "code-server --install-extension ${containerWorkspaceFolder}/.vscode/extensions/notestation-0.3.0.vsix",

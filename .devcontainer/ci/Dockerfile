@@ -2,16 +2,15 @@
 # Use of this source code is governed by licenses granted by the
 # copyright holder including that found in the LICENSE file.
 
-# Build development environment
+# Build ci environment
 # docker build --tag arduino-cli .
 
-# Launch development environment
+# Launch ci environment
 # docker run --entrypoint bash --interactive --rm --tty --volume "$(pwd)":/host-volume/ --workdir /host-volume/ arduino-cli
 
 # Define global arguments
 ARG ARDUINO_CLI_VERSION=1.4.0
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG UID=1000
 ARG USER="blues"
 
 # Debian-based, POSIX compatible (Linux/Unix) base image
@@ -21,7 +20,6 @@ FROM ghcr.io/blues/notestation-client:latest
 # Import global arguments
 ARG ARDUINO_CLI_VERSION
 ARG DEBIAN_FRONTEND
-ARG UID
 ARG USER
 
 # Define local arguments
@@ -84,16 +82,3 @@ RUN ["dash", "-c", "\
  && arduino-cli core update-index \
  && arduino-cli lib install \"Blues Wireless Notecard Pseudo Sensor\" \
 "]
-
-# Install Platform Support in Development Container
-# RUN ["dash", "-c", "\
-#     arduino-cli core install adafruit:nrf52 \
-#  && arduino-cli core install adafruit:samd \
-#  && arduino-cli core install arduino:avr \
-#  && arduino-cli core install arduino:mbed_nano \
-#  && arduino-cli core install arduino:samd \
-#  && arduino-cli core install esp32:esp32 \
-#  && arduino-cli core install rp2040:rp2040 \
-#  && arduino-cli core install SparkFun:apollo3 \
-#  && arduino-cli core install STMicroelectronics:stm32 \
-# "]

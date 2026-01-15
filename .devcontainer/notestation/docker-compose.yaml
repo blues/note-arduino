@@ -15,7 +15,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ..:/workspace:cached
+      - ../..:/workspace:cached
 
   tailscale:
     image: tailscale/tailscale:v1.90.6

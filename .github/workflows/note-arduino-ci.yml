@@ -29,7 +29,7 @@ jobs:
           base: 'master'
           filters: |
             changed:
-              - '.devcontainer/Dockerfile'
+              - '.devcontainer/ci/Dockerfile'
 
   build_ci_docker_image:
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: .devcontainer/Dockerfile
+          file: .devcontainer/ci/Dockerfile
           load: true
           tags: ghcr.io/blues/note_arduino_ci:latest
           outputs: type=docker,dest=/tmp/note_arduino_ci_image.tar
@@ -189,6 +189,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: .devcontainer/Dockerfile
+          file: .devcontainer/ci/Dockerfile
           push: true
           tags: ghcr.io/blues/note_arduino_ci:latest
