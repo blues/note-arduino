@@ -13,7 +13,7 @@
     "image": "ghcr.io/blues/note_arduino_ci:latest",
 
     // Use 'workspaceFolder' to specify the folder to open in the container.
-    "workspaceFolder": "/workspace",
+    "workspaceFolder": "/workspaces/note-arduino",
 
     // Set *default* container specific settings.json values on container create.
     "customizations": {
