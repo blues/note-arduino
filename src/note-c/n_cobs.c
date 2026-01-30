@@ -3,8 +3,10 @@
 // copyright holder including that found in the LICENSE file.
 
 #include <stdint.h>
+#include <string.h>
 
 #define COBS_EOP_OVERHEAD 1
+#define COBS_MAX_PACKET_SIZE 254
 
 //**************************************************************************/
 /*!
@@ -22,26 +24,67 @@
   @param  dst Pointer to the buffer for the decoded data
 
   @return the length of the decoded data
+
+  @note OPTIMIZED: Uses bulk copy operations (memmove for in-place safety)
+        instead of byte-by-byte processing, significantly reducing CPU cycles.
  */
 /**************************************************************************/
 uint32_t _cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 {
-    const uint8_t *start = dst, *end = ptr + length;
-    uint8_t code = 0xFF, copy = 0;
-    for (; ptr < end; copy--) {
-        if (copy != 0) {
-            *dst++ = (*ptr++) ^ eop;
+    const uint8_t *start = dst;
+    const uint8_t *end = ptr + length;
+    uint8_t code = 0xFF;  // Special initial value: 0xFF means "first iteration, don't insert zero"
+
+    while (ptr < end) {
+        // Insert a zero byte UNLESS this is the first iteration (code == 0xFF)
+        // COBS encoding removes zeros; decoding restores them between blocks
+        if (code != 0xFF) {
+            *dst++ = 0;
+        }
+
+        // Read next code byte (indicates how many data bytes follow)
+        code = (*ptr++) ^ eop;
+
+        // code == 0 is the termination marker
+        if (code == 0) {
+            break;
+        }
+
+        // Code byte meanings:
+        //   code=1: 0 data bytes follow (zero was here, already inserted above)
+        //   code=2: 1 data byte follows
+        //   code=0xFF: 254 data bytes follow (full block, no zero after)
+        // Therefore: bytesToCopy = code - 1
+        uint32_t bytesToCopy = code - 1;
+
+        // Safety: don't read past end of input
+        if (ptr + bytesToCopy > end) {
+            bytesToCopy = (uint32_t)(end - ptr);
+        }
+
+        // OPTIMIZATION: Bulk copy with XOR applied
+        if (eop == 0) {
+            // Fast path: no XOR needed
+            // CRITICAL: Use memmove() not memcpy() because in-place decoding is supported.
+            // When dst == original ptr, we're shifting data left (removing code bytes),
+            // which creates overlapping source and destination regions.
+            // memmove() correctly handles overlapping regions; memcpy() behavior is undefined.
+            memmove(dst, ptr, bytesToCopy);
         } else {
-            if (code != 0xFF) {
-                *dst++ = 0;
-            }
-            copy = code = (*ptr++) ^ eop;
-            if (code == 0) {
-                break;
+            // XOR path: tight array-indexed loop enables SIMD/NEON auto-vectorization.
+            // Safe for in-place decode because dst <= ptr (we're removing code bytes),
+            // so reads are always ahead of writes when processing left-to-right.
+            for (uint32_t i = 0; i < bytesToCopy; i++) {
+                dst[i] = ptr[i] ^ eop;
             }
         }
+
+        // Advance pointers
+        dst += bytesToCopy;
+        ptr += bytesToCopy;
     }
-    return dst - start;
+
+    return (uint32_t)(dst - start);
 }
 
 //**************************************************************************/
@@ -62,30 +105,78 @@ uint32_t _cobsDecode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 
   @note You may use `_cobsEncodedLength()` to calculate the required size for
         the buffer pointed to by the `dst` parameter.
+  @note OPTIMIZED: Uses memchr() to skip to next zero byte and bulk copy
+        operations instead of byte-by-byte processing, significantly reducing
+        CPU cycles.
 
   @see _cobsEncodedLength()
  */
 /**************************************************************************/
 uint32_t _cobsEncode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
 {
-    uint8_t ch;
     uint8_t *start = dst;
     uint8_t code = 1;
-    uint8_t *code_ptr = dst++;          // Where to insert the leading count
-    while (length--) {
-        ch = *ptr++;
-        if (ch != 0) {                  // Input byte not zero
-            *dst++ = ch ^ eop;
-            code++;
+    uint8_t *code_ptr = dst++;          // Reserve first byte for code
+
+    while (length > 0) {
+        // COBS encoding constraint: code byte ranges from 1 to 0xFF (255).
+        // code=1 means 0 data bytes follow (next byte is another code or end)
+        // code=2 means 1 data byte follows, ..., code=0xFF means 254 data bytes follow.
+        // Therefore, maximum bytes we can encode before needing a new code byte is 254.
+        uint32_t maxBytes = 0xFF - code;  // 254 when code=1, decreases as code increases
+
+        // Limit search to available data and code byte capacity
+        uint32_t searchLen = (length < maxBytes) ? length : maxBytes;
+
+        // OPTIMIZATION: Use memchr() to find next zero byte in O(n) hardware-accelerated search
+        // instead of checking each byte individually. This is typically 10-50x faster for
+        // finding zeros in long runs of non-zero data.
+        uint8_t *zeroPos = (uint8_t *)memchr(ptr, 0, searchLen);
+
+        // Calculate chunk length: bytes to process before hitting zero or code limit
+        uint32_t chunkLen;
+        if (zeroPos != NULL) {
+            // Found zero: process all bytes UP TO (not including) the zero
+            chunkLen = (uint32_t)(zeroPos - ptr);
+        } else {
+            // No zero found: process all searchLen bytes
+            chunkLen = searchLen;
         }
-        if (ch == 0 || code == 0xFF) {  // Input is zero or complete block
+
+        // Bulk copy using memmove() for overlap safety, then XOR in-place if needed
+        memmove(dst, ptr, chunkLen);
+        if (eop != 0) {
+            for (uint32_t i = 0; i < chunkLen; i++) {
+                dst[i] ^= eop;
+            }
+        }
+
+        // Update pointers and remaining length
+        dst += chunkLen;
+        ptr += chunkLen;
+        length -= chunkLen;
+        code += chunkLen;
+
+        // Determine why we stopped: hit a zero byte or reached code limit (0xFF)
+        if (zeroPos != NULL && length > 0) {
+            // Hit a zero byte: write current code, start new block
+            *code_ptr = code ^ eop;
+            code = 1;
+            code_ptr = dst++;
+            ptr++;          // Skip over the zero byte in input
+            length--;
+        } else if (code == 0xFF) {
+            // Hit code limit (254 data bytes): write 0xFF code, start new block
             *code_ptr = code ^ eop;
             code = 1;
             code_ptr = dst++;
         }
     }
-    *code_ptr = code ^ eop;             // Final code
-    return (dst - start);
+
+    // Write final code byte for the last block
+    *code_ptr = code ^ eop;
+
+    return (uint32_t)(dst - start);
 }
 
 //**************************************************************************/
@@ -98,25 +189,53 @@ uint32_t _cobsEncode(uint8_t *ptr, uint32_t length, uint8_t eop, uint8_t *dst)
   @return the length required for encoded data
 
   @note  The computed length does not include the EOP (end-of-packet) marker
+  @note  OPTIMIZED: Uses memchr() to skip to zeros instead of checking every
+         byte, matching the optimization strategy in _cobsEncode().
  */
 /**************************************************************************/
 uint32_t _cobsEncodedLength(const uint8_t *ptr, uint32_t length)
 {
-    uint8_t ch;
-    uint32_t dst = 1;
+    uint32_t encodedLen = 1;  // Start with 1 for the first code byte
     uint8_t code = 1;
-    while (length--) {
-        ch = *ptr++;
-        if (ch != 0) {                  // Input byte not zero
-            dst++;
-            code++;
+
+    while (length > 0) {
+        // Calculate max bytes we can process before hitting code limit (0xFF)
+        uint32_t maxBytes = 0xFF - code;
+        uint32_t searchLen = (length < maxBytes) ? length : maxBytes;
+
+        // OPTIMIZATION: Use memchr() to find next zero instead of byte-by-byte scan
+        const uint8_t *zeroPos = (const uint8_t *)memchr(ptr, 0, searchLen);
+
+        uint32_t chunkLen;
+        if (zeroPos != NULL) {
+            // Found zero: count bytes up to (not including) the zero
+            chunkLen = (uint32_t)(zeroPos - ptr);
+        } else {
+            // No zero found: count all searchLen bytes
+            chunkLen = searchLen;
         }
-        if (ch == 0 || code == 0xFF) {  // Input is zero or complete block
+
+        // Add data bytes to output length
+        encodedLen += chunkLen;
+        ptr += chunkLen;
+        length -= chunkLen;
+        code += chunkLen;
+
+        // Check if we need a new code byte
+        if (zeroPos != NULL && length > 0) {
+            // Hit a zero: will need a new code byte for next block
+            encodedLen++;
             code = 1;
-            dst++;
+            ptr++;          // Skip the zero
+            length--;
+        } else if (code == 0xFF) {
+            // Hit code limit: will need a new code byte for next block
+            encodedLen++;
+            code = 1;
         }
     }
-    return dst;
+
+    return encodedLen;
 }
 
 //**************************************************************************/
@@ -137,7 +256,7 @@ uint32_t _cobsEncodedLength(const uint8_t *ptr, uint32_t length)
 /**************************************************************************/
 uint32_t _cobsEncodedMaxLength(uint32_t length)
 {
-    const uint32_t overheadBytes = ((length / 254) + ((length % 254) > 0));
+    const uint32_t overheadBytes = (length == 0) + ((length != 0) * ((length / COBS_MAX_PACKET_SIZE) + ((length % COBS_MAX_PACKET_SIZE) > 0)));
     return (length + overheadBytes + COBS_EOP_OVERHEAD);
 }
 
@@ -150,12 +269,34 @@ uint32_t _cobsEncodedMaxLength(uint32_t length)
 
   @return the length of unencoded data
 
-  @note  The computation may leave additional space at the end.
-  @note  An additional byte is added for the EOP (end-of-packet) marker.
+  @note  An additional byte for the EOP (end-of-packet) marker is assumed.
  */
 /**************************************************************************/
 uint32_t _cobsGuaranteedFit(uint32_t bufLen)
 {
-    uint32_t cobsOverhead = 1 + (bufLen / 254) + COBS_EOP_OVERHEAD;
-    return (cobsOverhead > bufLen ? 0 : (bufLen - cobsOverhead));
+    // encodedLen = unencodedLen + codeBytesLen
+    // e = u + c (e = encoded (sorry Euler), and c = code bytes (sorry Einstein))
+    // u = e - c
+    // c = ⌈u / 254⌉ (the ceiling of u divided by 254)
+    //
+    // Rearranging the ceiling equation:
+    // (c - 1) < u / 254 <= c
+    // 254(c - 1) < u <= 254c
+    //
+    // Substitute u from first equation:
+    // 254(c - 1) < e - c <= 254c
+    // 254c - 254 < e - c <= 254c
+    // 255c < e + 254 AND e <= 255c
+    //
+    // Thus:
+    // e <= 255c < e + 254
+    // e / 255 <= c < (e + 254) / 255
+    //
+    // Knowing that c is an integer, we can express c as:
+    // c = ⌊(e + 254) / 255⌋ (the floor of (e + 254) divided by 255)
+    //
+    // Substitute c back into the original equation for u:
+    // u = e - ⌊(e + 254) / 255⌋
+    const uint32_t encodedLen = (bufLen == 0) + ((bufLen != 0) * (bufLen - COBS_EOP_OVERHEAD));
+    return (encodedLen - ((encodedLen + COBS_MAX_PACKET_SIZE) / 255));
 }

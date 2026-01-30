@@ -1,0 +1,56 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/docker-existing-dockerfile
+{
+    "name": "Note Arduino CI Environment",
+
+    // Build from the CI Dockerfile
+    // "build": {
+    //     "dockerfile": "Dockerfile",
+    //     "context": "../.."
+    // },
+
+    // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+    "image": "ghcr.io/blues/note_arduino_ci:latest",
+
+    // Use 'workspaceFolder' to specify the folder to open in the container.
+    "workspaceFolder": "/workspaces/note-arduino",
+
+    // Set *default* container specific settings.json values on container create.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "marus25.cortex-debug",
+                "marus25.cortex-debug-dp-stm32l4",
+                "mcu-debug.debug-tracker-vscode",
+                "mcu-debug.memory-view",
+                "mcu-debug.rtos-views",
+                "mcu-debug.peripheral-viewer",
+                "ms-vscode.cpptools",
+                "shardulm94.trailing-spaces"
+            ],
+            "settings": {}
+        }
+    },
+
+    // Set environment variables for the container(s)
+    "remoteEnv": {
+        "BLUES": "${localEnv:BLUES}"
+    },
+
+    // Run commands after the container is created -> setup the execution environment
+    // "postCreateCommand": "code-server --install-extension ${containerWorkspaceFolder}/.vscode/extensions/notestation-0.3.0.vsix",
+
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+
+    // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
+    // "runArgs": [
+    //     "--device=/dev/bus/usb/"
+    // ],
+
+    // Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
+    // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+
+    // Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "blues"
+}

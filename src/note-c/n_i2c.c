@@ -122,6 +122,7 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
     }
     size_t jsonbufAllocLen = (ALLOC_CHUNK * ((available / ALLOC_CHUNK) + ((available % ALLOC_CHUNK) > 0)));
     uint8_t *jsonbuf = NULL;
+    uint32_t jsonbufLen = 0;
     if (jsonbufAllocLen) {
         jsonbuf = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
         if (jsonbuf == NULL) {
@@ -130,52 +131,45 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
             _UnlockI2C();
             return err;
         }
-    }
 
-    // Receive the Notecard response
-    uint32_t jsonbufLen = 0;
-    do {
-        uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
+        // Receive the Notecard response
+        do {
+            uint32_t jsonbufAvailLen = (jsonbufAllocLen - jsonbufLen);
 
-        // Append into the json buffer
-        err = _i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
-        if (err) {
-            if (jsonbuf) {
+            // Append into the json buffer
+            err = _i2cChunkedReceive((uint8_t *)(jsonbuf + jsonbufLen), &jsonbufAvailLen, true, (CARD_INTRA_TRANSACTION_TIMEOUT_SEC * 1000), &available);
+            if (err) {
                 _Free(jsonbuf);
-            }
-            NOTE_C_LOG_ERROR(ERRSTR(err, c_iobad));
-            _UnlockI2C();
-            return err;
-        }
-        jsonbufLen += jsonbufAvailLen;
-        jsonbuf[jsonbufLen] = '\0';
-
-        if (available) {
-            // When more bytes are available than we have buffer to accommodate
-            // (i.e. overflow), then we allocate blocks of size `ALLOC_CHUNK` to
-            // reduce heap fragmentation.
-            // NOTE: We always put the +1 in the allocation so we can be assured
-            // that it can be null-terminated, because the json parser requires
-            // a null-terminated string.
-            jsonbufAllocLen += (ALLOC_CHUNK * ((available / ALLOC_CHUNK) + ((available % ALLOC_CHUNK) > 0)));
-            uint8_t *jsonbufNew = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
-            if (jsonbufNew == NULL) {
-                err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
-                NOTE_C_LOG_ERROR(err);
-                if (jsonbuf) {
-                    _Free(jsonbuf);
-                }
+                NOTE_C_LOG_ERROR(ERRSTR(err, c_iobad));
                 _UnlockI2C();
                 return err;
             }
-            if (jsonbuf) {
+            jsonbufLen += jsonbufAvailLen;
+            jsonbuf[jsonbufLen] = '\0';
+
+            if (available) {
+                // When more bytes are available than we have buffer to accommodate
+                // (i.e. overflow), then we allocate blocks of size `ALLOC_CHUNK` to
+                // reduce heap fragmentation.
+                // NOTE: We always put the +1 in the allocation so we can be assured
+                // that it can be null-terminated, because the json parser requires
+                // a null-terminated string.
+                jsonbufAllocLen += (ALLOC_CHUNK * ((available / ALLOC_CHUNK) + ((available % ALLOC_CHUNK) > 0)));
+                uint8_t *jsonbufNew = (uint8_t *)_Malloc(jsonbufAllocLen + 1);
+                if (jsonbufNew == NULL) {
+                    err = ERRSTR("transaction: jsonbuf grow malloc failed", c_mem);
+                    NOTE_C_LOG_ERROR(err);
+                    _Free(jsonbuf);
+                    _UnlockI2C();
+                    return err;
+                }
                 memcpy(jsonbufNew, jsonbuf, jsonbufLen);
                 _Free(jsonbuf);
+                jsonbuf = jsonbufNew;
+                NOTE_C_LOG_DEBUG("additional receive buffer chunk allocated");
             }
-            jsonbuf = jsonbufNew;
-            NOTE_C_LOG_DEBUG("additional receive buffer chunk allocated");
-        }
-    } while (available);
+        } while (available);
+    }
 
     // Done with the bus
     _UnlockI2C();

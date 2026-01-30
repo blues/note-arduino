@@ -4,9 +4,13 @@
 *.gcda
 *.gcno
 *.gcov
-vgcore.*
 *.tests
+*.whl
+*.zip
+
 failed_test_run
+vgcore.*
+
 
 .vscode/
 build/
@@ -17,3 +21,6 @@ doxygen_sqlite3.db
 html
 latex
 coverage.json
+
+# Secrets
+*.env

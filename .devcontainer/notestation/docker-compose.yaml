@@ -1,0 +1,40 @@
+# .devcontainer/docker-compose.yaml
+
+name: note-arduino
+services:
+  devcontainer:
+    # image: ghcr.io/blues/note_arduino_ci:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: note-arduino_devcontainer
+    command: sleep infinity
+    depends_on:
+      - tailscale
+    network_mode: service:tailscale  # Share network with tailscale service
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../..:/workspace:cached
+
+  tailscale:
+    image: tailscale/tailscale:v1.90.6
+    cap_add:
+      - NET_ADMIN  # Network admin privileges
+      - SYS_MODULE  # Required for TUN device
+    container_name: note-arduino_tailnet-connection
+    env_file:
+      - .env
+      - ts_config.env  # Load Tailscale config from generated file
+    environment:
+      - TS_ACCEPT_DNS=true  # Allows tailnet DNS resolution
+      # - TS_AUTHKEY=  # DO NOT POPULATE - Loaded automatically from `.env` file
+      # - TS_HOSTNAME= # DO NOT POPULATE - Loaded automatically from `ts_config.env`
+      - TS_STATE_DIR=/var/lib/tailscale  # Persist state
+      - TS_USERSPACE=false  # Use kernel networking (faster; requires TUN device)
+    restart: unless-stopped
+    volumes:
+      - tailscale-var-lib:/var/lib/tailscale  # Named volume for state
+
+volumes:
+  tailscale-var-lib:  # Defines the named volume
