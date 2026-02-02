@@ -33,7 +33,7 @@
 #define buttonPin 7
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 #define BREADBOARD_REQUIRED
-#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MBED)
+#elif defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_SAMD_MKRZERO)
 #define BREADBOARD_REQUIRED
 #endif
 

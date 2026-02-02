@@ -146,6 +146,13 @@
 #endif
 #define B0 4
 
+#elif defined(ARDUINO_SAMD_MKRZERO)
+
+#ifdef B0
+#undef B0
+#endif
+#define B0 7
+
 #elif defined(ARDUINO_NRF52840_FEATHER)
 
 #ifdef B0
