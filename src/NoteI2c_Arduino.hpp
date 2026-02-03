@@ -4,6 +4,7 @@
 #include "NoteI2c.hpp"
 
 #ifndef NOTE_MOCK
+#include <Arduino.h>
 #include <Wire.h>
 #else
 #include "mock/mock-arduino.hpp"
