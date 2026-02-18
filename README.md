@@ -107,6 +107,9 @@ Before running an example, you will need to set the Product Identifier, either
 in code or on your connected Notecard. Steps on how to do this can be found at
 [https://dev.blues.io/tools-and-sdks/samples/product-uid](https://dev.blues.io/tools-and-sdks/samples/product-uid).
 
+## Notestation Usage
+
+To gain access to the Tailscale VPN for Notestation, create a `.env` file based on `.env.example` in the `.devcontainer/notestation/` folder. This will set up the necessary environment variables for VPN access.
 
 ## Contributing
 
