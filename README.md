@@ -109,7 +109,7 @@ in code or on your connected Notecard. Steps on how to do this can be found at
 
 ## Notestation Usage
 
-To gain access to the Tailscale VPN for Notestation, create a `.env` file based on `.env.example` in the `.devcontainer/notestation/` folder. This will set up the necessary environment variables for VPN access.
+To gain access to the Tailscale VPN for Notestation, create a `.env` file based on `.env.example` in the `.devcontainer/notestation/` folder. Replace the placeholder TS_AUTHKEY with your actual Tailscale authentication key. Treat the .env file as sensitive and do not commit it to version control or share it publicly. This will set up the necessary environment variables for VPN access.
 
 ## Contributing
 
@@ -303,7 +303,7 @@ For additional Notecard SDKs and Libraries, see:
 ## To learn more about Blues, the Notecard and Notehub, see:
 
 * [blues.com](https://blues.com)
-* [notehub.io][Notehub]
+* [notehub.io][notehub]
 * [wireless.dev](https://wireless.dev)
 
 ## License
@@ -318,4 +318,4 @@ Copyright (c) 2019 Blues Inc. Released under the MIT license. See
 [note-python]: https://github.com/blues/note-python
 [archive]: https://github.com/blues/note-arduino/archive/master.zip
 [code of conduct]: https://blues.github.io/opensource/code-of-conduct
-[Notehub]: https://notehub.io
+[notehub]: https://notehub.io
