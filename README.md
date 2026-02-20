@@ -263,7 +263,7 @@ Verify containers are running:
 ```sh
 docker ps -a --filter "name=note-arduino"
 ```
-Confirm the following container are up and running:
+Confirm the following containers are up and running:
 
 ```
 note-arduino_devcontainer
