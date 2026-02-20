@@ -1,6 +1,6 @@
+version: "3.8"
 # .devcontainer/docker-compose.yaml
 
-name: note-arduino
 services:
   devcontainer:
     # image: ghcr.io/blues/note_arduino_ci:latest
