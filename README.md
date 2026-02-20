@@ -303,7 +303,7 @@ For additional Notecard SDKs and Libraries, see:
 ## To learn more about Blues, the Notecard and Notehub, see:
 
 * [blues.com](https://blues.com)
-* [notehub.io][Notehub]
+* [Notehub.io][notehub]
 * [wireless.dev](https://wireless.dev)
 
 ## License
@@ -318,4 +318,4 @@ Copyright (c) 2019 Blues Inc. Released under the MIT license. See
 [note-python]: https://github.com/blues/note-python
 [archive]: https://github.com/blues/note-arduino/archive/master.zip
 [code of conduct]: https://blues.github.io/opensource/code-of-conduct
-[Notehub]: https://notehub.io
+[notehub]: https://notehub.io
