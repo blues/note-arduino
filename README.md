@@ -107,9 +107,63 @@ Before running an example, you will need to set the Product Identifier, either
 in code or on your connected Notecard. Steps on how to do this can be found at
 [https://dev.blues.io/tools-and-sdks/samples/product-uid](https://dev.blues.io/tools-and-sdks/samples/product-uid).
 
-## Notestation Usage
+## Notestation Setup and Usage
 
 To gain access to the Tailscale VPN for Notestation, create a `.env` file based on `.env.example` in the `.devcontainer/notestation/` folder. Replace the placeholder TS_AUTHKEY with your actual Tailscale authentication key. Treat the .env file as sensitive and do not commit it to version control or share it publicly. This will set up the necessary environment variables for VPN access.
+
+### Launching the Dev Container
+
+Run:
+
+```
+devcontainer up --config .devcontainer/notestation/devcontainer.json --workspace-folder .
+```
+
+Verify containers are running:
+
+```
+docker ps -a --filter "name=note-arduino"
+```
+
+Exec into the dev container:
+
+```
+docker exec -it note-arduino_devcontainer bash
+```
+
+Inside the container, check Notestation:
+
+```
+pipenv run notestation --version
+pipenv run notestation client list
+```
+
+### Compiling and Flashing Examples
+
+Inside the dev container:
+
+1. Navigate to workspace: `cd /workspace/examples/Example6_SensorTutorial`
+
+2. Compile for target (e.g., SWAN_R5 or CYGNET fallback):
+
+   ```
+   arduino-cli compile --fqbn blues:swan:swan_r5 .  # For SWAN_R5
+   arduino-cli compile --fqbn blues:swan:cygnet .  # For CYGNET
+   ```
+
+3. Flash to Notestation (e.g., barcelona-notestation-2 for CYGNET):
+
+   ```
+   pipenv run notestation flash --client barcelona-notestation-2 --tag mcu_cygnet --bin Example6_SensorTutorial.ino.bin
+   ```
+
+If primary station offline, fallback as needed.
+
+### Troubleshooting
+
+- Tailscale errors: Verify TS_AUTHKEY, restart containers.
+- Client not found: Check `client list --all`; use online alternatives.
+- Merge conflicts on rebase: Resolve by keeping custom sections.
 
 ## Contributing
 
