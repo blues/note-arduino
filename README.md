@@ -318,3 +318,5 @@ Copyright (c) 2019 Blues Inc. Released under the MIT license. See
 [note-python]: https://github.com/blues/note-python
 [archive]: https://github.com/blues/note-arduino/archive/master.zip
 [code of conduct]: https://blues.github.io/opensource/code-of-conduct
+
+[notehub]: https://notehub.io
