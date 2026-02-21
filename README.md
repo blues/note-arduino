@@ -319,6 +319,15 @@ Inside the dev container:
 
 - Tailscale errors: Verify TS_AUTHKEY, restart containers.
 - Client not found: Check `pipenv run notestation client list --all`; use online alternatives.
+- Stuck reservations: Kill lingering processes with `pkill -f notestation` or `kill -9 <PID>` for reservation PIDs.
+- Queue issues: Check queue with `pipenv run notestation client list`; if queue doesn't decrease, kill and retry.
+
+### Additional Notes
+
+- For SWAN_R5, use tag `["mcu_swan"]` in reservations.
+- Capture output: Use `tio ~/.notestation/pid-<pid>_<hostname>/host_mcu_usb` to monitor pseudo-tty (e.g., tail -n 10 or grep for specific logs).
+- Reservation is blocking; run in background with `&` and note PID for later kill.
+- If monitoring for specific logs (e.g., temp/humidity), use `tio ... | grep -i -E "temperature|humidity"` with timeout.
 
 ## Generating a Release
 
