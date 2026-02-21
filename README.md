@@ -296,7 +296,7 @@ Inside the dev container:
    a. Replace ${input:example} with the path to your `.ino` file
    b. Replace ${input:board} with either `SWAN_R5` or `CYGNET`
 
-2. Reserve a Notestation with the appropriate hardware support (e.g., mcu_cygnet for CYGNET):
+2. Reserve a Notestation with the appropriate hardware support (e.g., mcu_cygnet for CYGNET or mcu_swan for SWAN_R5):
 
    ```sh
    pipenv run notestation client reserve --tags '["mcu_cygnet"]' &
@@ -313,12 +313,26 @@ Inside the dev container:
 
    > _**HINT:** Look in folder `./build/${input:board}`_
 
-4. Free the reserved Notestation by terminating the associated process.
+4. Free the reserved Notestation by terminating the PID of the associated process.
 
+### Capturing Notestation Output (i.e. device logs)
+
+1. Capture application output using `tio` by monitoring the associated the pseudo-tty devices:
+
+   ```sh
+   tio ~/.notestation/pid-<pid>_<hostname>/host_mcu_usb
+   ```
+   
+   > _**HINT:** The pseudo-tty devices are located in a folder related to the Notestattion reservations (e.g. `~/.notestation/pid-<pid>_<hostname>/<ptty_device>`)._
+
+   > _**HINT:** The devices are named according to their function, for example `host_mcu_usb` is a connection to the host MCU USB._
+   
 ### Troubleshooting
 
 - Tailscale errors: Verify TS_AUTHKEY, restart containers.
 - Client not found: Check `pipenv run notestation client list --all`; use online alternatives.
+- Stuck reservations: Kill lingering processes with `pkill -f notestation` or `kill -9 <PID>` for reservation PIDs.
+- Queue issues: Check queue with `pipenv run notestation client list`; if queue doesn't decrease, kill and retry.
 
 ## Generating a Release
 
