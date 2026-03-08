@@ -1,5 +1,9 @@
-version: "3.8"
-# .devcontainer/docker-compose.yaml
+# .devcontainer/notestation/docker-compose.yaml
+#
+# Uses Compose Specification (no `version:` field — it is deprecated).
+# Requires Docker Compose v2 (`docker compose`). The `name:` field pins the
+# project name so the CLI cannot derive a colliding name from the directory.
+name: note-arduino-notestation
 
 services:
   devcontainer:
