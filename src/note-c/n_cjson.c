@@ -362,12 +362,12 @@ NOTE_C_STATIC unsigned char* _ensure(printbuffer * const p, size_t needed)
         return NULL;
     }
 
+    needed += p->offset + 1;
     if (needed > INT_MAX) {
         /* sizes bigger than INT_MAX are currently not supported */
         return NULL;
     }
 
-    needed += p->offset + 1;
     if (needed <= p->length) {
         return p->buffer + p->offset;
     }
@@ -376,19 +376,8 @@ NOTE_C_STATIC unsigned char* _ensure(printbuffer * const p, size_t needed)
         return NULL;
     }
 
-    /* calculate new buffer size */
-    if (needed > (INT_MAX / 2)) {
-        /* overflow of int, use INT_MAX if possible */
-        if (needed <= INT_MAX) {
-            newsize = INT_MAX;
-        } else {
-            return NULL;
-        }
-    } else {
-        newsize = needed * 2;
-    }
-
     /* otherwise reallocate manually */
+    newsize = (ALLOC_CHUNK * ((needed / ALLOC_CHUNK) + ((needed % ALLOC_CHUNK) > 0)));  // chunked, linear calculation for new buffer to reduce memory waste
     newbuffer = (unsigned char*)_Malloc(newsize);
     if (!newbuffer) {
         _Free(p->buffer);
@@ -1819,9 +1808,12 @@ NOTE_C_STATIC Jbool _add_item_to_array(J *array, J *item)
 N_CJSON_PUBLIC(void) JAddItemToArray(J *array, J *item)
 {
     if (array == NULL || item == NULL) {
+        JDelete(item);
         return;
     }
-    _add_item_to_array(array, item);
+    if (!_add_item_to_array(array, item)) {
+        JDelete(item);
+    }
 }
 
 #if defined(__clang__) || (defined(__GNUC__)  && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 5))))
@@ -1874,18 +1866,24 @@ NOTE_C_STATIC Jbool _add_item_to_object(J * const object, const char * const str
 N_CJSON_PUBLIC(void) JAddItemToObject(J *object, const char *string, J *item)
 {
     if (object == NULL || string == NULL || item == NULL) {
+        JDelete(item);
         return;
     }
-    _add_item_to_object(object, string, item, false);
+    if (!_add_item_to_object(object, string, item, false)) {
+        JDelete(item);
+    }
 }
 
 /* Add an item to an object with constant string as key */
 N_CJSON_PUBLIC(void) JAddItemToObjectCS(J *object, const char *string, J *item)
 {
     if (object == NULL || string == NULL || item == NULL) {
+        JDelete(item);
         return;
     }
-    _add_item_to_object(object, string, item, true);
+    if (!_add_item_to_object(object, string, item, true)) {
+        JDelete(item);
+    }
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToArray(J *array, J *item)
@@ -1893,7 +1891,10 @@ N_CJSON_PUBLIC(void) JAddItemReferenceToArray(J *array, J *item)
     if (array == NULL || item == NULL) {
         return;
     }
-    _add_item_to_array(array, _create_reference(item));
+    J *ref = _create_reference(item);
+    if (!_add_item_to_array(array, ref)) {
+        JDelete(ref);
+    }
 }
 
 N_CJSON_PUBLIC(void) JAddItemReferenceToObject(J *object, const char *string, J *item)
@@ -1901,7 +1902,10 @@ N_CJSON_PUBLIC(void) JAddItemReferenceToObject(J *object, const char *string, J 
     if (object == NULL || string == NULL || item == NULL) {
         return;
     }
-    _add_item_to_object(object, string, _create_reference(item), false);
+    J *ref = _create_reference(item);
+    if (!_add_item_to_object(object, string, ref, false)) {
+        JDelete(ref);
+    }
 }
 
 N_CJSON_PUBLIC(J*) JAddTrueToObject(J * const object, const char * const name)
@@ -2170,18 +2174,22 @@ N_CJSON_PUBLIC(void) JDeleteItemFromObjectCaseSensitive(J *object, const char *s
 N_CJSON_PUBLIC(void) JInsertItemInArray(J *array, int which, J *newitem)
 {
     if (array == NULL || newitem == NULL) {
+        JDelete(newitem);
         return;
     }
 
     J *after_inserted = NULL;
 
     if (which < 0) {
+        JDelete(newitem);
         return;
     }
 
     after_inserted = _get_array_item(array, (size_t)which);
     if (after_inserted == NULL) {
-        _add_item_to_array(array, newitem);
+        if (!_add_item_to_array(array, newitem)) {
+            JDelete(newitem);
+        }
         return;
     }
 
@@ -2228,14 +2236,18 @@ N_CJSON_PUBLIC(Jbool) JReplaceItemViaPointer(J * const parent, J * const item, J
 N_CJSON_PUBLIC(void) JReplaceItemInArray(J *array, int which, J *newitem)
 {
     if (array == NULL || newitem == NULL) {
+        JDelete(newitem);
         return;
     }
 
     if (which < 0) {
+        JDelete(newitem);
         return;
     }
 
-    JReplaceItemViaPointer(array, _get_array_item(array, (size_t)which), newitem);
+    if (!JReplaceItemViaPointer(array, _get_array_item(array, (size_t)which), newitem)) {
+        JDelete(newitem);
+    }
 }
 
 NOTE_C_STATIC Jbool _replace_item_in_object(J *object, const char *string, J *replacement, Jbool case_sensitive)
@@ -2244,14 +2256,24 @@ NOTE_C_STATIC Jbool _replace_item_in_object(J *object, const char *string, J *re
         return false;
     }
 
+    J *existing = _get_object_item(object, string, case_sensitive);
+    if (existing == NULL) {
+        return false;
+    }
+
+    char *new_key = (char*)_j_strdup((const unsigned char*)string);
+    if (new_key == NULL) {
+        return false;
+    }
+
     /* replace the name in the replacement */
     if (!(replacement->type & JStringIsConst) && (replacement->string != NULL)) {
         _Free(replacement->string);
     }
-    replacement->string = (char*)_j_strdup((const unsigned char*)string);
+    replacement->string = new_key;
     replacement->type &= ~JStringIsConst;
 
-    JReplaceItemViaPointer(object, _get_object_item(object, string, case_sensitive), replacement);
+    JReplaceItemViaPointer(object, existing, replacement);
 
     return true;
 }
@@ -2259,17 +2281,23 @@ NOTE_C_STATIC Jbool _replace_item_in_object(J *object, const char *string, J *re
 N_CJSON_PUBLIC(void) JReplaceItemInObject(J *object, const char *string, J *newitem)
 {
     if (object == NULL || newitem == NULL) {
+        JDelete(newitem);
         return;
     }
-    _replace_item_in_object(object, string, newitem, false);
+    if (!_replace_item_in_object(object, string, newitem, false)) {
+        JDelete(newitem);
+    }
 }
 
 N_CJSON_PUBLIC(void) JReplaceItemInObjectCaseSensitive(J *object, const char *string, J *newitem)
 {
     if (object == NULL || newitem == NULL) {
+        JDelete(newitem);
         return;
     }
-    _replace_item_in_object(object, string, newitem, true);
+    if (!_replace_item_in_object(object, string, newitem, true)) {
+        JDelete(newitem);
+    }
 }
 
 N_CJSON_PUBLIC(J *) JCreateTrue(void)

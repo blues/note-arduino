@@ -126,11 +126,11 @@ bool _i2cNoteReset(void);
 const char *_serialNoteTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs);
 bool _serialNoteReset(void);
 const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
-const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+const char *_i2cChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay);
 const char *_i2cNoteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
-const char *_i2cNoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+const char *_i2cNoteChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay);
 const char *_serialChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
-const char *_serialChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+const char *_serialChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay);
 
 // Hooks
 void _noteLockNote(void);
@@ -139,16 +139,16 @@ bool _noteTransactionStart(uint32_t timeoutMs);
 void _noteTransactionStop(void);
 const char *_noteActiveInterface(void);
 bool _noteSerialReset(void);
-void _noteSerialTransmit(uint8_t *, size_t, bool);
+void _noteSerialTransmit(const uint8_t *, size_t, bool);
 bool _noteSerialAvailable(void);
 char _noteSerialReceive(void);
 bool _noteI2CReset(uint16_t DevAddress);
-const char *_noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size);
+const char *_noteI2CTransmit(uint16_t DevAddress, const uint8_t* pBuffer, uint16_t Size);
 const char *_noteI2CReceive(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size, uint32_t *avail);
 bool _noteHardReset(void);
 const char *_noteJSONTransaction(const char *request, size_t reqLen, char **response, uint32_t timeoutMs);
 const char *_noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint32_t timeoutMs, uint32_t *available);
-const char *_noteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay);
+const char *_noteChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay);
 bool _noteIsDebugOutputActive(void);
 #ifdef NOTE_C_HEARTBEAT_CALLBACK
 bool _noteHeartbeat(const char *heartbeatJson);

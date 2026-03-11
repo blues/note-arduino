@@ -244,20 +244,26 @@ uint32_t _cobsEncodedLength(const uint8_t *ptr, uint32_t length)
 
   @param  length Length of the data to encode
 
-  @return The max length required to encode the data
+  @return The max length required to encode the data (including EOP byte)
 
-  @note  Since the contents of the buffer are unknown, then we must assume
-          that the entire buffer has no end-of-packet markers. This would
-          require the injection of overhead bytes (as opposed to the
-          replacement of end-of-packet markers with overhead bytes) at
-          intervals of 255, thus producing the worst case scenario.
+  @note  Worst case is input with no zero bytes (no EOP markers to replace).
+         The COBS encoder always emits 1 initial code byte, then 1 additional
+         code byte for every 254 data bytes processed:
+
+           codeBytes = floor(length / 254) + 1
+
+         IMPORTANT: This is NOT ceil(length / 254). They differ at exact
+         multiples of 254. Example: encoding 254 non-zero bytes produces
+         code byte 0xFF, 254 data bytes, then a final code byte 0x01.
+         That's 2 code bytes, but ceil(254/254) = 1 (wrong).
+
   @note  An additional byte is added for the EOP (end-of-packet) marker.
  */
 /**************************************************************************/
 uint32_t _cobsEncodedMaxLength(uint32_t length)
 {
-    const uint32_t overheadBytes = (length == 0) + ((length != 0) * ((length / COBS_MAX_PACKET_SIZE) + ((length % COBS_MAX_PACKET_SIZE) > 0)));
-    return (length + overheadBytes + COBS_EOP_OVERHEAD);
+    const uint32_t codeBytes = (length / COBS_MAX_PACKET_SIZE) + 1;
+    return (length + codeBytes + COBS_EOP_OVERHEAD);
 }
 
 //**************************************************************************/
@@ -267,36 +273,40 @@ uint32_t _cobsEncodedMaxLength(uint32_t length)
 
   @param  bufLen Length of the buffer in bytes
 
-  @return the length of unencoded data
+  @return the length of unencoded data that is guaranteed to fit when
+          COBS-encoded into bufLen bytes (including EOP)
 
-  @note  An additional byte for the EOP (end-of-packet) marker is assumed.
+  @note  The COBS encoder always emits 1 initial code byte, then 1 additional
+         code byte for every 254 data bytes. Therefore:
+
+           codeBytes(u) = floor(u / 254) + 1
+
+         IMPORTANT: This is NOT ceil(u / 254). They differ at exact multiples
+         of 254. Example: encoding 254 non-zero bytes produces code 0xFF,
+         254 data bytes, then final code 0x01 -- that's 2 code bytes, but
+         ceil(254/254) = 1 (wrong).
+
+         Buffer requirement: bufLen >= u + floor(u/254) + 1 + 1(EOP)
+                                     = u + floor(u/254) + 2
+
+         Inversion: find max u where u + floor(u/254) <= t, with t = bufLen-2.
+         Substituting u = 254q + r (0 <= r <= 253): 255q + r <= t.
+
+         Closed form:  u = t - floor((t + 1) / 255)
+
+         Proof: Let t+1 = 255k + j (0 <= j <= 254), so u = 254k + j - 1.
+           j >= 1: floor(u/254)=k, u+floor(u/254) = 255k+j-1 = t. Exact fit.
+           j = 0:  u=254(k-1)+253, floor(u/254)=k-1, sum = t-1. One byte slack.
+         In both cases u+1 would exceed t, confirming u is the maximum.
+
+  @see _cobsEncodedMaxLength()
  */
 /**************************************************************************/
 uint32_t _cobsGuaranteedFit(uint32_t bufLen)
 {
-    // encodedLen = unencodedLen + codeBytesLen
-    // e = u + c (e = encoded (sorry Euler), and c = code bytes (sorry Einstein))
-    // u = e - c
-    // c = ⌈u / 254⌉ (the ceiling of u divided by 254)
-    //
-    // Rearranging the ceiling equation:
-    // (c - 1) < u / 254 <= c
-    // 254(c - 1) < u <= 254c
-    //
-    // Substitute u from first equation:
-    // 254(c - 1) < e - c <= 254c
-    // 254c - 254 < e - c <= 254c
-    // 255c < e + 254 AND e <= 255c
-    //
-    // Thus:
-    // e <= 255c < e + 254
-    // e / 255 <= c < (e + 254) / 255
-    //
-    // Knowing that c is an integer, we can express c as:
-    // c = ⌊(e + 254) / 255⌋ (the floor of (e + 254) divided by 255)
-    //
-    // Substitute c back into the original equation for u:
-    // u = e - ⌊(e + 254) / 255⌋
-    const uint32_t encodedLen = (bufLen == 0) + ((bufLen != 0) * (bufLen - COBS_EOP_OVERHEAD));
-    return (encodedLen - ((encodedLen + COBS_MAX_PACKET_SIZE) / 255));
+    if (bufLen <= 2) {
+        return 0;
+    }
+    const uint32_t t = bufLen - 2;
+    return (t - ((t + 1) / 255));
 }

@@ -3,7 +3,7 @@
 # note-c
 
 The note-c C library for communicating with the
-[Blues Wireless][blues] Notecard via serial or I²C.
+[Blues Wireless][blues] Notecard via serial or I2C.
 
 This library allows you to control a Notecard by writing a C
 or C++ program. Your program may programmatically configure Notecard and send

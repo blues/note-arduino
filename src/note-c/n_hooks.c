@@ -190,7 +190,7 @@ NOTE_C_STATIC int noteLogLevel = NOTE_C_LOG_LEVEL;
 typedef bool (*nNoteResetFn) (void);
 typedef const char * (*nTransactionFn) (const char *, size_t, char **, uint32_t);
 typedef const char * (*nReceiveFn) (uint8_t *, uint32_t *, bool, uint32_t, uint32_t *);
-typedef const char * (*nTransmitFn) (uint8_t *, uint32_t, bool);
+typedef const char * (*nTransmitFn) (const uint8_t *, uint32_t, bool);
 NOTE_C_STATIC nNoteResetFn notecardReset = NULL;
 NOTE_C_STATIC nTransactionFn notecardTransaction = NULL;
 NOTE_C_STATIC nReceiveFn notecardChunkedReceive = NULL;
@@ -600,7 +600,7 @@ void NoteFree(void *ptr)
             hookDebugOutput("free ");
             // Convert the pointer to a string and print
             char str[16];
-            _n_ptoa32(p, str);
+            _n_ptoa32(ptr, str);
             hookDebugOutput(str);
         }
 #endif // NOTE_C_SHOW_MALLOC && !defined(NOTE_C_LOW_MEM)
@@ -868,10 +868,12 @@ bool _noteSerialReset(void)
   @param   flush `true` to flush the bytes upon transmit.
 */
 /**************************************************************************/
-void _noteSerialTransmit(uint8_t *text, size_t len, bool flush)
+void _noteSerialTransmit(const uint8_t *text, size_t len, bool flush)
 {
     if (hookActiveInterface == NOTE_C_INTERFACE_SERIAL && hookSerialTransmit != NULL) {
-        hookSerialTransmit(text, len, flush);
+        // Cast is intentional: serialTransmitFn is non-const for API compatibility.
+        // TODO: Remove this cast when serialTransmitFn is updated to const uint8_t *.
+        hookSerialTransmit((uint8_t *)text, len, flush);
     }
 }
 
@@ -929,10 +931,12 @@ bool _noteI2CReset(uint16_t DevAddress)
   if the bus is not active.
 */
 /**************************************************************************/
-const char *_noteI2CTransmit(uint16_t DevAddress, uint8_t* pBuffer, uint16_t Size)
+const char *_noteI2CTransmit(uint16_t DevAddress, const uint8_t* pBuffer, uint16_t Size)
 {
     if (hookActiveInterface == NOTE_C_INTERFACE_I2C && hookI2CTransmit != NULL) {
-        return hookI2CTransmit(DevAddress, pBuffer, Size);
+        // Cast is intentional: i2cTransmitFn is non-const for API compatibility.
+        // TODO: Remove this cast when i2cTransmitFn is updated to const uint8_t *.
+        return hookI2CTransmit(DevAddress, (uint8_t *)pBuffer, Size);
     }
     return "i2c not active";
 }
@@ -1080,7 +1084,7 @@ const char *_noteChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay,
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *_noteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+const char *_noteChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay)
 {
     if (notecardChunkedTransmit == NULL || hookActiveInterface == NOTE_C_INTERFACE_NONE) {
         return "a valid interface must be selected";

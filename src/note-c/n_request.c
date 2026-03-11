@@ -436,7 +436,6 @@ J *_noteTransactionShouldLock(J *req, bool lockNotecard)
     // Serialize the JSON request
     char *json = JPrintUnformatted(req); // `json` allocated, must be freed
     if (json == NULL) {
-        _TransactionStop();
         NOTE_C_LOG_ERROR(ERRSTR("failed to serialize JSON request", c_mem));
         return NULL;
     }
@@ -946,43 +945,55 @@ NOTE_C_STATIC char *_crcAdd(char *json, uint16_t seqno)
  */
 NOTE_C_STATIC bool _crcError(char *json, uint16_t shouldBeSeqno)
 {
-    // Trim whitespace (specifically "\r\n") for CRC calculation
+    // Trim whitespace from tail (specifically "\r\n") for CRC calculation
     size_t jsonLen = strlen(json);
     while (jsonLen > 0 && json[jsonLen - 1] <= ' ') {
         jsonLen--;
     }
 
-    // Ignore CRC check if the response contains an error
-    // A valid JSON string begins with "{". Therefore, the presence of an error
-    // message in a well-formed JSON string MUST result in a non-zero response.
+    // Valid JSON must begin with an opening "{" and end with a closing "}"
+    if (jsonLen < 2 || json[0] != '{' || json[jsonLen - 1] != '}') {
+        // Invalid JSON
+        return false;
+    }
+
+    // Ignore CRC checks when error ("err") is present in JSON.
+    // This condition must be tested early-on, because Notecard errors should
+    // not be treated as CRC errors (CRC errors are automatically retried).
+    // There is little value in attempting to retry a transaction that prompts
+    // an error condition in the Notecard.
     if (strstr(json, ERR_FIELD_NAME_TEST)) {
+        // Error ("err") present in JSON
         return false;
     }
 
-    // Skip if invalid JSON or is too short to contain a CRC parameter
-    // Minimum length is "{}" (2 bytes) + CRC_FIELD_LENGTH
-    // Valid JSON ends with a closing "}"
-    if ((jsonLen < (CRC_FIELD_LENGTH + 2)) || (json[jsonLen - 1] != '}')) {
-        return false;
-    }
-
-    // See if it has a compliant CRC field
-    size_t fieldOffset = ((jsonLen - 1) - CRC_FIELD_LENGTH);
-    if (memcmp(&json[fieldOffset + CRC_FIELD_NAME_OFFSET], CRC_FIELD_NAME_TEST, ((sizeof(CRC_FIELD_NAME_TEST) - 1)) != 0)) {
-        // If we've seen a CRC before, we should see one every time
+    // Minimum JSON length is "{}" (2 bytes) + CRC_FIELD_LENGTH
+    if (jsonLen < (CRC_FIELD_LENGTH + 2)) {
+        // JSON too short to contain a CRC parameter
+        // Return error if we've seen a CRC before, otherwise no CRC value is expected.
         return notecardFirmwareSupportsCrc;
     }
 
-    // If we get here, we've seen at least one CRC from the Notecard, so we should expect it.
+    // Calculate CRC offset by subtracting CRC_FIELD_LENGTH (the length of the
+    // CRC field name and value) from the end of the JSON.
+    size_t crcOffset = ((jsonLen - 1) - CRC_FIELD_LENGTH);
+    if (memcmp(&json[crcOffset + CRC_FIELD_NAME_OFFSET], CRC_FIELD_NAME_TEST, (sizeof(CRC_FIELD_NAME_TEST) - 1)) != 0) {
+        // CRC value not present in JSON
+        // Return error if we've seen a CRC before, otherwise no CRC value is expected.
+        return notecardFirmwareSupportsCrc;
+    }
+
+    // Once we get here, we've seen a CRC from the Notecard,
+    // so we should continue to expect it from now on.
     notecardFirmwareSupportsCrc = true;
 
     // Extract the CRC field and the sequence number
-    char *p = &json[fieldOffset + CRC_FIELD_NAME_OFFSET + (sizeof(CRC_FIELD_NAME_TEST) - 1)];
+    char *p = &json[crcOffset + CRC_FIELD_NAME_OFFSET + (sizeof(CRC_FIELD_NAME_TEST) - 1)];
     uint16_t actualSeqno = (uint16_t) _n_atoh(p, 4);
     uint32_t actualCrc32 = (uint32_t) _n_atoh(p+5, 8);
-    json[fieldOffset++] = '}';
-    json[fieldOffset] = '\0';
-    uint32_t shouldBeCrc32 = _crc32(json, fieldOffset);
+    json[crcOffset++] = '}';
+    json[crcOffset] = '\0';
+    uint32_t shouldBeCrc32 = _crc32(json, crcOffset);
 
     return (shouldBeSeqno != actualSeqno || shouldBeCrc32 != actualCrc32);
 }

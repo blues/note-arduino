@@ -322,11 +322,11 @@ Inside the dev container:
    ```sh
    tio ~/.notestation/pid-<pid>_<hostname>/host_mcu_usb
    ```
-   
+
    > _**HINT:** The pseudo-tty devices are located in a folder related to the Notestattion reservations (e.g. `~/.notestation/pid-<pid>_<hostname>/<ptty_device>`)._
 
    > _**HINT:** The devices are named according to their function, for example `host_mcu_usb` is a connection to the host MCU USB._
-   
+
 ### Troubleshooting
 
 - Tailscale errors: Verify TS_AUTHKEY, restart containers.

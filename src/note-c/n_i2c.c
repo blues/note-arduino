@@ -93,7 +93,7 @@ const char *_i2cNoteTransaction(const char *request, size_t reqLen, char **respo
 
     // Do not attempt to send a zero-length request
     if (reqLen > 0) {
-        err = _i2cChunkedTransmit((uint8_t *)request, reqLen, true);
+        err = _i2cChunkedTransmit((const uint8_t *)request, reqLen, true);
         if (err) {
             NOTE_C_LOG_ERROR(err);
             _UnlockI2C();
@@ -217,7 +217,10 @@ bool _i2cNoteReset(void)
         // NOTE: This MUST always be `\n` and not `\r\n`, because there are some
         //       versions of the Notecard firmware will not respond to `\r\n`
         //       after communicating over I2C.
-        const char *transmitErr = _I2CTransmit(_I2CAddress(), (uint8_t *)"\n", 1);
+        // Stack buffer used to avoid passing flash-resident data through the
+        // non-const hook. TODO: Remove when i2cTransmitFn accepts const uint8_t *.
+        uint8_t lf[] = {'\n'};
+        const char *transmitErr = _I2CTransmit(_I2CAddress(), lf, 1);
         // If we get a failure on transmitting the `\n`, it means that the
         // Notecard isn't present.
         if (transmitErr) {
@@ -450,7 +453,7 @@ const char *_i2cChunkedReceive(uint8_t *buffer, uint32_t *size, bool delay, uint
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *_i2cNoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+const char *_i2cNoteChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay)
 {
     _LockI2C();
     const char *errstr = _i2cChunkedTransmit(buffer, size, delay);
@@ -469,12 +472,12 @@ const char *_i2cNoteChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
   @returns  A c-string with an error, or `NULL` if no error ocurred.
 */
 /**************************************************************************/
-const char *_i2cChunkedTransmit(uint8_t *buffer, uint32_t size, bool delay)
+const char *_i2cChunkedTransmit(const uint8_t *buffer, uint32_t size, bool delay)
 {
     // Transmit the request in chunks, but also in segments so as not to
     // overwhelm the notecard's interrupt buffers
     const char *estr;
-    uint8_t *chunk = buffer;
+    const uint8_t *chunk = buffer;
     uint16_t sentInSegment = 0;
     while (size > 0) {
         // Constrain chunkLen to fit into 16 bits (_I2CTransmit takes the buffer

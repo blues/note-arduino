@@ -229,7 +229,7 @@ bool JAddBinaryToObject(J *json, const char *fieldName, const void *binaryData, 
         return false;
     }
     JAddItemToObject(json, fieldName, stringItem);
-    return true;
+    return JIsPresent(json, fieldName);
 }
 
 bool JGetBinaryFromObject(J *json, const char *fieldName, uint8_t **retBinaryData, uint32_t *retBinaryDataLen)
