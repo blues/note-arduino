@@ -1,0 +1,40 @@
+name: Publish note-c docs site
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish_docs_site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+
+      - name: Install Python dependencies
+        run: |
+          pip install sphinx sphinx_rtd_theme breathe
+
+      - name: Install other dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake doxygen
+
+      - name: Build docs site
+        # The TZ=UTC thing is a workaround for this problem:
+        # https://github.com/nektos/act/issues/1853
+        run: |
+          TZ=UTC ./scripts/build_docs.sh
+
+      - name: Deploy docs site to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/docs/
+          force_orphan: true
