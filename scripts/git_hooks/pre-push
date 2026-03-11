@@ -1,0 +1,23 @@
+#!/bin/bash
+
+PRE_PUSH_HOOK_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+NOTE_C_DIR=$PRE_PUSH_HOOK_DIR/../..
+SCRIPTS_DIR=$NOTE_C_DIR/scripts
+
+$SCRIPTS_DIR/run_astyle.sh
+if [ $? -ne 0 ]; then
+    echo "run_astyle.sh failed."
+    exit 1
+fi
+
+$SCRIPTS_DIR/build_docs.sh
+if [ $? -ne 0 ]; then
+    echo "build_docs.sh failed."
+    exit 1
+fi
+
+$SCRIPTS_DIR/run_unit_tests.sh
+if [ $? -ne 0 ]; then
+    echo "run_unit_tests.sh failed."
+    exit 1
+fi

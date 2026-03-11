@@ -1,0 +1,40 @@
+name: MD5 Server Tests
+
+on:
+  workflow_dispatch:
+  workflow_call:  # reusable workflow
+
+jobs:
+  test-md5srv: # job id
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+        TERM: xterm-256color
+        MD5SRV_TIMEOUT: 5
+        MD5SRV_DIR: ./test/hitl/scripts
+        BATS_VERSION: 1.10.0
+    steps:
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.0
+        with:
+            bats-install: true
+            file-install: false
+            detik-install: false
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Tests
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+        run: |
+            cd ${{env.MD5SRV_DIR}}
+            bats -p --print-output-on-failure .
+      - name: Re-run Tests
+        if: failure()
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+        run: |
+          cd ${{env.MD5SRV_DIR}}
+          $HOME/.local/bin/bats -p --print-output-on-failure -x .
