@@ -2956,6 +2956,97 @@ int test_notecard_responseError_does_not_modify_note_c_result_value_before_retur
   return result;
 }
 
+int test_notecard_ping_i2c_sends_card_version_request()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  J * const EXPECTED_REQUEST = reinterpret_cast<J *>(0x1979);
+  J * const EXPECTED_RESPONSE = reinterpret_cast<J *>(0x1980);
+
+  noteGetActiveInterface_Parameters.reset();
+  noteGetActiveInterface_Parameters.result = NOTE_C_INTERFACE_I2C;
+  noteNewRequest_Parameters.reset();
+  noteNewRequest_Parameters.result = EXPECTED_REQUEST;
+  noteRequestResponse_Parameters.reset();
+  noteRequestResponse_Parameters.result = EXPECTED_RESPONSE;
+  noteResponseError_Parameters.reset();
+  noteResponseError_Parameters.result = false;
+  noteDeleteResponse_Parameters.reset();
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = notecard.ping();
+
+   // Assert
+  ///////////
+
+  if (ACTUAL_RESULT
+      && noteNewRequest_Parameters.request_cache == "card.version"
+      && noteRequestResponse_Parameters.req == EXPECTED_REQUEST
+      && noteResponseError_Parameters.rsp == EXPECTED_RESPONSE
+      && noteDeleteResponse_Parameters.response == EXPECTED_RESPONSE)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('p' + 'i' + 'n' + 'g');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotecard.ping() == " << ACTUAL_RESULT << ", EXPECTED: true" << std::endl;
+    std::cout << "\tnoteNewRequest_Parameters.request == " << noteNewRequest_Parameters.request_cache.c_str() << ", EXPECTED: card.version" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
+int test_notecard_ping_i2c_returns_false_when_card_version_fails()
+{
+  int result;
+
+   // Arrange
+  ////////////
+
+  Notecard notecard;
+  J * const EXPECTED_REQUEST = reinterpret_cast<J *>(0x1981);
+
+  noteGetActiveInterface_Parameters.reset();
+  noteGetActiveInterface_Parameters.result = NOTE_C_INTERFACE_I2C;
+  noteNewRequest_Parameters.reset();
+  noteNewRequest_Parameters.result = EXPECTED_REQUEST;
+  noteRequestResponse_Parameters.reset();
+  noteRequestResponse_Parameters.result = nullptr;
+  noteDeleteResponse_Parameters.reset();
+
+   // Action
+  ///////////
+
+  const bool ACTUAL_RESULT = notecard.ping();
+
+   // Assert
+  ///////////
+
+  if (!ACTUAL_RESULT && !noteDeleteResponse_Parameters.invoked)
+  {
+    result = 0;
+  }
+  else
+  {
+    result = static_cast<int>('p' + 'i' + 'n' + 'g');
+    std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << "\tnotecard.ping() == " << ACTUAL_RESULT << ", EXPECTED: false" << std::endl;
+    std::cout << "\tnoteDeleteResponse_Parameters.invoked == " << noteDeleteResponse_Parameters.invoked << ", EXPECTED: 0" << std::endl;
+    std::cout << "[";
+  }
+
+  return result;
+}
+
 int test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c()
 {
   int result;
@@ -5109,6 +5200,8 @@ int main(void)
       {test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c, "test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c"},
       {test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller"},
+      {test_notecard_ping_i2c_sends_card_version_request, "test_notecard_ping_i2c_sends_card_version_request"},
+      {test_notecard_ping_i2c_returns_false_when_card_version_fails, "test_notecard_ping_i2c_returns_false_when_card_version_fails"},
       {test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c, "test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c"},
       {test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller, "test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller"},
       {test_static_callback_note_i2c_receive_invokes_notei2c_receive, "test_static_callback_note_i2c_receive_invokes_notei2c_receive"},

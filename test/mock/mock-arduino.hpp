@@ -159,7 +159,7 @@ struct StreamPrint_Parameters {
 struct HardwareSerial : public Stream {
     operator bool();
     unsigned int available (void);
-    void begin(unsigned int baud);
+    void begin(uint32_t baud);
     void end(void);
     void flush(void);
     char read (void);
@@ -198,7 +198,7 @@ struct HardwareSerialBegin_Parameters {
         invoked = 0;
         baud = 0;
     }
-    unsigned int baud;
+    uint32_t baud;
     size_t invoked;
 };
 
@@ -297,7 +297,7 @@ struct HardwareSerialWrite_Parameters {
 struct SoftwareSerial : public Stream {
     operator bool();
     unsigned int available (void);
-    void begin(unsigned int baud);
+    void begin(uint32_t baud);
     void end(void);
     void flush(void);
     char read (void);
@@ -336,7 +336,7 @@ struct SoftwareSerialBegin_Parameters {
         invoked = 0;
         baud = 0;
     }
-    unsigned int baud;
+    uint32_t baud;
     size_t invoked;
 };
 

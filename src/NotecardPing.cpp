@@ -83,6 +83,23 @@ const uint32_t kAuxSerialSettleMs = 20;
 const uint8_t  kPostReconfigPingAttempts = 5;
 const uint32_t kPostReconfigPingDelayMs  = 250;
 
+bool pingNotecard(void)
+{
+    J *req = NoteNewRequest("card.version");
+    if (req == nullptr) {
+        return false;
+    }
+
+    J *rsp = NoteRequestResponse(req);
+    if (rsp == nullptr) {
+        return false;
+    }
+
+    const bool ok = !NoteResponseError(rsp);
+    NoteDeleteResponse(rsp);
+    return ok;
+}
+
 } // namespace
 
 bool Notecard::ping(void)
@@ -91,7 +108,7 @@ bool Notecard::ping(void)
     // connectivity to catch wiring/address problems and return the result.
     if (NoteGetActiveInterface() == NOTE_C_INTERFACE_I2C) {
         NOTE_C_LOG_DEBUG("ping: starting (i2c)");
-        const bool ok = NotePing();
+        const bool ok = pingNotecard();
         if (ok) {
             NOTE_C_LOG_INFO("ping: Notecard reachable over i2c");
         } else {
@@ -107,12 +124,12 @@ bool Notecard::ping(void)
         return false;
     }
 
-    const size_t desiredRate = ns->getBaudRate();
+    const uint32_t desiredRate = ns->getBaudRate();
     PING_LOG_DEBUG("ping: starting (serial, %lu baud)", (unsigned long)desiredRate);
 
     // Step 1: ping at the currently-configured host UART rate. If the
     // Notecard is already reachable, we are done and nothing else changes.
-    if (NotePing()) {
+    if (pingNotecard()) {
         PING_LOG_INFO("ping: Notecard reachable at %lu baud", (unsigned long)desiredRate);
         return true;
     }
@@ -127,9 +144,9 @@ bool Notecard::ping(void)
     // whatever `ns->setBaudRate` was last called with) and we fall
     // through to step 3.
     bool found = false;
-    size_t discoveredRate = 0;
+    uint32_t discoveredRate = 0;
     for (size_t i = 0; i < kScanBaudRateCount; ++i) {
-        const size_t rate = kScanBaudRates[i];
+        const uint32_t rate = kScanBaudRates[i];
         if (rate == desiredRate) {
             continue;
         }
@@ -140,7 +157,7 @@ bool Notecard::ping(void)
             NOTE_C_LOG_WARN("ping: host Serial does not support runtime baud rate change");
             return false;
         }
-        if (NotePing()) {
+        if (pingNotecard()) {
             found = true;
             discoveredRate = rate;
             break;
@@ -172,11 +189,11 @@ bool Notecard::ping(void)
         NOTE_C_LOG_WARN("ping: card.io request failed");
         return false;
     }
-    const bool ioHasErr = !JIsNullString(rsp, "err");
+    const bool ioHasErr = NoteResponseError(rsp);
     const char *portStatus = JGetString(rsp, "status");
     const bool isAux = (strcmp(portStatus, "aux") == 0);
     PING_LOG_INFO("ping: card.io reports port '%s'", portStatus);
-    JDelete(rsp);
+    NoteDeleteResponse(rsp);
 
     if (ioHasErr) {
         // Unexpected: NotePing proved connectivity at the discovered rate,
@@ -215,8 +232,8 @@ bool Notecard::ping(void)
                       (unsigned long)discoveredRate);
         return false;
     }
-    const bool auxErr = !JIsNullString(rsp, "err");
-    JDelete(rsp);
+    const bool auxErr = NoteResponseError(rsp);
+    NoteDeleteResponse(rsp);
     if (auxErr) {
         // Notecard rejected the rate change. Host UART stays at the
         // discovered rate (per the design decision for option (a)) so
@@ -239,7 +256,7 @@ bool Notecard::ping(void)
     // period after committing to the new aux-port rate before it can service
     // a fresh request; a single probe is not reliable here.
     for (uint8_t attempt = 1; attempt <= kPostReconfigPingAttempts; ++attempt) {
-        if (NotePing()) {
+        if (pingNotecard()) {
             PING_LOG_INFO("ping: aux port now at %lu baud; verified (attempt %u)",
                           (unsigned long)desiredRate, (unsigned)attempt);
             return true;

@@ -61,7 +61,7 @@ template <typename T>
 NoteSerial_Arduino<T>::NoteSerial_Arduino
 (
     T & serial_,
-    size_t baud_rate_
+    uint32_t baud_rate_
 ) :
     _notecardSerial(serial_),
     _notecardSerialSpeed(baud_rate_)
@@ -132,7 +132,7 @@ NoteSerial_Arduino<T>::transmit (
 template <typename T>
 bool
 NoteSerial_Arduino<T>::setBaudRate (
-    size_t rate
+    uint32_t rate
 )
 {
     _notecardSerial.end();
@@ -151,12 +151,12 @@ NoteSerial_Arduino<T>::setBaudRate (
 }
 
 template <typename T>
-size_t
+uint32_t
 NoteSerial_Arduino<T>::getBaudRate (
     void
 ) const
 {
-    return (size_t)_notecardSerialSpeed;
+    return _notecardSerialSpeed;
 }
 
 // Explicitly instantiate the classes and methods for the supported types

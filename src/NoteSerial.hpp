@@ -62,7 +62,7 @@ public:
                 or failed.
     */
     /**************************************************************************/
-    virtual bool setBaudRate(size_t rate) {
+    virtual bool setBaudRate(uint32_t rate) {
         (void)rate;
         return false;
     }
@@ -74,7 +74,7 @@ public:
                 do not track a rate may return 0.
     */
     /**************************************************************************/
-    virtual size_t getBaudRate(void) const {
+    virtual uint32_t getBaudRate(void) const {
         return 0;
     }
 };

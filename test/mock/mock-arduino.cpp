@@ -134,7 +134,7 @@ HardwareSerial::available (
 
 void
 HardwareSerial::begin (
-    unsigned int baud
+    uint32_t baud
 ) {
     // Record invocation(s)
     ++hardwareSerialBegin_Parameters.invoked;
@@ -210,7 +210,7 @@ SoftwareSerial::available (
 
 void
 SoftwareSerial::begin (
-    unsigned int baud
+    uint32_t baud
 ) {
     // Record invocation(s)
     ++softwareSerialBegin_Parameters.invoked;

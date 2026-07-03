@@ -14,6 +14,8 @@ public:
     char receive(void) override;
     bool reset(void) override;
     size_t transmit(uint8_t * buffer, size_t size, bool flush) override;
+    bool setBaudRate(uint32_t rate) override;
+    uint32_t getBaudRate(void) const override;
 };
 
 template <typename T>
@@ -114,10 +116,49 @@ struct NoteSerialTransmit_Parameters {
     size_t result;
 };
 
+struct NoteSerialSetBaudRate_Parameters {
+    NoteSerialSetBaudRate_Parameters(
+        void
+    ) :
+        invoked(0),
+        rate(0),
+        result(false)
+    { }
+    void reset (
+        void
+    ) {
+        invoked = 0;
+        rate = 0;
+        result = false;
+    }
+    size_t invoked;
+    uint32_t rate;
+    bool result;
+};
+
+struct NoteSerialGetBaudRate_Parameters {
+    NoteSerialGetBaudRate_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(0)
+    { }
+    void reset (
+        void
+    ) {
+        invoked = 0;
+        result = 0;
+    }
+    mutable size_t invoked;
+    uint32_t result;
+};
+
 extern MakeNoteSerial_Parameters<HardwareSerial> make_note_serial_Parameters;
 extern NoteSerialAvailable_Parameters noteSerialAvailable_Parameters;
 extern NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 extern NoteSerialReset_Parameters noteSerialReset_Parameters;
 extern NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
+extern NoteSerialSetBaudRate_Parameters noteSerialSetBaudRate_Parameters;
+extern NoteSerialGetBaudRate_Parameters noteSerialGetBaudRate_Parameters;
 
 #endif // MOCK_NOTE_SERIAL_HPP
