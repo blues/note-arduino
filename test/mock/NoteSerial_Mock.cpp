@@ -5,6 +5,8 @@ NoteSerialAvailable_Parameters noteSerialAvailable_Parameters;
 NoteSerialReceive_Parameters noteSerialReceive_Parameters;
 NoteSerialReset_Parameters noteSerialReset_Parameters;
 NoteSerialTransmit_Parameters noteSerialTransmit_Parameters;
+NoteSerialSetBaudRate_Parameters noteSerialSetBaudRate_Parameters;
+NoteSerialGetBaudRate_Parameters noteSerialGetBaudRate_Parameters;
 
 NoteSerial *
 make_note_serial (
@@ -95,4 +97,31 @@ NoteSerial_Mock::transmit (
 
     // Return user-supplied result
     return noteSerialTransmit_Parameters.result;
+}
+
+bool
+NoteSerial_Mock::setBaudRate (
+    uint32_t rate_
+)
+{
+    // Record invocation(s)
+    ++noteSerialSetBaudRate_Parameters.invoked;
+
+    // Stash parameter(s)
+    noteSerialSetBaudRate_Parameters.rate = rate_;
+
+    // Return user-supplied result
+    return noteSerialSetBaudRate_Parameters.result;
+}
+
+uint32_t
+NoteSerial_Mock::getBaudRate (
+    void
+) const
+{
+    // Record invocation(s)
+    ++noteSerialGetBaudRate_Parameters.invoked;
+
+    // Return user-supplied result
+    return noteSerialGetBaudRate_Parameters.result;
 }

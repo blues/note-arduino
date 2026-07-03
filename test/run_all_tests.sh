@@ -19,6 +19,7 @@ if [ 0 -eq $all_tests_result ]; then
   echo && echo -e "${YELLOW}Compiling and running Notecard Test Suite...${DEFAULT}"
   g++ -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror -Wpedantic -Wno-deprecated-declarations -std=c++11 -O0 -g \
     src/Notecard.cpp \
+    src/NotecardPing.cpp \
     test/Notecard.test.cpp \
     test/mock/mock-arduino.cpp \
     test/mock/mock-note-c-note.c \

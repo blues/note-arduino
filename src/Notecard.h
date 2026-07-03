@@ -368,6 +368,39 @@ public:
 
     /**************************************************************************/
     /*!
+        @brief  Ping the Notecard to verify that it is reachable, negotiating
+                the serial baud rate if necessary.
+
+        On I2C, this simply pings the Notecard with a fast connectivity check.
+
+        On Serial, the behavior is:
+          1. Ping the Notecard at the currently-configured host UART rate.
+             If it responds, return `true`.
+          2. Otherwise, assume this may be the Notecard's AUX serial port at
+             an unknown rate. Scan through known rates (115200, 230400, 460800,
+             921600, 9600) to discover the current Notecard rate. If none
+             succeed, restore the original host UART rate and return `false`.
+          3. If a rate was found, query `card.io` to determine which physical
+             port we are connected to. If it is not the AUX port, comms are
+             working; return `true` with the host UART left at the discovered
+             rate. Note that in this case the host UART may differ from the
+             rate passed to `begin()` — there is no way to change the rate of
+             non-AUX ports.
+          4. If it is the AUX port, issue `card.aux.serial` to reconfigure the
+             AUX port to the rate originally passed to `begin()`. On success,
+             switch the host UART to match, verify with a final ping, and
+             return the result. On failure, leave the host UART at the
+             discovered rate (so the caller can still reach the Notecard) and
+             return `false`.
+
+        @return `true` if the Notecard is reachable at the end of the call,
+                `false` otherwise.
+    */
+    /**************************************************************************/
+    bool ping(void);
+
+    /**************************************************************************/
+    /*!
         @brief  Sends a request to the Notecard.
 
         This function takes a populated `J` JSON request object and sends
@@ -490,6 +523,12 @@ public:
 
 private:
     void platformInit (bool assignCallbacks);
+
+    // Accessor for the Notecard's NoteSerial singleton. Defined in
+    // Notecard.cpp where the anonymous-namespace-scoped singleton is
+    // visible; used by ping() (in NotecardPing.cpp) to manipulate the
+    // host UART baud rate during AUX-port negotiation.
+    NoteSerial *getNoteSerial(void) const;
 };
 
 #endif

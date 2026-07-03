@@ -57,6 +57,13 @@ For I2C, you may simply call Notecard `begin()` with no parameters.
 notecard.begin();
 ```
 
+### Checking Connectivity
+
+After calling `begin()`, `ping()` can verify that the Notecard is reachable.
+On serial transports, it also attempts to recover from a baud-rate mismatch
+by scanning common Notecard rates and, when connected on AUX, reconfiguring
+the Notecard to the baud rate passed to `begin()`.
+
 ### Sending Notecard Requests
 
 Notecard requests use bundled `J` json package to allocate a `req`, is a JSON
