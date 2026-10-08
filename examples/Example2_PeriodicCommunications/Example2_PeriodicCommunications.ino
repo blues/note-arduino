@@ -133,7 +133,7 @@ void setup()
     JAddNumberToObject(req, "inbound", 60);
 
     // Issue the request
-    notecard.sendRequestWithRetry(req, 5); // 5 seconds
+    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly

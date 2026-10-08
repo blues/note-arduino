@@ -102,16 +102,14 @@ void setup()
 
     // Put the Notecard in continuous mode so it maintains a live session with
     // Notehub. Outboard Firmware Update requires the Notecard to be in
-    // "continuous" or "periodic" mode. `sendRequestWithRetry()` is important on
-    // the first message after a cold boot, to handle the hardware race
-    // condition while the Notecard becomes ready.
+    // "continuous" or "periodic" mode.
     J *req = notecard.newRequest("hub.set");
     if (myProductID[0])
     {
         JAddStringToObject(req, "product", myProductID);
     }
     JAddStringToObject(req, "mode", "continuous");
-    notecard.sendRequestWithRetry(req, 5); // 5 seconds
+    notecard.sendRequest(req);
 
     // Enable Outboard Firmware Update for this host and tell the Notecard which
     // MCU type it is driving. On a Notecarrier F the DFU signals are routed over

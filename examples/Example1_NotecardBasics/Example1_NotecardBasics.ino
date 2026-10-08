@@ -114,13 +114,10 @@ void setup()
     //       "product" : myProductID,
     //       "mode"    : "continuous"
     //     }
-    // Note that `notecard.sendRequestWithRetry()` always frees the request data
+    // Note that `notecard.sendRequest()` always frees the request data
     // structure, and it returns "true" if success or "false" if there is any
-    // failure. It is important to use `sendRequestWithRetry()` on the first
-    // message from the MCU to the Notecard, because there will always be a
-    // hardware race condition on cold boot and the Notecard must be ready to
-    // receive and process the message.
-    notecard.sendRequestWithRetry(req, 5); // 5 seconds
+    // failure.
+    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every

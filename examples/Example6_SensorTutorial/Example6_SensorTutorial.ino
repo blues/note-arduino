@@ -60,7 +60,7 @@ void setup()
         JAddStringToObject(req, "product", myProductID);
     }
     JAddStringToObject(req, "mode", "continuous");
-    notecard.sendRequestWithRetry(req, 5); // 5 seconds
+    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every
