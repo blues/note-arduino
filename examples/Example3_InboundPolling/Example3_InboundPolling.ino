@@ -89,7 +89,7 @@ void setup()
     JAddStringToObject(req, "mode", "periodic");
     JAddNumberToObject(req, "inbound", 60);
 #endif
-    notecard.sendRequestWithRetry(req, 5);
+    notecard.sendRequest(req);
 }
 
 // In the Arduino main loop which is called repeatedly, add outbound data every

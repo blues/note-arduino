@@ -119,7 +119,7 @@ void setup()
         }
         JAddStringToObject(req, "mode", "periodic");
         JAddNumberToObject(req, "outbound", notehubUploadPeriodMins);
-        notecard.sendRequestWithRetry(req, 5); // 5 seconds
+        notecard.sendRequest(req);
 
         // Because many devs will be using oscilloscopes or joulescopes to
         // closely examine power consumption, it can be helpful during

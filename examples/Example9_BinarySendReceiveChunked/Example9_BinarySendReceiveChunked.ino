@@ -66,7 +66,7 @@ void setup()
         JAddStringToObject(req, "product", myProductID);
     }
     JAddStringToObject(req, "mode", "continuous");
-    notecard.sendRequestWithRetry(req, 5); // 5 seconds
+    notecard.sendRequest(req);
 
     // Reset the state of the Notecard's binary store to a known value.
     NoteBinaryStoreReset();
