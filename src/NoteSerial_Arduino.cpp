@@ -61,7 +61,7 @@ template <typename T>
 NoteSerial_Arduino<T>::NoteSerial_Arduino
 (
     T & serial_,
-    size_t baud_rate_
+    uint32_t baud_rate_
 ) :
     _notecardSerial(serial_),
     _notecardSerialSpeed(baud_rate_)
@@ -127,6 +127,36 @@ NoteSerial_Arduino<T>::transmit (
         _notecardSerial.flush();
     }
     return result;
+}
+
+template <typename T>
+bool
+NoteSerial_Arduino<T>::setBaudRate (
+    uint32_t rate
+)
+{
+    _notecardSerial.end();
+    _notecardSerial.begin(rate);
+    _notecardSerialSpeed = rate;
+
+    // Wait for the serial port to be ready, matching the constructor's
+    // handling for native-USB boards where the Serial object becomes
+    // truthy only after the USB CDC link is up.
+    for (const size_t startMs = NoteGetMs()
+       ; !_notecardSerial && ((NoteGetMs() - startMs) < NOTE_C_SERIAL_TIMEOUT_MS)
+       ;
+    );
+
+    return true;
+}
+
+template <typename T>
+uint32_t
+NoteSerial_Arduino<T>::getBaudRate (
+    void
+) const
+{
+    return _notecardSerialSpeed;
 }
 
 // Explicitly instantiate the classes and methods for the supported types

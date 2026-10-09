@@ -1,10 +1,13 @@
 #include "mock-parameters.hpp"
 
 JAddIntToObject_Parameters jAddIntToObject_Parameters;
+JAddStringToObject_Parameters jAddStringToObject_Parameters;
+JGetString_Parameters jGetString_Parameters;
 NoteDebug_Parameters noteDebug_Parameters;
 NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 NoteDelayMs_Parameters noteDelayMs_Parameters;
 NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+NoteGetActiveInterface_Parameters noteGetActiveInterface_Parameters;
 NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
 NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
 NoteGetMs_Parameters noteGetMs_Parameters;
@@ -49,6 +52,47 @@ JAddIntToObject (
     } else {
         return jAddIntToObject_Parameters.result[(jAddIntToObject_Parameters.invoked - 1)];
     }
+}
+
+J *
+JAddStringToObject (
+    J * const object_,
+    const char * const name_,
+    const char * const string_
+) {
+    // Record invocation(s)
+    ++jAddStringToObject_Parameters.invoked;
+
+    // Stash parameter(s)
+    jAddStringToObject_Parameters.object.push_back(object_);
+    jAddStringToObject_Parameters.name.push_back(name_ ? name_ : "");
+    jAddStringToObject_Parameters.string.push_back(string_ ? string_ : "");
+
+    // Return user-supplied result
+    if (jAddStringToObject_Parameters.result.size() < jAddStringToObject_Parameters.invoked) {
+        return jAddStringToObject_Parameters.default_result;
+    } else {
+        return jAddStringToObject_Parameters.result[(jAddStringToObject_Parameters.invoked - 1)];
+    }
+}
+
+char *
+JGetString (
+    J * json_,
+    const char * field_
+) {
+    // Record invocation(s)
+    ++jGetString_Parameters.invoked;
+
+    // Stash parameter(s)
+    jGetString_Parameters.json = json_;
+    jGetString_Parameters.field = field_;
+    if (field_) {
+        jGetString_Parameters.field_cache = field_;
+    }
+
+    // Return user-supplied result
+    return const_cast<char *>(jGetString_Parameters.result);
 }
 
 void
@@ -179,6 +223,17 @@ void NoteGetFnSerial(serialResetFn *resetFn, serialTransmitFn *transmitFn,
     if (receiveFn) {
         *receiveFn = noteGetFnSerial_Parameters.receiveFn_result;
     }
+}
+
+int
+NoteGetActiveInterface(
+    void
+) {
+    // Record invocation(s)
+    ++noteGetActiveInterface_Parameters.invoked;
+
+    // Return user-supplied result
+    return noteGetActiveInterface_Parameters.result;
 }
 
 uint32_t

@@ -50,6 +50,58 @@ struct JAddIntToObject_Parameters {
     J *default_result;
 };
 
+struct JAddStringToObject_Parameters {
+    JAddStringToObject_Parameters(
+        void
+    ) :
+        invoked(0),
+        default_result(nullptr)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        object.clear();
+        name.clear();
+        string.clear();
+        result.clear();
+        default_result = nullptr;
+    }
+    size_t invoked;
+    std::vector<J *> object;
+    std::vector<std::string> name;
+    std::vector<std::string> string;
+    std::vector<J *> result;
+    J *default_result;
+};
+
+struct JGetString_Parameters {
+    JGetString_Parameters(
+        void
+    ) :
+        invoked(0),
+        json(nullptr),
+        field(nullptr),
+        result("")
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        json = nullptr;
+        field = nullptr;
+        field_cache.clear();
+        result = "";
+    }
+    size_t invoked;
+    J *json;
+    const char *field;
+    std::string field_cache;
+    const char *result;
+};
+
 struct NoteDebug_Parameters {
     NoteDebug_Parameters(
         void
@@ -236,6 +288,24 @@ struct NoteGetMs_Parameters {
     size_t invoked;
     uint32_t default_result;
     std::vector<uint32_t> result;
+};
+
+struct NoteGetActiveInterface_Parameters {
+    NoteGetActiveInterface_Parameters(
+        void
+    ) :
+        invoked(0),
+        result(NOTE_C_INTERFACE_NONE)
+    { }
+    void
+    reset (
+        void
+    ) {
+        invoked = 0;
+        result = NOTE_C_INTERFACE_NONE;
+    }
+    size_t invoked;
+    int result;
 };
 
 struct NoteNewCommand_Parameters {
@@ -701,10 +771,13 @@ struct NoteSetUserAgent_Parameters {
 };
 
 extern JAddIntToObject_Parameters jAddIntToObject_Parameters;
+extern JAddStringToObject_Parameters jAddStringToObject_Parameters;
+extern JGetString_Parameters jGetString_Parameters;
 extern NoteDebug_Parameters noteDebug_Parameters;
 extern NoteDebugSyncStatus_Parameters noteDebugSyncStatus_Parameters;
 extern NoteDelayMs_Parameters noteDelayMs_Parameters;
 extern NoteDeleteResponse_Parameters noteDeleteResponse_Parameters;
+extern NoteGetActiveInterface_Parameters noteGetActiveInterface_Parameters;
 extern NoteGetFnI2C_Parameters noteGetFnI2C_Parameters;
 extern NoteGetFnSerial_Parameters noteGetFnSerial_Parameters;
 extern NoteGetMs_Parameters noteGetMs_Parameters;

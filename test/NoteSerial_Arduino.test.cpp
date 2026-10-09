@@ -150,6 +150,34 @@ int test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_pa
     return result;
 }
 
+int test_noteserial_arduino_constructor_preserves_high_baud_rate()
+{
+    int result;
+
+    // Arrange
+    const uint32_t EXPECTED_BAUD_RATE = 460800;
+
+    hardwareSerialBegin_Parameters.reset();
+
+    // Action
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, EXPECTED_BAUD_RATE);
+
+    // Assert
+    if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
+
 int test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method()
 {
     int result;
@@ -571,6 +599,36 @@ int test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_resul
     return result;
 }
 
+int test_noteserial_arduino_setBaudRate_updates_rate_used_by_reset()
+{
+    int result;
+
+    // Arrange
+    const uint32_t EXPECTED_BAUD_RATE = 460800;
+    NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
+
+    hardwareSerialBegin_Parameters.reset();
+
+    // Action
+    noteserial.setBaudRate(EXPECTED_BAUD_RATE);
+    noteserial.reset();
+
+    // Assert
+    if (EXPECTED_BAUD_RATE == hardwareSerialBegin_Parameters.baud)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = static_cast<int>('s' + 'e' + 'r' + 'i' + 'a' + 'l');
+        std::cout << "\33[31mFAILED\33[0m] " << __FILE__ << ":" << __LINE__ << std::endl;
+        std::cout << "\thardwareSerialBegin_Parameters.baud == " << hardwareSerialBegin_Parameters.baud << ", EXPECTED: " << EXPECTED_BAUD_RATE << std::endl;
+        std::cout << "[";
+    }
+
+    return result;
+}
+
 int main(void)
 {
     TestFunction tests[] = {
@@ -579,6 +637,7 @@ int main(void)
         {test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter, "test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter"},
         {test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method, "test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method"},
         {test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin, "test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin"},
+        {test_noteserial_arduino_constructor_preserves_high_baud_rate, "test_noteserial_arduino_constructor_preserves_high_baud_rate"},
         {test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method, "test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method"},
         {test_noteserial_arduino_available_invokes_hardware_serial_available, "test_noteserial_arduino_available_invokes_hardware_serial_available"},
         {test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller, "test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller"},
@@ -593,7 +652,8 @@ int main(void)
         {test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write, "test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write"},
         {test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true, "test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true"},
         {test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false, "test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false"},
-        {test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller, "test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller"}
+        {test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller, "test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller"},
+        {test_noteserial_arduino_setBaudRate_updates_rate_used_by_reset, "test_noteserial_arduino_setBaudRate_updates_rate_used_by_reset"}
     };
 
     return TestFunction::runTests(tests, (sizeof(tests) / sizeof(TestFunction)));
