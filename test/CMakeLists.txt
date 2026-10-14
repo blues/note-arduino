@@ -41,10 +41,10 @@ set(TEST_TARGETS "")
 macro(add_test TEST_UNIT)
     set(TEST_DEFINES ${ARGN})
     set(TEST_NAME ${TEST_UNIT}_test)
-    set(TEST_PREFIX "")
+    set(TEST_SUFFIX "")
     foreach(TEST_DEFINE ${TEST_DEFINES})
         string(APPEND TEST_NAME "_${TEST_DEFINE}")
-        string(APPEND TEST_PREFIX "${TEST_DEFINE}:")
+        string(APPEND TEST_SUFFIX " [${TEST_DEFINE}]")
     endforeach()
     set(TEST_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/${TEST_UNIT}_test.cpp
@@ -77,7 +77,7 @@ macro(add_test TEST_UNIT)
 
     list(APPEND TEST_TARGETS ${TEST_NAME})
 
-    catch_discover_tests(${TEST_NAME} TEST_PREFIX "${TEST_PREFIX}")
+    catch_discover_tests(${TEST_NAME} TEST_SUFFIX "${TEST_SUFFIX}")
 endmacro(add_test)
 
 add_test(Notecard)

@@ -6,9 +6,16 @@
 #include <cassert>
 
 
-TEST_CASE("test_make_note_txn_instantiates_notetxn_object", "[NoteTxn_Arduino]")
+// Called first in every TEST_CASE: RESET_FAKE on every FFF fake, then
+// FFF_RESET_HISTORY() (see resetArduinoFakes()).
+static void resetFakes(void)
 {
   resetArduinoFakes();
+}
+
+TEST_CASE("test_make_note_txn_instantiates_notetxn_object", "[NoteTxn_Arduino]")
+{
+  resetFakes();
   // Arrange
   NoteTxn * notetxn = nullptr;
   uint8_t txn_pins[2] = {19, 79};
@@ -26,7 +33,7 @@ TEST_CASE("test_make_note_txn_instantiates_notetxn_object", "[NoteTxn_Arduino]")
 
 TEST_CASE("test_make_note_txn_enforces_singleton_by_returning_same_notetxn_object_for_all_calls", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   uint8_t txn_pins_1[2] = {19, 79};
   NoteTxn * const notetxn_1 = make_note_txn(txn_pins_1);
@@ -46,7 +53,7 @@ TEST_CASE("test_make_note_txn_enforces_singleton_by_returning_same_notetxn_objec
 //int test_make_note_txn_returns_nullptr_when_same_pins_are_passed_as_parameter()
 TEST_CASE("test_make_note_txn_deletes_singleton_when_same_pins_are_passed_as_parameter", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   uint8_t txn_pins[2] = {19, 79};
   NoteTxn * notetxn = make_note_txn(txn_pins);
@@ -62,7 +69,7 @@ TEST_CASE("test_make_note_txn_deletes_singleton_when_same_pins_are_passed_as_par
 
 TEST_CASE("test_notetxn_arduino_constructor_floats_ctx_pin", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -77,7 +84,7 @@ TEST_CASE("test_notetxn_arduino_constructor_floats_ctx_pin", "[NoteTxn_Arduino]"
 
 TEST_CASE("test_notetxn_arduino_constructor_floats_rtx_pin", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -92,7 +99,7 @@ TEST_CASE("test_notetxn_arduino_constructor_floats_rtx_pin", "[NoteTxn_Arduino]"
 
 TEST_CASE("test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pullup", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -113,7 +120,7 @@ TEST_CASE("test_notetxn_arduino_start_initially_configures_ctx_pin_as_input_pull
 
 TEST_CASE("test_notetxn_arduino_start_configures_rtx_pin_as_output", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -134,7 +141,7 @@ TEST_CASE("test_notetxn_arduino_start_configures_rtx_pin_as_output", "[NoteTxn_A
 
 TEST_CASE("test_notetxn_arduino_start_sets_rtx_pin_high", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -155,7 +162,7 @@ TEST_CASE("test_notetxn_arduino_start_sets_rtx_pin_high", "[NoteTxn_Arduino]")
 
 TEST_CASE("test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -179,7 +186,7 @@ TEST_CASE("test_notetxn_arduino_start_blocks_until_ctx_pin_goes_high", "[NoteTxn
 
 TEST_CASE("test_notetxn_arduino_start_blocks_until_timeout_ms", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -205,7 +212,7 @@ TEST_CASE("test_notetxn_arduino_start_blocks_until_timeout_ms", "[NoteTxn_Arduin
 
 TEST_CASE("test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds_high", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -228,7 +235,7 @@ TEST_CASE("test_notetxn_arduino_start_leaves_rtx_pin_as_output_when_ctx_responds
 
 TEST_CASE("test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -251,7 +258,7 @@ TEST_CASE("test_notetxn_arduino_start_leaves_rtx_pin_high_when_ctx_responds_high
 
 TEST_CASE("test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_high", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -272,7 +279,7 @@ TEST_CASE("test_notetxn_arduino_start_leaves_ctx_pin_floating_when_ctx_responds_
 
 TEST_CASE("test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -300,7 +307,7 @@ TEST_CASE("test_notetxn_arduino_start_leaves_ctx_pin_floating_on_timeout", "[Not
 
 TEST_CASE("test_notetxn_arduino_start_floats_rtx_pin_on_timeout", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;
@@ -327,7 +334,7 @@ TEST_CASE("test_notetxn_arduino_start_floats_rtx_pin_on_timeout", "[NoteTxn_Ardu
 
 TEST_CASE("test_notetxn_arduino_stop_floats_rtx_pin", "[NoteTxn_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
   // Arrange
   const uint8_t CTX_PIN = 19;
   const uint8_t RTX_PIN = 79;

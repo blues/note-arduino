@@ -43,6 +43,7 @@ RUN ["dash", "-c", "\
      git \
      gzip \
      lcov \
+     make \
      libjson-xs-perl \
      nano \
      python-is-python3 \

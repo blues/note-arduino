@@ -14,10 +14,17 @@ static int fake_sentinel;
 #include "Notecard.h"
 
 
-TEST_CASE("test_notecard_begin_i2c_sets_user_agent_to_note_arduino", "[Notecard]")
+// Called first in every TEST_CASE: RESET_FAKE on every FFF fake, then
+// FFF_RESET_HISTORY() (see resetArduinoFakes() and resetNoteInterfaceFakes()).
+static void resetFakes(void)
 {
   resetArduinoFakes();
   resetNoteInterfaceFakes();
+}
+
+TEST_CASE("test_notecard_begin_i2c_sets_user_agent_to_note_arduino", "[Notecard]")
+{
+  resetFakes();
    // Arrange
   ////////////
 
@@ -41,8 +48,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_user_agent_to_note_arduino", "[Notecard]
 
 TEST_CASE("test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -64,8 +70,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_user_agent_to_note_arduino_when_interfac
 
 TEST_CASE("test_notecard_begin_i2c_shares_a_memory_allocation_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -86,8 +91,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_a_memory_allocation_function_pointer",
 
 TEST_CASE("test_notecard_begin_i2c_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -107,8 +111,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_memory_allocation_function_pointer_to_nu
 
 TEST_CASE("test_notecard_begin_i2c_shares_a_memory_free_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -129,8 +132,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_a_memory_free_function_pointer", "[Not
 
 TEST_CASE("test_notecard_begin_i2c_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -150,8 +152,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_memory_free_function_pointer_to_nullptr_
 
 TEST_CASE("test_notecard_begin_i2c_shares_a_delay_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -172,8 +173,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_a_delay_function_pointer", "[Notecard]
 
 TEST_CASE("test_notecard_begin_i2c_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -193,8 +193,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_delay_function_pointer_to_nullptr_when_i
 
 TEST_CASE("test_notecard_begin_i2c_shares_a_millis_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -215,8 +214,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_a_millis_function_pointer", "[Notecard
 
 TEST_CASE("test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -236,8 +234,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_millis_function_pointer_to_nullptr_when_
 
 TEST_CASE("test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -261,8 +258,7 @@ TEST_CASE("test_notecard_begin_i2c_does_not_modify_i2c_address_parameter_before_
 
 TEST_CASE("test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -286,8 +282,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_i2c_address_parameter_to_zero_before_pas
 
 TEST_CASE("test_notecard_begin_i2c_does_not_modify_i2c_mtu_parameter_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -310,8 +305,7 @@ TEST_CASE("test_notecard_begin_i2c_does_not_modify_i2c_mtu_parameter_before_pass
 
 TEST_CASE("test_notecard_begin_i2c_sets_i2c_mtu_parameter_to_zero_before_passing_to_note_c_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -334,8 +328,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_i2c_mtu_parameter_to_zero_before_passing
 
 TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -356,8 +349,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_reset_function_pointer", "[Note
 
 TEST_CASE("test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -378,8 +370,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_i2c_reset_function_pointer_to_nullptr_wh
 
 TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -400,8 +391,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_transmit_function_pointer", "[N
 
 TEST_CASE("test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -422,8 +412,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_i2c_transmit_function_pointer_to_nullptr
 
 TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -444,8 +433,7 @@ TEST_CASE("test_notecard_begin_i2c_shares_an_i2c_receive_function_pointer", "[No
 
 TEST_CASE("test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -466,8 +454,7 @@ TEST_CASE("test_notecard_begin_i2c_sets_i2c_receive_function_pointer_to_nullptr_
 
 TEST_CASE("test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -489,8 +476,7 @@ TEST_CASE("test_notecard_begin_i2c_default_parameter_for_i2cMax_is_passed_to_not
 
 TEST_CASE("test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -512,8 +498,7 @@ TEST_CASE("test_notecard_begin_i2c_default_parameter_for_i2cAddress_is_passed_to
 
 TEST_CASE("test_notecard_begin_serial_sets_user_agent_to_note_arduino", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -536,8 +521,7 @@ TEST_CASE("test_notecard_begin_serial_sets_user_agent_to_note_arduino", "[Noteca
 
 TEST_CASE("test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -559,8 +543,7 @@ TEST_CASE("test_notecard_begin_serial_sets_user_agent_to_note_arduino_when_inter
 
 TEST_CASE("test_notecard_begin_serial_shares_a_memory_allocation_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -581,8 +564,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_memory_allocation_function_pointe
 
 TEST_CASE("test_notecard_begin_serial_sets_memory_allocation_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -602,8 +584,7 @@ TEST_CASE("test_notecard_begin_serial_sets_memory_allocation_function_pointer_to
 
 TEST_CASE("test_notecard_begin_serial_shares_a_memory_free_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -624,8 +605,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_memory_free_function_pointer", "[
 
 TEST_CASE("test_notecard_begin_serial_sets_memory_free_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -645,8 +625,7 @@ TEST_CASE("test_notecard_begin_serial_sets_memory_free_function_pointer_to_nullp
 
 TEST_CASE("test_notecard_begin_serial_shares_a_delay_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -667,8 +646,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_delay_function_pointer", "[Noteca
 
 TEST_CASE("test_notecard_begin_serial_sets_delay_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -688,8 +666,7 @@ TEST_CASE("test_notecard_begin_serial_sets_delay_function_pointer_to_nullptr_whe
 
 TEST_CASE("test_notecard_begin_serial_shares_a_millis_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -710,8 +687,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_millis_function_pointer", "[Notec
 
 TEST_CASE("test_notecard_begin_serial_sets_millis_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -731,8 +707,7 @@ TEST_CASE("test_notecard_begin_serial_sets_millis_function_pointer_to_nullptr_wh
 
 TEST_CASE("test_notecard_begin_serial_shares_a_serial_reset_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -753,8 +728,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_serial_reset_function_pointer", "
 
 TEST_CASE("test_notecard_begin_serial_sets_serial_reset_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -775,8 +749,7 @@ TEST_CASE("test_notecard_begin_serial_sets_serial_reset_function_pointer_to_null
 
 TEST_CASE("test_notecard_begin_serial_shares_a_serial_transmit_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -797,8 +770,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_serial_transmit_function_pointer"
 
 TEST_CASE("test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -819,8 +791,7 @@ TEST_CASE("test_notecard_begin_serial_sets_transmit_function_pointer_to_nullptr_
 
 TEST_CASE("test_notecard_begin_serial_shares_a_serial_available_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -841,8 +812,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_serial_available_function_pointer
 
 TEST_CASE("test_notecard_begin_serial_sets_serial_available_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -863,8 +833,7 @@ TEST_CASE("test_notecard_begin_serial_sets_serial_available_function_pointer_to_
 
 TEST_CASE("test_notecard_begin_serial_shares_a_serial_receive_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -885,8 +854,7 @@ TEST_CASE("test_notecard_begin_serial_shares_a_serial_receive_function_pointer",
 
 TEST_CASE("test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nullptr_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -907,8 +875,7 @@ TEST_CASE("test_notecard_begin_serial_sets_serial_receive_function_pointer_to_nu
 
 TEST_CASE("test_notecard_end_does_not_call_wire_end_when_the_i2c_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -934,8 +901,7 @@ TEST_CASE("test_notecard_end_does_not_call_wire_end_when_the_i2c_interface_has_n
 
 TEST_CASE("test_notecard_end_clears_all_i2c_interface_function_pointers_when_the_i2c_interface_has_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -964,8 +930,7 @@ TEST_CASE("test_notecard_end_clears_all_i2c_interface_function_pointers_when_the
 
 TEST_CASE("test_notecard_end_does_not_call_serial_end_when_the_serial_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -991,8 +956,7 @@ TEST_CASE("test_notecard_end_does_not_call_serial_end_when_the_serial_interface_
 
 TEST_CASE("test_notecard_end_clears_all_serial_interface_function_pointers_when_the_serial_interface_has_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1022,8 +986,7 @@ TEST_CASE("test_notecard_end_clears_all_serial_interface_function_pointers_when_
 
 TEST_CASE("test_notecard_end_clears_all_platform_interface_function_pointers", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1048,8 +1011,7 @@ TEST_CASE("test_notecard_end_clears_all_platform_interface_function_pointers", "
 
 TEST_CASE("test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associated_memory_when_the_i2c_interface_has_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1077,8 +1039,7 @@ TEST_CASE("test_notecard_end_provides_nullptr_to_make_note_i2c_to_free_associate
 
 TEST_CASE("test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_associated_memory_when_the_serial_interface_has_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1106,8 +1067,7 @@ TEST_CASE("test_notecard_end_invokes_make_note_serial_nullptr_method_to_free_ass
 
 TEST_CASE("test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1128,8 +1088,7 @@ TEST_CASE("test_notecard_setDebugOutputStream_shares_a_debug_log_function_pointe
 
 TEST_CASE("test_notecard_setDebugOutputStream_clears_the_debug_log_function_pointer_when_nullptr_is_provided", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1150,8 +1109,7 @@ TEST_CASE("test_notecard_setDebugOutputStream_clears_the_debug_log_function_poin
 
 TEST_CASE("test_notecard_clearDebugOutputStream_clears_the_debug_log_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1173,8 +1131,7 @@ TEST_CASE("test_notecard_clearDebugOutputStream_clears_the_debug_log_function_po
 
 TEST_CASE("test_notecard_setFn_shares_a_memory_allocation_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1196,8 +1153,7 @@ TEST_CASE("test_notecard_setFn_shares_a_memory_allocation_function_pointer", "[N
 
 TEST_CASE("test_notecard_setFn_shares_a_memory_deallocation_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1219,8 +1175,7 @@ TEST_CASE("test_notecard_setFn_shares_a_memory_deallocation_function_pointer", "
 
 TEST_CASE("test_notecard_setFn_shares_a_delay_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1242,8 +1197,7 @@ TEST_CASE("test_notecard_setFn_shares_a_delay_function_pointer", "[Notecard]")
 
 TEST_CASE("test_notecard_setFn_shares_a_millis_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1265,8 +1219,7 @@ TEST_CASE("test_notecard_setFn_shares_a_millis_function_pointer", "[Notecard]")
 
 TEST_CASE("test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
   const mutexFn lockFn = reinterpret_cast<mutexFn>(0x19790917);
@@ -1286,8 +1239,7 @@ TEST_CASE("test_notecard_setFnI2cMutex_does_not_modify_locking_mutex_func_parame
 
 TEST_CASE("test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
   const mutexFn unlockFn = reinterpret_cast<mutexFn>(0x19790917);
@@ -1307,8 +1259,7 @@ TEST_CASE("test_notecard_setFnI2cMutex_does_not_modify_unlocking_mutex_func_para
 
 TEST_CASE("test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
   const mutexFn lockFn = reinterpret_cast<mutexFn>(0x19790917);
@@ -1328,8 +1279,7 @@ TEST_CASE("test_notecard_setFnNoteMutex_does_not_modify_locking_mutex_func_param
 
 TEST_CASE("test_notecard_setFnNoteMutex_does_not_modify_unlocking_mutex_func_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
   const mutexFn unlockFn = reinterpret_cast<mutexFn>(0x19790917);
@@ -1349,8 +1299,7 @@ TEST_CASE("test_notecard_setFnNoteMutex_does_not_modify_unlocking_mutex_func_par
 
 TEST_CASE("test_notecard_setTransactionPins_shares_a_transaction_start_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1371,8 +1320,7 @@ TEST_CASE("test_notecard_setTransactionPins_shares_a_transaction_start_function_
 
 TEST_CASE("test_notecard_setTransactionPins_shares_a_transaction_stop_function_pointer", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1393,8 +1341,7 @@ TEST_CASE("test_notecard_setTransactionPins_shares_a_transaction_stop_function_p
 
 TEST_CASE("test_notecard_setTransactionPins_clears_the_transaction_start_function_pointer_when_nullptr_is_provided", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1416,8 +1363,7 @@ TEST_CASE("test_notecard_setTransactionPins_clears_the_transaction_start_functio
 
 TEST_CASE("test_notecard_setTransactionPins_clears_the_transaction_stop_function_pointer_when_nullptr_is_provided", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1439,8 +1385,7 @@ TEST_CASE("test_notecard_setTransactionPins_clears_the_transaction_stop_function
 
 TEST_CASE("test_notecard_newRequest_does_not_modify_string_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1462,8 +1407,7 @@ TEST_CASE("test_notecard_newRequest_does_not_modify_string_parameter_value_befor
 
 TEST_CASE("test_notecard_newRequest_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1495,8 +1439,7 @@ TEST_CASE("test_notecard_newRequest_does_not_modify_note_c_result_value_before_r
 
 TEST_CASE("test_notecard_sendRequest_does_not_modify_j_object_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1529,8 +1472,7 @@ TEST_CASE("test_notecard_sendRequest_does_not_modify_j_object_parameter_value_be
 
 TEST_CASE("test_notecard_sendRequest_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1553,8 +1495,7 @@ TEST_CASE("test_notecard_sendRequest_does_not_modify_note_c_result_value_before_
 
 TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1587,8 +1528,7 @@ TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_j_object_parameter
 
 TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1609,8 +1549,7 @@ TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_timeout_parameter_
 
 TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1633,8 +1572,7 @@ TEST_CASE("test_notecard_sendRequestWithRetry_does_not_modify_note_c_result_valu
 
 TEST_CASE("test_notecard_requestAndResponse_does_not_modify_j_object_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1667,8 +1605,7 @@ TEST_CASE("test_notecard_requestAndResponse_does_not_modify_j_object_parameter_v
 
 TEST_CASE("test_notecard_requestAndResponse_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1700,8 +1637,7 @@ TEST_CASE("test_notecard_requestAndResponse_does_not_modify_note_c_result_value_
 
 TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_j_object_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1734,8 +1670,7 @@ TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_j_object_pa
 
 TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_timeout_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1756,8 +1691,7 @@ TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_timeout_par
 
 TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1789,8 +1723,7 @@ TEST_CASE("test_notecard_requestAndResponseWithRetry_does_not_modify_note_c_resu
 
 TEST_CASE("test_notecard_deleteResponse_does_not_modify_j_object_parameter_pointer_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1812,8 +1745,7 @@ TEST_CASE("test_notecard_deleteResponse_does_not_modify_j_object_parameter_point
 
 TEST_CASE("test_notecard_logDebug_does_not_modify_string_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1835,8 +1767,7 @@ TEST_CASE("test_notecard_logDebug_does_not_modify_string_parameter_value_before_
 
 TEST_CASE("test_notecard_logDebugf_does_not_modify_string_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1858,8 +1789,7 @@ TEST_CASE("test_notecard_logDebugf_does_not_modify_string_parameter_value_before
 
 TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_pollFrequencyMs_parameter_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1881,8 +1811,7 @@ TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_pollFrequencyMs_paramet
 
 TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_maxLevel_parameter_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1904,8 +1833,7 @@ TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_maxLevel_parameter_befo
 
 TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1928,8 +1856,7 @@ TEST_CASE("test_notecard_debugSyncStatus_does_not_modify_note_c_result_value_bef
 
 TEST_CASE("test_notecard_responseError_does_not_modify_j_object_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1962,8 +1889,7 @@ TEST_CASE("test_notecard_responseError_does_not_modify_j_object_parameter_value_
 
 TEST_CASE("test_notecard_responseError_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -1986,8 +1912,7 @@ TEST_CASE("test_notecard_responseError_does_not_modify_note_c_result_value_befor
 
 TEST_CASE("test_notecard_newCommand_does_not_modify_string_parameter_value_before_passing_to_note_c", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2009,8 +1934,7 @@ TEST_CASE("test_notecard_newCommand_does_not_modify_string_parameter_value_befor
 
 TEST_CASE("test_notecard_newCommand_does_not_modify_note_c_result_value_before_returning_to_caller", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2042,8 +1966,7 @@ TEST_CASE("test_notecard_newCommand_does_not_modify_note_c_result_value_before_r
 
 TEST_CASE("test_static_callback_note_i2c_receive_invokes_notei2c_receive", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2071,8 +1994,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_invokes_notei2c_receive", "[Not
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_device_address_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2101,8 +2023,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_device_address_
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_buffer_parameter_address_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2130,8 +2051,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_buffer_paramete
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_size_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2159,8 +2079,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_size_parameter_
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_available_parameter_address_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2188,8 +2107,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_available_param
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2218,8 +2136,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_modify_interface_metho
 
 TEST_CASE("test_static_callback_note_i2c_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2250,8 +2167,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_does_not_call_interface_method_
 
 TEST_CASE("test_static_callback_note_i2c_receive_returns_error_message_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2283,8 +2199,7 @@ TEST_CASE("test_static_callback_note_i2c_receive_returns_error_message_when_inte
 
 TEST_CASE("test_static_callback_note_i2c_reset_invokes_notei2c_reset", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2309,8 +2224,7 @@ TEST_CASE("test_static_callback_note_i2c_reset_invokes_notei2c_reset", "[Notecar
 
 TEST_CASE("test_static_callback_note_i2c_reset_does_not_modify_device_address_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2336,8 +2250,7 @@ TEST_CASE("test_static_callback_note_i2c_reset_does_not_modify_device_address_pa
 
 TEST_CASE("test_static_callback_note_i2c_reset_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2363,8 +2276,7 @@ TEST_CASE("test_static_callback_note_i2c_reset_does_not_modify_interface_method_
 
 TEST_CASE("test_static_callback_note_i2c_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2392,8 +2304,7 @@ TEST_CASE("test_static_callback_note_i2c_reset_does_not_call_interface_method_wh
 
 TEST_CASE("test_static_callback_note_i2c_reset_returns_false_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2422,8 +2333,7 @@ TEST_CASE("test_static_callback_note_i2c_reset_returns_false_when_interface_has_
 
 TEST_CASE("test_static_callback_note_i2c_transmit_invokes_notei2c_transmit", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2450,8 +2360,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_invokes_notei2c_transmit", "[N
 
 TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_device_address_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2479,8 +2388,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_device_address
 
 TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_buffer_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2507,8 +2415,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_buffer_paramet
 
 TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_size_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2535,8 +2442,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_size_parameter
 
 TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2564,8 +2470,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_does_not_modify_interface_meth
 
 TEST_CASE("test_static_callback_note_i2c_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2595,8 +2500,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_does_not_call_interface_method
 
 TEST_CASE("test_static_callback_note_i2c_transmit_returns_error_message_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2627,8 +2531,7 @@ TEST_CASE("test_static_callback_note_i2c_transmit_returns_error_message_when_int
 
 TEST_CASE("test_static_callback_note_log_print_invokes_notelog_print", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2653,8 +2556,7 @@ TEST_CASE("test_static_callback_note_log_print_invokes_notelog_print", "[Notecar
 
 TEST_CASE("test_static_callback_note_log_print_does_not_modify_message_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2679,8 +2581,7 @@ TEST_CASE("test_static_callback_note_log_print_does_not_modify_message_parameter
 
 TEST_CASE("test_static_callback_note_log_print_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2706,8 +2607,7 @@ TEST_CASE("test_static_callback_note_log_print_does_not_modify_interface_method_
 
 TEST_CASE("test_static_callback_note_log_print_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2737,8 +2637,7 @@ TEST_CASE("test_static_callback_note_log_print_does_not_call_interface_method_wh
 
 TEST_CASE("test_static_callback_note_log_print_returns_false_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2770,8 +2669,7 @@ TEST_CASE("test_static_callback_note_log_print_returns_false_when_interface_has_
 
 TEST_CASE("test_static_callback_note_serial_available_invokes_noteserial_available", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2794,8 +2692,7 @@ TEST_CASE("test_static_callback_note_serial_available_invokes_noteserial_availab
 
 TEST_CASE("test_static_callback_note_serial_available_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2819,8 +2716,7 @@ TEST_CASE("test_static_callback_note_serial_available_does_not_modify_interface_
 
 TEST_CASE("test_static_callback_note_serial_available_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2848,8 +2744,7 @@ TEST_CASE("test_static_callback_note_serial_available_does_not_call_interface_me
 
 TEST_CASE("test_static_callback_note_serial_available_returns_false_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2878,8 +2773,7 @@ TEST_CASE("test_static_callback_note_serial_available_returns_false_when_interfa
 
 TEST_CASE("test_static_callback_note_serial_receive_invokes_noteserial_receive", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2902,8 +2796,7 @@ TEST_CASE("test_static_callback_note_serial_receive_invokes_noteserial_receive",
 
 TEST_CASE("test_static_callback_note_serial_receive_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2927,8 +2820,7 @@ TEST_CASE("test_static_callback_note_serial_receive_does_not_modify_interface_me
 
 TEST_CASE("test_static_callback_note_serial_receive_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2956,8 +2848,7 @@ TEST_CASE("test_static_callback_note_serial_receive_does_not_call_interface_meth
 
 TEST_CASE("test_static_callback_note_serial_receive_returns_false_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -2987,8 +2878,7 @@ TEST_CASE("test_static_callback_note_serial_receive_returns_false_when_interface
 
 TEST_CASE("test_static_callback_note_serial_reset_invokes_noteserial_reset", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3011,8 +2901,7 @@ TEST_CASE("test_static_callback_note_serial_reset_invokes_noteserial_reset", "[N
 
 TEST_CASE("test_static_callback_note_serial_reset_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3036,8 +2925,7 @@ TEST_CASE("test_static_callback_note_serial_reset_does_not_modify_interface_meth
 
 TEST_CASE("test_static_callback_note_serial_reset_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3065,8 +2953,7 @@ TEST_CASE("test_static_callback_note_serial_reset_does_not_call_interface_method
 
 TEST_CASE("test_static_callback_note_serial_reset_returns_false_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3095,8 +2982,7 @@ TEST_CASE("test_static_callback_note_serial_reset_returns_false_when_interface_h
 
 TEST_CASE("test_static_callback_note_serial_transmit_invokes_noteserial_transmit", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3123,8 +3009,7 @@ TEST_CASE("test_static_callback_note_serial_transmit_invokes_noteserial_transmit
 
 TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_text_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3151,8 +3036,7 @@ TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_text_parame
 
 TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_length_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3179,8 +3063,7 @@ TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_length_para
 
 TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_flush_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3207,8 +3090,7 @@ TEST_CASE("test_static_callback_note_serial_transmit_does_not_modify_flush_param
 
 TEST_CASE("test_static_callback_note_serial_transmit_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3240,8 +3122,7 @@ TEST_CASE("test_static_callback_note_serial_transmit_does_not_call_interface_met
 
 TEST_CASE("test_static_callback_note_txn_start_invokes_notetxn_start", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3268,8 +3149,7 @@ TEST_CASE("test_static_callback_note_txn_start_invokes_notetxn_start", "[Notecar
 
 TEST_CASE("test_static_callback_note_txn_start_does_not_modify_timeout_ms_parameter_before_passing_to_interface_method", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3296,8 +3176,7 @@ TEST_CASE("test_static_callback_note_txn_start_does_not_modify_timeout_ms_parame
 
 TEST_CASE("test_static_callback_note_txn_start_does_not_modify_interface_method_return_value", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3325,8 +3204,7 @@ TEST_CASE("test_static_callback_note_txn_start_does_not_modify_interface_method_
 
 TEST_CASE("test_static_callback_note_txn_start_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3356,8 +3234,7 @@ TEST_CASE("test_static_callback_note_txn_start_does_not_call_interface_method_wh
 
 TEST_CASE("test_static_callback_note_txn_start_returns_true_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3389,8 +3266,7 @@ TEST_CASE("test_static_callback_note_txn_start_returns_true_when_interface_has_n
 
 TEST_CASE("test_static_callback_note_txn_stop_invokes_notetxn_stop", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 
@@ -3415,8 +3291,7 @@ TEST_CASE("test_static_callback_note_txn_stop_invokes_notetxn_stop", "[Notecard]
 
 TEST_CASE("test_static_callback_note_txn_stop_does_not_call_interface_method_when_interface_has_not_been_instantiated", "[Notecard]")
 {
-  resetArduinoFakes();
-  resetNoteInterfaceFakes();
+  resetFakes();
    // Arrange
   ////////////
 

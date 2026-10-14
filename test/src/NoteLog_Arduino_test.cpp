@@ -8,9 +8,16 @@
 #include <iostream>
 
 
-TEST_CASE("test_make_note_log_instantiates_notelog_object", "[NoteLog_Arduino]")
+// Called first in every TEST_CASE: RESET_FAKE on every FFF fake, then
+// FFF_RESET_HISTORY() (see resetArduinoFakes()).
+static void resetFakes(void)
 {
   resetArduinoFakes();
+}
+
+TEST_CASE("test_make_note_log_instantiates_notelog_object", "[NoteLog_Arduino]")
+{
+  resetFakes();
     // Arrange
     NoteLog * notelog = nullptr;
     Stream & serial_stream = Serial;
@@ -27,7 +34,7 @@ TEST_CASE("test_make_note_log_instantiates_notelog_object", "[NoteLog_Arduino]")
 
 TEST_CASE("test_make_note_log_enforces_singleton_by_returning_same_notelog_object_for_all_calls", "[NoteLog_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     Stream & serial_stream = Serial;
     NoteLog * const notelog_1 = make_note_log(serial_stream);
@@ -45,7 +52,7 @@ TEST_CASE("test_make_note_log_enforces_singleton_by_returning_same_notelog_objec
 //int test_make_note_log_returns_nullptr_when_nullptr_is_passed_as_parameter()
 TEST_CASE("test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parameter", "[NoteLog_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     Stream & serial_stream = Serial;
     NoteLog * notelog = make_note_log(serial_stream);
@@ -60,7 +67,7 @@ TEST_CASE("test_make_note_log_deletes_singleton_when_nullptr_is_passed_as_parame
 
 TEST_CASE("test_notelog_arduino_print_does_not_modify_str_parameter_value_before_passing_to_stream_print", "[NoteLog_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteLog_Arduino notelog(&Serial);
     const char EXPECTED_RESULT[] = "Hello, Test!";
@@ -76,7 +83,7 @@ TEST_CASE("test_notelog_arduino_print_does_not_modify_str_parameter_value_before
 
 TEST_CASE("test_notelog_arduino_print_does_not_modify_stream_print_result_value_before_returning_to_caller", "[NoteLog_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteLog_Arduino notelog(&Serial);
     const size_t EXPECTED_RESULT = 13;

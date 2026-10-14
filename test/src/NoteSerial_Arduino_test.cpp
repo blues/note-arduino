@@ -8,9 +8,16 @@
 #include <iostream>
 
 
-TEST_CASE("test_make_note_serial_instantiates_noteserial_object", "[NoteSerial_Arduino]")
+// Called first in every TEST_CASE: RESET_FAKE on every FFF fake, then
+// FFF_RESET_HISTORY() (see resetArduinoFakes()).
+static void resetFakes(void)
 {
   resetArduinoFakes();
+}
+
+TEST_CASE("test_make_note_serial_instantiates_noteserial_object", "[NoteSerial_Arduino]")
+{
+  resetFakes();
     // Arrange
     NoteSerial * noteserial = nullptr;
     MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
@@ -27,7 +34,7 @@ TEST_CASE("test_make_note_serial_instantiates_noteserial_object", "[NoteSerial_A
 
 TEST_CASE("test_make_note_serial_enforces_singleton_by_returning_same_noteserial_object_for_all_calls", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
     NoteSerial * const noteserial_1 = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
@@ -45,7 +52,7 @@ TEST_CASE("test_make_note_serial_enforces_singleton_by_returning_same_noteserial
 //int test_make_note_serial_returns_nullptr_when_nullptr_is_passed_as_parameter()
 TEST_CASE("test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_parameter", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     MakeNoteSerial_ArduinoParameters<HardwareSerial> arduino_parameters(Serial, 9600);
     NoteSerial * noteserial = make_note_serial<MakeNoteSerial_ArduinoParameters<HardwareSerial>>(arduino_parameters);
@@ -60,7 +67,7 @@ TEST_CASE("test_make_note_serial_deletes_singleton_when_nullptr_is_passed_as_par
 
 TEST_CASE("test_noteserial_arduino_constructor_invokes_hardware_serial_parameter_begin_method", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     RESET_FAKE(HardwareSerial_begin);
 
@@ -73,7 +80,7 @@ TEST_CASE("test_noteserial_arduino_constructor_invokes_hardware_serial_parameter
 
 TEST_CASE("test_noteserial_arduino_constructor_does_not_modify_baud_parameter_before_passing_to_hardware_serial_begin", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     const size_t EXPECTED_BAUD_RATE = 9600;
 
@@ -88,7 +95,7 @@ TEST_CASE("test_noteserial_arduino_constructor_does_not_modify_baud_parameter_be
 
 TEST_CASE("test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_method", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     RESET_FAKE(HardwareSerial_end);
     NoteSerial_Arduino<HardwareSerial> * noteserial = new NoteSerial_Arduino<HardwareSerial>(Serial, 9600);
@@ -102,7 +109,7 @@ TEST_CASE("test_noteserial_arduino_deconstructor_invokes_hardware_serial_end_met
 
 TEST_CASE("test_noteserial_arduino_available_invokes_hardware_serial_available", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     RESET_FAKE(HardwareSerial_available);
@@ -116,7 +123,7 @@ TEST_CASE("test_noteserial_arduino_available_invokes_hardware_serial_available",
 
 TEST_CASE("test_noteserial_arduino_available_does_not_modify_hardware_serial_available_result_value_before_returning_to_caller", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const size_t EXPECTED_RESULT = 79;
@@ -133,7 +140,7 @@ TEST_CASE("test_noteserial_arduino_available_does_not_modify_hardware_serial_ava
 
 TEST_CASE("test_noteserial_arduino_receive_invokes_hardware_serial_read", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
@@ -148,7 +155,7 @@ TEST_CASE("test_noteserial_arduino_receive_invokes_hardware_serial_read", "[Note
 
 TEST_CASE("test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_result_value_before_returning_to_caller", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     const char EXPECTED_RESULT = 'z';
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
@@ -165,7 +172,7 @@ TEST_CASE("test_noteserial_arduino_receive_does_not_modify_hardware_serial_read_
 
 TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_end", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     RESET_FAKE(HardwareSerial_end);
@@ -179,7 +186,7 @@ TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_end", "[NoteSer
 
 TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_begin", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     RESET_FAKE(HardwareSerial_begin);
@@ -193,7 +200,7 @@ TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_begin", "[NoteS
 
 TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_baud_parameter_that_was_originally_supplied_to_the_constructor", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     const size_t EXPECTED_BAUD_RATE = 9600;
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, EXPECTED_BAUD_RATE);
@@ -209,7 +216,7 @@ TEST_CASE("test_noteserial_arduino_reset_invokes_hardware_serial_begin_with_the_
 
 TEST_CASE("test_noteserial_arduino_reset_always_returns_true", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
@@ -222,7 +229,7 @@ TEST_CASE("test_noteserial_arduino_reset_always_returns_true", "[NoteSerial_Ardu
 
 TEST_CASE("test_noteserial_arduino_transmit_invokes_hardware_serial_write", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
 
@@ -237,7 +244,7 @@ TEST_CASE("test_noteserial_arduino_transmit_invokes_hardware_serial_write", "[No
 
 TEST_CASE("test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_value_before_passing_to_hardware_serial_write", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const char EXPECTED_RESULT[] = "Hello, Test!";
@@ -253,7 +260,7 @@ TEST_CASE("test_noteserial_arduino_transmit_does_not_modify_buffer_parameter_val
 
 TEST_CASE("test_noteserial_arduino_transmit_does_not_modify_size_parameter_value_before_passing_to_hardware_serial_write", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     const size_t EXPECTED_RESULT = 13;
@@ -269,7 +276,7 @@ TEST_CASE("test_noteserial_arduino_transmit_does_not_modify_size_parameter_value
 
 TEST_CASE("test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     RESET_FAKE(HardwareSerial_flush);
@@ -283,7 +290,7 @@ TEST_CASE("test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_f
 
 TEST_CASE("test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
     RESET_FAKE(HardwareSerial_flush);
@@ -297,7 +304,7 @@ TEST_CASE("test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flus
 
 TEST_CASE("test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller", "[NoteSerial_Arduino]")
 {
-  resetArduinoFakes();
+  resetFakes();
     // Arrange
     const size_t EXPECTED_RESULT = 13;
     NoteSerial_Arduino<HardwareSerial> noteserial(Serial, 9600);
