@@ -5,8 +5,7 @@
 #ifndef NOTE_MOCK
   #include <Arduino.h>
 #else
-  #include "mock/mock-arduino.hpp"
-  #include "mock/mock-parameters.hpp"
+  #include "arduino_fakes.hpp"
 #endif
 
 // Singleton instance of the NoteTxn_Arduino class

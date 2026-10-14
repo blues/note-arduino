@@ -46,8 +46,7 @@
 #ifndef NOTE_MOCK
 #include <note-c/note.h>
 #else
-#include "mock/mock-arduino.hpp"
-#include "mock/mock-parameters.hpp"
+#include "arduino_fakes.hpp"
 #endif
 
 /**************************************************************************/

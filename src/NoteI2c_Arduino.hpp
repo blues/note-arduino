@@ -7,8 +7,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #else
-#include "mock/mock-arduino.hpp"
-#include "mock/mock-parameters.hpp"
+#include "arduino_fakes.hpp"
 #endif
 
 class NoteI2c_Arduino final : public NoteI2c

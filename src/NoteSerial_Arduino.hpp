@@ -6,7 +6,7 @@
 #ifndef NOTE_MOCK
 #include <Arduino.h>
 #else
-#include "mock/mock-arduino.hpp"
+#include "arduino_fakes.hpp"
 #endif
 
 template <typename T>
