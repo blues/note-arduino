@@ -91,9 +91,10 @@ jobs:
         run: |
           docker run --rm --volume $(pwd):/note-arduino/ \
                           --workdir /note-arduino/ \
-                          --entrypoint ./test/run_all_tests.sh \
+                          --entrypoint ./scripts/run_unit_tests.sh \
                           --user root \
-                          ghcr.io/blues/note_arduino_ci:latest
+                          ghcr.io/blues/note_arduino_ci:latest \
+                          --coverage --mem-check
 
       - name: Adjust lcov source file paths for Coveralls
         run: sudo sed -i 's/\/note-arduino\///g' ./coverage/lcov.info

@@ -120,33 +120,45 @@ For details on contributions we accept and the process for contributing, see our
 
 ## Note Arduino Tests
 
+### Framework
+
+The unit-tests use [Catch2](https://github.com/catchorg/Catch2) (v3.3.0, fetched
+by CMake) and [FFF](https://github.com/meekrosoft/fff) fakes, built and run
+with CMake/CTest, in the same way as [note-c](https://github.com/blues/note-c).
+Each unit (`Notecard`, `NoteI2c_Arduino`, `NoteLog_Arduino`,
+`NoteSerial_Arduino` and `NoteTxn_Arduino`) is one test executable, built from
+`test/src/<unit>_test.cpp`. `NoteI2c_Arduino` is also built with
+`-DWIRE_HAS_END`. The FFF fakes for the Arduino core and note-c live in
+`test/include/arduino_fakes.hpp` and `test/src/arduino_fakes.cpp`.
+
 ### Dependencies
 
-The tests are designed to be executed using Docker, and the environment required
-by the tests is defined in .github/actions/run-tests-in-container/Dockerfile.
-The following directions are provided to aid in executing the tests in
-a container.
-
-> _**NOTE:** If you are uncomfortable using Docker, then you may wish to use
-the Dockerfile as a guide to install the necessary dependencies and execute
-`run_all_tests.sh` locally._
+The tests need a C/C++ compiler, CMake (3.20+), git, and optionally lcov and
+valgrind. The CI environment is defined in `.devcontainer/ci/Dockerfile`.
 
 ### Invocation
 
-1. From the `note-arduino` folder, build the container with the
-following command:
+From the `note-arduino` folder, run:
 
 ```none
-docker build .github/actions/run-tests-in-container/ --tag note-arduino-test
+./scripts/run_unit_tests.sh [--coverage] [--mem-check] [--verbose]
 ```
 
-1. Execute the tests inside the container using the following command:
+- `--coverage` writes an lcov report to `coverage/lcov.info`.
+- `--mem-check` runs every test under valgrind; a leak fails the run.
+
+Or use CMake directly:
 
 ```none
-docker run --rm --volume $(pwd):/note-arduino/ --workdir /note-arduino/ note-arduino-test
+cmake -B build -S test && cmake --build build && ctest --test-dir build --output-on-failure
 ```
 
-1. Similar test results should print to your terminal for review.
+To run them in the CI container:
+
+```none
+docker run --rm --volume $(pwd):/note-arduino/ --workdir /note-arduino/ \
+  --entrypoint ./scripts/run_unit_tests.sh ghcr.io/blues/note_arduino_ci:latest --coverage --mem-check
+```
 
 ### Success
 

@@ -36,6 +36,7 @@ RUN ["dash", "-c", "\
      bash \
      bash-completion \
      ca-certificates \
+     cmake \
      curl \
      g++ \
      gdb \
