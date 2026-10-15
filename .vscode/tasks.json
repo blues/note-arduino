@@ -3,8 +3,8 @@
 	"tasks": [
         {
             "label": "Compile and Run ALL Tests",
-            "type": "cppbuild",
-            "command": "./test/run_all_tests.sh",
+            "type": "shell",
+            "command": "./scripts/run_unit_tests.sh",
             "args": [],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -18,201 +18,28 @@
             }
         },
         {
-            "label": "Compile Notecard Tests",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "test/mock/NoteI2c_Mock.cpp",
-                "test/mock/NoteLog_Mock.cpp",
-                "test/mock/NoteSerial_Mock.cpp",
-                "test/mock/NoteTime_Mock.cpp",
-                "test/mock/NoteTxn_Mock.cpp",
-                "src/Notecard.cpp",
-                "test/Notecard.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-o",
-                "notecard.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Compile NoteI2c Arduino Tests",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "src/NoteI2c_Arduino.cpp",
-                "test/NoteI2c_Arduino.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-o",
-                "notei2c_arduino.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Compile NoteI2c Arduino Tests (-DWIRE_HAS_END)",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "src/NoteI2c_Arduino.cpp",
-                "test/NoteI2c_Arduino.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-DWIRE_HAS_END",
-                "-o",
-                "notei2c_arduino_wire_has_end.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Compile NoteLog Arduino Tests",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "src/NoteLog_Arduino.cpp",
-                "test/NoteLog_Arduino.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-o",
-                "notelog_arduino.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Compile NoteSerial Arduino Tests",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "src/NoteSerial_Arduino.cpp",
-                "test/NoteSerial_Arduino.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-o",
-                "noteserial_arduino.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Compile NoteTxn Arduino Tests",
-            "type": "cppbuild",
-            "command": "g++",
-            "args": [
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "test/mock/mock-arduino.cpp",
-                "test/mock/mock-note-c-note.c",
-                "src/NoteTxn_Arduino.cpp",
-                "test/NoteTxn_Arduino.test.cpp",
-                "-std=c++11",
-                "-Itest",
-                "-Isrc",
-                "-DNOTE_MOCK",
-                "-o",
-                "notetxn_arduino.tests",
-                "-g",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Clear Test Binaries",
+            "label": "Compile and Run ALL Tests (coverage + mem-check)",
             "type": "shell",
-            "command": "rm -rf *.tests",
+            "command": "./scripts/run_unit_tests.sh",
+            "args": [
+                "--coverage",
+                "--mem-check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Clear Test Build",
+            "type": "shell",
+            "command": "rm -rf build coverage",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

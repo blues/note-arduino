@@ -36,12 +36,14 @@ RUN ["dash", "-c", "\
      bash \
      bash-completion \
      ca-certificates \
+     cmake \
      curl \
      g++ \
      gdb \
      git \
      gzip \
      lcov \
+     make \
      libjson-xs-perl \
      nano \
      python-is-python3 \

@@ -120,128 +120,78 @@ For details on contributions we accept and the process for contributing, see our
 
 ## Note Arduino Tests
 
+The unit tests use [Catch2](https://github.com/catchorg/Catch2) v3.3.0 (fetched
+by CMake) and [FFF](https://github.com/meekrosoft/fff) fakes, built with CMake
+and run with CTest, the same framework as [note-c](https://github.com/blues/note-c).
+Catch2 v3 requires C++14, so the unit-test build uses `-std=c++14` (the library
+itself is unchanged).
+
+- `test/src/<unit>_test.cpp`: one Catch2 executable per unit under test
+  (`Notecard`, `NoteI2c_Arduino`, `NoteLog_Arduino`, `NoteSerial_Arduino`,
+  `NoteTxn_Arduino`). `NoteI2c_Arduino` is also built with `-DWIRE_HAS_END`;
+  those cases carry the ` [WIRE_HAS_END]` suffix in CTest.
+- `test/include/arduino_fakes.hpp`, `test/src/arduino_fakes.cpp`: FFF fakes for
+  the Arduino core and the note-c API, plus minimal stateless `Stream`,
+  `HardwareSerial`, `SoftwareSerial` and `TwoWire` stubs that forward to FFF
+  fakes (FFF cannot fake C++ class methods).
+- `test/include/note_iface_fakes.hpp`, `test/src/note_iface_fakes.cpp`: FFF
+  fakes for the note-arduino interfaces, used by the `Notecard` tests.
+- `test/include/fff.h`: byte-identical to note-c's `test/include/fff.h`.
+
 ### Dependencies
 
-The tests are designed to be executed using Docker, and the environment required
-by the tests is defined in .github/actions/run-tests-in-container/Dockerfile.
-The following directions are provided to aid in executing the tests in
-a container.
-
-> _**NOTE:** If you are uncomfortable using Docker, then you may wish to use
-the Dockerfile as a guide to install the necessary dependencies and execute
-`run_all_tests.sh` locally._
+`cmake` (3.20+), `make`, `g++`, `git`, and optionally `lcov` (coverage) and
+`valgrind` (memory checks). Catch2 is downloaded by CMake. The CI environment
+is defined in `.devcontainer/ci/Dockerfile`.
 
 ### Invocation
 
-1. From the `note-arduino` folder, build the container with the
-following command:
+From the `note-arduino` folder:
 
 ```none
-docker build .github/actions/run-tests-in-container/ --tag note-arduino-test
+./scripts/run_unit_tests.sh [--coverage] [--mem-check] [--verbose]
 ```
 
-1. Execute the tests inside the container using the following command:
+- `--coverage` writes `coverage/lcov.info` (src/ only).
+- `--mem-check` runs every test under valgrind; a leak fails the run.
+- The build uses `-j2` by default; set `NOTE_ARDUINO_BUILD_JOBS=<n>` to change it.
+
+Or use CMake directly:
 
 ```none
-docker run --rm --volume $(pwd):/note-arduino/ --workdir /note-arduino/ note-arduino-test
+cmake -B build -S test
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-1. Similar test results should print to your terminal for review.
+Run only the `-DWIRE_HAS_END` variants with
+`ctest --test-dir build -R 'WIRE_HAS_END\]'`.
+
+To use the CI container:
+
+```none
+docker build . --file .devcontainer/ci/Dockerfile --tag note-arduino-ci
+docker run --rm --volume $(pwd):/note-arduino/ --workdir /note-arduino/ \
+    --entrypoint ./scripts/run_unit_tests.sh note-arduino-ci --coverage --mem-check
+```
 
 ### Success
 
-Upon success, you will see a message similar to the following:
+Upon success, the script ends with:
 
 ```none
+100% tests passed, 0 tests failed out of 250
 ...
-[passed] test_noteserial_arduino_transmit_invokes_hardware_serial_flush_when_flush_parameter_is_true
-[passed] test_noteserial_arduino_transmit_does_not_invoke_hardware_serial_flush_when_flush_parameter_is_false
-[passed] test_noteserial_arduino_transmit_does_not_modify_hardware_serial_write_result_value_before_returning_to_caller
-==13467==
-==13467== HEAP SUMMARY:
-==13467==     in use at exit: 0 bytes in 0 blocks
-==13467==   total heap usage: 2 allocs, 2 frees, 73,728 bytes allocated
-==13467==
-==13467== All heap blocks were freed -- no leaks are possible
-==13467==
-==13467== For lists of detected and suppressed errors, rerun with: -s
-==13467== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-NoteSerial_Arduino tests passed!
-
-All tests have passed!
-
-gcov (Alpine 10.3.1_git20210424) 10.3.1 20210424
-Copyright (C) 2020 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.
-There is NO warranty; not even for MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.
-
-lcov: LCOV version 20200626-2688-g6cc6292bbc
-Capturing coverage data from .
-Found gcov version: 10.3.1
-Using intermediate gcov format
-Scanning . for .gcda files ...
-Found 4 data files in .
-Processing NoteLog_Arduino.gcda
-Processing NoteI2c_Arduino.gcda
-Processing NoteSerial_Arduino.gcda
-Processing Notecard.gcda
-Finished .info-file creation
-Reading tracefile ./coverage/lcov.info
-Summary coverage rate:
-  lines......: 100.0% (215 of 215 lines)
-  functions..: 92.9% (39 of 42 functions)
-  branches...: no data found
+SUCCESS: Tests passed.
 ```
-
-### Failure
-
-When a test fails, you will see a message similar to the following:
-
-```none
-...
-[passed] test_notei2c_arduino_constructor_invokes_twowire_parameter_begin_method
-[passed] test_notei2c_arduino_receive_requests_response_data_from_notecard
-[FAILED] NoteI2c_Arduino.test.cpp:120
-        twoWireBeginTransmission_Parameters.invoked == 2, EXPECTED: > 1
-        twoWireWriteByte_Parameters.invoked == 4, EXPECTED: > 2
-        twoWireEndTransmission_Parameters.invoked == 2, EXPECTED: > 1
-[FAILED] test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure
-==14566==
-==14566== HEAP SUMMARY:
-==14566==     in use at exit: 0 bytes in 0 blocks
-==14566==   total heap usage: 7 allocs, 7 frees, 73,738 bytes allocated
-==14566==
-==14566== All heap blocks were freed -- no leaks are possible
-==14566==
-==14566== For lists of detected and suppressed errors, rerun with: -s
-==14566== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-NoteI2c_Arduino tests failed!
-
-TESTS FAILED!!!
-```
-
-Here, the failed test is the last reported test,
-`test_notei2c_arduino_receive_will_retry_transmission_on_i2c_failure`. The first
-line marked with `[FAILED]` indicates the file and line number related to the
-failed test: file `NoteI2c_Arduino.test.cpp` near line `120`. The return value
-of each test is a non-zero identifier related to the test suite.
 
 ### Adding a New Test
 
-The signature of a test function is `int(*test_fn)(void)`, so to say, a test
-function takes NO parameters and returns an integer.
-
-To add a new test to a test suite, create your new test and add the test
-to the test runner at the bottom of the file. You may find it easiest to copy
-an existing test and adapt the **Arrange**, **Action**, and **Assert** sections.
-Please create an expressive error message that can assist in understanding a
-failed test.
-
-To add a test to the runner, copy the test's name and use it to create an entry
-in the `tests` array in the `main` function. The entry will occupy it's own line
-at the end of the array, and syntax should be as follows,
-`{test_name, "test_name"},`.
+Add a `TEST_CASE("test_<name>", "[<Unit>]")` to `test/src/<unit>_test.cpp`.
+Call `resetFakes();` first, then follow the **Arrange**, **Action** and
+**Assert** sections of the existing tests. CTest discovers new cases
+automatically. A new unit needs one `add_test(<unit>)` line in
+`test/CMakeLists.txt`.
 
 ## Notestation Dev Environment (Setup and Usage)
 
