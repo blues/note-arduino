@@ -278,6 +278,11 @@ NOTE_ARDUINO_DEPRECATED void Notecard::logDebugf(const char *format, ...) const
     NoteDebug(message);
 }
 
+NoteSerial *Notecard::getNoteSerial(void) const
+{
+    return noteSerial;
+}
+
 J *Notecard::newCommand(const char *request) const
 {
     return NoteNewCommand(request);

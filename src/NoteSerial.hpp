@@ -47,6 +47,36 @@ public:
     */
     /**************************************************************************/
     virtual size_t transmit(uint8_t * buffer, size_t size, bool flush) = 0;
+
+    /**************************************************************************/
+    /*!
+        @brief  Change the baud rate of the host Serial port.
+
+        Reconfigures the underlying platform Serial interface to operate at
+        the specified baud rate, and updates the cached rate used by `reset()`
+        so a subsequent reset restores to the new rate. Implementations that
+        cannot change the rate at runtime may return `false`.
+
+        @param rate  The new baud rate, in bits per second.
+        @return `true` on success, `false` if the rate change is unsupported
+                or failed.
+    */
+    /**************************************************************************/
+    virtual bool setBaudRate(size_t rate) {
+        (void)rate;
+        return false;
+    }
+
+    /**************************************************************************/
+    /*!
+        @brief  Get the currently-configured baud rate of the host Serial port.
+        @return The active baud rate, in bits per second. Implementations that
+                do not track a rate may return 0.
+    */
+    /**************************************************************************/
+    virtual size_t getBaudRate(void) const {
+        return 0;
+    }
 };
 
 /******************************************************************************/
