@@ -205,10 +205,11 @@ jobs:
                           "${{ matrix.board.extra-flags }}"
 
   # Runs on every passing master run, one run at a time. The hash tag is
-  # write-once (except on force_build), so an older build can't replace a
-  # newer one. latest only moves to the exact image this run tested, from the
-  # head of master, while the hash tag still points at it; this also repairs
-  # latest after a Dockerfile revert or a failed push.
+  # write-once (force_build may overwrite it only from master's head), and it
+  # only ever holds images whose master run passed tests and examples. latest
+  # follows the hash tag for the Dockerfile at master's head, so every publish
+  # converges on the same image regardless of order, and latest is repaired
+  # after a Dockerfile revert or a failed push.
   publish_ci_image:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -228,12 +229,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Look up the head of master
+        id: head
+        run: |
+          set -o pipefail
+          sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
+          hash=$(curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${sha}/.devcontainer/ci/Dockerfile" | sha256sum | cut -c1-16)
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "tag=${CI_IMAGE_REPO}:dockerfile-${hash}" >> "$GITHUB_OUTPUT"
+
       - name: Check whether the rebuilt image should be pushed
         id: check
         if: needs.ci_image.outputs.built == 'true'
         env:
           TAG: ${{ needs.ci_image.outputs.tag }}
-          FORCE_BUILD: ${{ inputs.force_build == true }}
+          FORCE_BUILD: ${{ inputs.force_build == true && steps.head.outputs.sha == github.sha }}
         run: |
           if [ "$FORCE_BUILD" = "true" ]; then
             echo "push=true" >> "$GITHUB_OUTPUT"
@@ -255,28 +265,22 @@ jobs:
           path: /tmp
 
       - name: Push rebuilt image
-        id: push
         if: steps.check.outputs.push == 'true'
         env:
           TAG: ${{ needs.ci_image.outputs.tag }}
         run: |
           docker load --input /tmp/note_arduino_ci_image.tar
           docker push "$TAG"
-          image=$(docker inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$TAG" | grep -m1 "^${CI_IMAGE_REPO}@")
-          echo "image=${image}" >> "$GITHUB_OUTPUT"
 
-      - name: Point latest at the tested image
+      - name: Point latest at the published image
         env:
           TAG: ${{ needs.ci_image.outputs.tag }}
-          IMAGE: ${{ steps.push.outputs.image || needs.ci_image.outputs.image }}
+          HEAD_TAG: ${{ steps.head.outputs.tag }}
         run: |
-          set -o pipefail
-          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
-          current="${CI_IMAGE_REPO}@$(docker buildx imagetools inspect "$TAG" --format '{{.Manifest.Digest}}')"
-          if [ "$head" != "$GITHUB_SHA" ]; then
-            echo "::warning::master is now at ${head}; latest is left for a passing run at the head of master"
-          elif [ "$current" != "$IMAGE" ]; then
-            echo "::notice::$TAG points at a different build than this run tested; latest is left unchanged"
-          else
-            docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
+          if [ "$TAG" != "$HEAD_TAG" ]; then
+            echo "::notice::master's Dockerfile has changed since this commit; latest is left for a run that matches it"
+            exit 0
           fi
+          image="${CI_IMAGE_REPO}@$(docker buildx imagetools inspect "$TAG" --format '{{.Manifest.Digest}}')"
+          echo "Pointing latest at $image"
+          docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$image"
