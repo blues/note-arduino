@@ -204,11 +204,11 @@ jobs:
                           "${{ matrix.example-sketch }}" \
                           "${{ matrix.board.extra-flags }}"
 
-  # Runs on every master run (after tests and examples pass) so that latest
-  # always matches the image master was tested with, including when the
-  # Dockerfile reverts to a previously published hash. Only the run at the
-  # head of master publishes, one run at a time, so an older run can't
-  # overwrite the hash tag or latest.
+  # Runs on every passing master run, one run at a time. The hash tag is
+  # write-once (except on force_build), so an older build can't replace a
+  # newer one. latest only moves to the exact image this run tested, from the
+  # head of master, while the hash tag still points at it; this also repairs
+  # latest after a Dockerfile revert or a failed push.
   publish_ci_image:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -218,38 +218,45 @@ jobs:
       packages: write
     concurrency:
       group: publish-ci-image
+      queue: max
 
     steps:
-      - name: Check that this run is the head of master
-        id: head
-        run: |
-          set -o pipefail
-          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
-          if [ "$head" = "$GITHUB_SHA" ]; then
-            echo "current=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "master is now at ${head}; that run will publish"
-            echo "current=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Download image artifact
-        if: steps.head.outputs.current == 'true' && needs.ci_image.outputs.built == 'true'
-        uses: actions/download-artifact@v8
-        with:
-          name: note_arduino_ci_image
-          path: /tmp
-
       - name: Login to GitHub Container Registry
-        if: steps.head.outputs.current == 'true'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check whether the rebuilt image should be pushed
+        id: check
+        if: needs.ci_image.outputs.built == 'true'
+        env:
+          TAG: ${{ needs.ci_image.outputs.tag }}
+          FORCE_BUILD: ${{ inputs.force_build == true }}
+        run: |
+          if [ "$FORCE_BUILD" = "true" ]; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          elif out=$(docker buildx imagetools inspect "$TAG" 2>&1); then
+            echo "::notice::$TAG was already published by another run; leaving it as is"
+            echo "push=false" >> "$GITHUB_OUTPUT"
+          elif grep -q "not found" <<< "$out"; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "$out"
+            exit 1
+          fi
+
+      - name: Download image artifact
+        if: steps.check.outputs.push == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: note_arduino_ci_image
+          path: /tmp
+
       - name: Push rebuilt image
         id: push
-        if: steps.head.outputs.current == 'true' && needs.ci_image.outputs.built == 'true'
+        if: steps.check.outputs.push == 'true'
         env:
           TAG: ${{ needs.ci_image.outputs.tag }}
         run: |
@@ -259,7 +266,17 @@ jobs:
           echo "image=${image}" >> "$GITHUB_OUTPUT"
 
       - name: Point latest at the tested image
-        if: steps.head.outputs.current == 'true'
         env:
+          TAG: ${{ needs.ci_image.outputs.tag }}
           IMAGE: ${{ steps.push.outputs.image || needs.ci_image.outputs.image }}
-        run: docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
+        run: |
+          set -o pipefail
+          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
+          current="${CI_IMAGE_REPO}@$(docker buildx imagetools inspect "$TAG" --format '{{.Manifest.Digest}}')"
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "::warning::master is now at ${head}; latest is left for a passing run at the head of master"
+          elif [ "$current" != "$IMAGE" ]; then
+            echo "::notice::$TAG points at a different build than this run tested; latest is left unchanged"
+          else
+            docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
+          fi
