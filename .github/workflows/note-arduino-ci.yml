@@ -34,7 +34,8 @@ jobs:
       contents: read
       packages: read
     outputs:
-      image: ${{ steps.tag.outputs.image }}
+      tag: ${{ steps.tag.outputs.tag }}
+      image: ${{ steps.check.outputs.image }}
       built: ${{ steps.check.outputs.build }}
 
     steps:
@@ -54,19 +55,23 @@ jobs:
         id: tag
         run: |
           hash=$(sha256sum .devcontainer/ci/Dockerfile | cut -c1-16)
-          echo "image=${CI_IMAGE_REPO}:dockerfile-${hash}" >> "$GITHUB_OUTPUT"
+          echo "tag=${CI_IMAGE_REPO}:dockerfile-${hash}" >> "$GITHUB_OUTPUT"
 
+      # An existing tag is resolved to its digest once, so every job in the run
+      # uses the same image even if the tag is pushed again mid-run.
       - name: Check whether the image needs to be built
         id: check
         env:
-          IMAGE: ${{ steps.tag.outputs.image }}
+          TAG: ${{ steps.tag.outputs.tag }}
           FORCE_BUILD: ${{ inputs.force_build == true }}
         run: |
-          if [ "$FORCE_BUILD" != "true" ] && docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
-            echo "Found $IMAGE"
+          if [ "$FORCE_BUILD" != "true" ] && digest=$(docker buildx imagetools inspect "$TAG" --format '{{.Manifest.Digest}}' 2> /dev/null); then
+            echo "Found $TAG at $digest"
+            echo "image=${CI_IMAGE_REPO}@${digest}" >> "$GITHUB_OUTPUT"
             echo "build=false" >> "$GITHUB_OUTPUT"
           else
-            echo "Building $IMAGE"
+            echo "Building $TAG"
+            echo "image=${TAG}" >> "$GITHUB_OUTPUT"
             echo "build=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -80,7 +85,7 @@ jobs:
         with:
           context: .
           file: .devcontainer/ci/Dockerfile
-          tags: ${{ steps.tag.outputs.image }}
+          tags: ${{ steps.tag.outputs.tag }}
           outputs: type=docker,dest=/tmp/note_arduino_ci_image.tar
 
       - name: Upload image artifact
@@ -226,16 +231,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push rebuilt image
+        id: push
         if: needs.ci_image.outputs.built == 'true'
         env:
-          IMAGE: ${{ needs.ci_image.outputs.image }}
+          TAG: ${{ needs.ci_image.outputs.tag }}
         run: |
           docker load --input /tmp/note_arduino_ci_image.tar
-          docker push "$IMAGE"
+          docker push "$TAG"
+          image=$(docker inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$TAG" | grep -m1 "^${CI_IMAGE_REPO}@")
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
 
       - name: Point latest at the tested image
         env:
-          IMAGE: ${{ needs.ci_image.outputs.image }}
+          IMAGE: ${{ steps.push.outputs.image || needs.ci_image.outputs.image }}
         run: |
           set -o pipefail
           head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
@@ -243,6 +251,4 @@ jobs:
             echo "master is now at ${head}; that run will update latest"
             exit 0
           fi
-          docker pull --quiet "$IMAGE"
-          docker tag "$IMAGE" "${CI_IMAGE_REPO}:latest"
-          docker push "${CI_IMAGE_REPO}:latest"
+          docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
