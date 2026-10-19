@@ -216,6 +216,7 @@ jobs:
     needs: [ci_image, run_tests, build_examples]
     if: ${{ github.ref == 'refs/heads/master' }}
     permissions:
+      contents: read
       packages: write
     concurrency:
       group: publish-ci-image
@@ -231,10 +232,12 @@ jobs:
 
       - name: Look up the head of master
         id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -o pipefail
-          sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
-          hash=$(curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${sha}/.devcontainer/ci/Dockerfile" | sha256sum | cut -c1-16)
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/master" --jq .sha)
+          hash=$(gh api "repos/${GITHUB_REPOSITORY}/contents/.devcontainer/ci/Dockerfile?ref=${sha}" -H "Accept: application/vnd.github.raw" | sha256sum | cut -c1-16)
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           echo "tag=${CI_IMAGE_REPO}:dockerfile-${hash}" >> "$GITHUB_OUTPUT"
 
