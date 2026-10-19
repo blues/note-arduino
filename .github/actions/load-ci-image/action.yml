@@ -1,10 +1,8 @@
 name: 'Load note-arduino CI Docker image'
+description: 'Download the CI image artifact built earlier in this run and load it into Docker'
 runs:
   using: 'composite'
   steps:
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
-
     - name: Download image artifact
       uses: actions/download-artifact@v8
       with:

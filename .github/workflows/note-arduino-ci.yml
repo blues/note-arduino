@@ -8,40 +8,34 @@ on:
   workflow_dispatch:
     inputs:
       force_build:
-        description: 'Force rebuild and publish Docker image (even if Dockerfile unchanged)'
+        description: 'Force rebuild of the CI Docker image (published only when run on master)'
         required: false
         type: boolean
         default: false
 
+# Superseded PR runs are cancelled. The per-run suffix keeps master runs
+# (which publish the CI image) from cancelling or replacing each other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.ref == 'refs/heads/master' && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 permissions:
   contents: read
-  packages: write
+
+env:
+  CI_IMAGE_REPO: ghcr.io/blues/note_arduino_ci
 
 jobs:
-  check_dockerfile_changed:
+  ci_image:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # packages: read is required to pull the private notestation-client base image.
+    permissions:
+      contents: read
+      packages: read
     outputs:
-      changed: ${{ steps.filter.outputs.changed }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      # TODO: This is a 3rd party GitHub action from some dude. Ideally, we'd
-      #       use something more "official".
-      - name: Check if Dockerfile changed
-        uses: dorny/paths-filter@v4
-        id: filter
-        with:
-          base: 'master'
-          filters: |
-            changed:
-              - '.devcontainer/ci/Dockerfile'
-
-  build_ci_docker_image:
-    runs-on: ubuntu-latest
-    needs: [check_dockerfile_changed]
-    if: ${{ needs.check_dockerfile_changed.outputs.changed == 'true' || inputs.force_build == true }}
+      image: ${{ steps.tag.outputs.image }}
+      built: ${{ steps.check.outputs.build }}
 
     steps:
       - name: Checkout code
@@ -54,46 +48,73 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The tag is derived from the Dockerfile alone. The Dockerfile copies no
+      # files from the build context; if that changes, hash those files too.
+      - name: Compute image tag from Dockerfile hash
+        id: tag
+        run: |
+          hash=$(sha256sum .devcontainer/ci/Dockerfile | cut -c1-16)
+          echo "image=${CI_IMAGE_REPO}:dockerfile-${hash}" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether the image needs to be built
+        id: check
+        env:
+          IMAGE: ${{ steps.tag.outputs.image }}
+          FORCE_BUILD: ${{ inputs.force_build == true }}
+        run: |
+          if [ "$FORCE_BUILD" != "true" ] && docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "Found $IMAGE"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Building $IMAGE"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Docker Buildx
+        if: steps.check.outputs.build == 'true'
         uses: docker/setup-buildx-action@v4
 
-      - name: Rebuild image
+      - name: Build image
+        if: steps.check.outputs.build == 'true'
         uses: docker/build-push-action@v7
         with:
           context: .
           file: .devcontainer/ci/Dockerfile
-          load: true
-          tags: ghcr.io/blues/note_arduino_ci:latest
+          tags: ${{ steps.tag.outputs.image }}
           outputs: type=docker,dest=/tmp/note_arduino_ci_image.tar
 
       - name: Upload image artifact
+        if: steps.check.outputs.build == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: note_arduino_ci_image
           path: /tmp/note_arduino_ci_image.tar
+          retention-days: 7
 
   run_tests:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: [build_ci_docker_image]
+    timeout-minutes: 20
+    needs: [ci_image]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
       - name: Load CI Docker image
-        # Only load the Docker image artifact if build_ci_docker_image actually
-        # ran (e.g. it wasn't skipped and was successful).
-        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        if: needs.ci_image.outputs.built == 'true'
         uses: ./.github/actions/load-ci-image
 
       - name: Run tests
+        env:
+          IMAGE: ${{ needs.ci_image.outputs.image }}
         run: |
-          docker run --rm --volume $(pwd):/note-arduino/ \
+          docker run --rm --volume "$(pwd)":/note-arduino/ \
                           --workdir /note-arduino/ \
                           --entrypoint ./scripts/run_unit_tests.sh \
                           --user root \
-                          ghcr.io/blues/note_arduino_ci:latest \
+                          --env CTEST_PARALLEL_LEVEL="$(nproc)" \
+                          --env NOTE_ARDUINO_BUILD_JOBS="$(nproc)" \
+                          "$IMAGE" \
                           --coverage --mem-check
 
       - name: Adjust lcov source file paths for Coveralls
@@ -107,8 +128,8 @@ jobs:
 
   build_examples:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: [build_ci_docker_image]
+    timeout-minutes: 15
+    needs: [ci_image]
     strategy:
       fail-fast: false
       matrix:
@@ -163,28 +184,35 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Load CI docker image
-        if: ${{ needs.build_ci_docker_image.result == 'success' }}
+        if: needs.ci_image.outputs.built == 'true'
         uses: ./.github/actions/load-ci-image
 
       - name: Compile Examples
+        env:
+          IMAGE: ${{ needs.ci_image.outputs.image }}
         run: |
-          docker run --rm --volume $(pwd):/note-arduino/ \
+          docker run --rm --volume "$(pwd)":/note-arduino/ \
                           --workdir /note-arduino/ \
                           --entrypoint ./scripts/build_example.sh \
-                          ghcr.io/blues/note_arduino_ci:latest \
+                          "$IMAGE" \
                           "${{ matrix.board.fqbn }}" \
                           "${{ matrix.example-sketch }}" \
                           "${{ matrix.board.extra-flags }}"
 
+  # Runs on every master run (after tests and examples pass) so that latest
+  # always matches the image master was tested with, including when the
+  # Dockerfile reverts to a previously published hash.
   publish_ci_image:
     runs-on: ubuntu-latest
-    # Make sure tests passed and examples built successfully before publishing.
-    needs: [build_ci_docker_image, run_tests, build_examples]
-    # Only publish the image if this is a push event (or manual trigger with force_build) and the Docker image was rebuilt
-    if: ${{ (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.force_build == true)) && needs.build_ci_docker_image.result == 'success' }}
+    timeout-minutes: 10
+    needs: [ci_image, run_tests, build_examples]
+    if: ${{ github.ref == 'refs/heads/master' }}
+    permissions:
+      packages: write
 
     steps:
       - name: Download image artifact
+        if: needs.ci_image.outputs.built == 'true'
         uses: actions/download-artifact@v8
         with:
           name: note_arduino_ci_image
@@ -197,7 +225,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load and push image
+      - name: Push rebuilt image
+        if: needs.ci_image.outputs.built == 'true'
+        env:
+          IMAGE: ${{ needs.ci_image.outputs.image }}
         run: |
           docker load --input /tmp/note_arduino_ci_image.tar
-          docker push ghcr.io/blues/note_arduino_ci:latest
+          docker push "$IMAGE"
+
+      - name: Point latest at the tested image
+        env:
+          IMAGE: ${{ needs.ci_image.outputs.image }}
+        run: |
+          set -o pipefail
+          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "master is now at ${head}; that run will update latest"
+            exit 0
+          fi
+          docker pull --quiet "$IMAGE"
+          docker tag "$IMAGE" "${CI_IMAGE_REPO}:latest"
+          docker push "${CI_IMAGE_REPO}:latest"
