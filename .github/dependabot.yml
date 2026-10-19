@@ -1,0 +1,13 @@
+version: 2
+
+updates:
+  # "/" only covers .github/workflows, so the composite action is listed explicitly.
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/load-ci-image"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(actions)"
