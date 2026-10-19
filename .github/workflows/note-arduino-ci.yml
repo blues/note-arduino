@@ -206,7 +206,9 @@ jobs:
 
   # Runs on every master run (after tests and examples pass) so that latest
   # always matches the image master was tested with, including when the
-  # Dockerfile reverts to a previously published hash.
+  # Dockerfile reverts to a previously published hash. Only the run at the
+  # head of master publishes, one run at a time, so an older run can't
+  # overwrite the hash tag or latest.
   publish_ci_image:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -214,16 +216,31 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' }}
     permissions:
       packages: write
+    concurrency:
+      group: publish-ci-image
 
     steps:
+      - name: Check that this run is the head of master
+        id: head
+        run: |
+          set -o pipefail
+          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "master is now at ${head}; that run will publish"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download image artifact
-        if: needs.ci_image.outputs.built == 'true'
+        if: steps.head.outputs.current == 'true' && needs.ci_image.outputs.built == 'true'
         uses: actions/download-artifact@v8
         with:
           name: note_arduino_ci_image
           path: /tmp
 
       - name: Login to GitHub Container Registry
+        if: steps.head.outputs.current == 'true'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -232,7 +249,7 @@ jobs:
 
       - name: Push rebuilt image
         id: push
-        if: needs.ci_image.outputs.built == 'true'
+        if: steps.head.outputs.current == 'true' && needs.ci_image.outputs.built == 'true'
         env:
           TAG: ${{ needs.ci_image.outputs.tag }}
         run: |
@@ -242,13 +259,7 @@ jobs:
           echo "image=${image}" >> "$GITHUB_OUTPUT"
 
       - name: Point latest at the tested image
+        if: steps.head.outputs.current == 'true'
         env:
           IMAGE: ${{ steps.push.outputs.image || needs.ci_image.outputs.image }}
-        run: |
-          set -o pipefail
-          head=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}" refs/heads/master | cut -f1)
-          if [ "$head" != "$GITHUB_SHA" ]; then
-            echo "master is now at ${head}; that run will update latest"
-            exit 0
-          fi
-          docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
+        run: docker buildx imagetools create --prefer-index=false --tag "${CI_IMAGE_REPO}:latest" "$IMAGE"
