@@ -109,6 +109,15 @@ jobs:
         if: needs.ci_image.outputs.built == 'true'
         uses: ./.github/actions/load-ci-image
 
+      - name: Print CI image tool versions
+        env:
+          IMAGE: ${{ needs.ci_image.outputs.image }}
+        run: |
+          docker run --rm --entrypoint bash \
+                          --user root \
+                          "$IMAGE" \
+                          -c 'dpkg -l lcov | tail -1; python3 --version; lcov --version'
+
       - name: Run tests
         env:
           IMAGE: ${{ needs.ci_image.outputs.image }}

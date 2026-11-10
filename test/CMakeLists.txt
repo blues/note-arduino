@@ -33,6 +33,7 @@ enable_testing()
 
 set(NOTE_ARDUINO_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(TEST_TARGETS "")
+set(TESTED_UNITS "")
 
 # add_test(<unit> [<extra compile definition>...])
 # Builds test/src/<unit>_test.cpp together with src/<unit>.cpp and the FFF
@@ -76,6 +77,7 @@ macro(add_test TEST_UNIT)
     endif()
 
     list(APPEND TEST_TARGETS ${TEST_NAME})
+    list(APPEND TESTED_UNITS ${TEST_UNIT})
 
     catch_discover_tests(${TEST_NAME} TEST_SUFFIX "${TEST_SUFFIX}")
 endmacro(add_test)
@@ -91,7 +93,64 @@ if(NOTE_ARDUINO_COVERAGE)
     find_program(LCOV lcov REQUIRED)
     message(STATUS "Found lcov: ${LCOV}")
 
-    set(COVERAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../coverage)
+    option(NOTE_ARDUINO_COVERAGE_EXCEPTION_BRANCHES
+           "Count compiler-made exception branches in the coverage numbers." OFF)
+
+    get_filename_component(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+    set(COVERAGE_DIR ${REPO_ROOT}/coverage)
+
+    # A unit with no test would not appear in the report, so its lines would
+    # not count as missed. Compile each such unit (never run it): lcov reads
+    # the zero counters of its .gcno file and the unit counts as 0% covered.
+    set(UNTESTED_TARGETS "")
+    file(GLOB NOTE_ARDUINO_UNITS CONFIGURE_DEPENDS ${NOTE_ARDUINO_SRC_DIR}/*.cpp)
+    foreach(UNIT_SOURCE ${NOTE_ARDUINO_UNITS})
+        get_filename_component(UNIT ${UNIT_SOURCE} NAME_WE)
+        if(NOT UNIT IN_LIST TESTED_UNITS)
+            message(STATUS "Coverage: ${UNIT} has no test; counting it as uncovered.")
+            add_library(${UNIT}_untested OBJECT ${UNIT_SOURCE})
+            target_include_directories(${UNIT}_untested
+                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+                PRIVATE ${NOTE_ARDUINO_SRC_DIR}
+            )
+            target_compile_definitions(${UNIT}_untested PRIVATE NOTE_MOCK)
+            target_compile_options(${UNIT}_untested
+                PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-deprecated-declarations
+                PRIVATE -O0 -ggdb --coverage
+            )
+            list(APPEND UNTESTED_TARGETS ${UNIT}_untested)
+        endif()
+    endforeach()
+
+    # lcov 2 names the option "branch_coverage". lcov 1 names it
+    # "lcov_branch_coverage" and ignores the other name (it then writes no
+    # branch data at all).
+    execute_process(COMMAND ${LCOV} --version OUTPUT_VARIABLE LCOV_VERSION_TEXT)
+    if(LCOV_VERSION_TEXT MATCHES "version ([0-9]+)" AND CMAKE_MATCH_1 LESS 2)
+        set(LCOV_BRANCH_RC lcov_branch_coverage=1)
+        message(WARNING "lcov ${CMAKE_MATCH_1} found. The coverage baseline is made with lcov 2. "
+                        "lcov 1 counts exception branches that lcov 2 skips, so the numbers differ.")
+    else()
+        set(LCOV_BRANCH_RC branch_coverage=1)
+    endif()
+
+    # Measure only src/ (not note-c, tests, fakes or Catch2).
+    set(LCOV_SCOPE
+        --no-external
+        --base-directory ${REPO_ROOT}
+        --include "${REPO_ROOT}/src/*"
+        --exclude "${REPO_ROOT}/src/note-c/*"
+        --rc ${LCOV_BRANCH_RC}
+    )
+    # Compiler-made exception branches are not code paths a test can choose.
+    if(NOT NOTE_ARDUINO_COVERAGE_EXCEPTION_BRANCHES)
+        list(APPEND LCOV_SCOPE --rc no_exception_branch=1)
+    endif()
+    # lcov 2 reports an exclude pattern that matches nothing as an error.
+    if(LCOV_VERSION_TEXT MATCHES "version ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 2)
+        list(APPEND LCOV_SCOPE --ignore-errors unused,unused)
+    endif()
+
     add_custom_target(
         coverage
         COMMAND mkdir -p ${COVERAGE_DIR}
@@ -100,18 +159,24 @@ if(NOTE_ARDUINO_COVERAGE)
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-    # Only src/ is measured: the tests, fakes and Catch2 are excluded.
     add_custom_command(
         TARGET coverage POST_BUILD
-        COMMAND lcov --capture --no-external
-                --base-directory ${CMAKE_CURRENT_SOURCE_DIR}/..
+        # 1. Zero-count baseline of every compiled unit (tested or not).
+        COMMAND lcov --capture --initial ${LCOV_SCOPE}
                 --directory ${CMAKE_CURRENT_BINARY_DIR}
-                --rc branch_coverage=1
-                --exclude */test/* --exclude */build/_deps/*
+                --output-file ${COVERAGE_DIR}/lcov-initial.info
+        # 2. Counts from the test run.
+        COMMAND lcov --capture ${LCOV_SCOPE}
+                --directory ${CMAKE_CURRENT_BINARY_DIR}
+                --output-file ${COVERAGE_DIR}/lcov-tests.info
+        # 3. Merge them. The tracefile is what Coveralls reads.
+        COMMAND lcov --rc ${LCOV_BRANCH_RC}
+                --add-tracefile ${COVERAGE_DIR}/lcov-initial.info
+                --add-tracefile ${COVERAGE_DIR}/lcov-tests.info
                 --output-file ${COVERAGE_DIR}/lcov.info
-        COMMAND lcov --summary --rc branch_coverage=1 ${COVERAGE_DIR}/lcov.info
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
+        COMMAND lcov --summary --rc ${LCOV_BRANCH_RC} ${COVERAGE_DIR}/lcov.info
+        WORKING_DIRECTORY ${REPO_ROOT}
         VERBATIM
     )
-    add_dependencies(coverage ${TEST_TARGETS})
+    add_dependencies(coverage ${TEST_TARGETS} ${UNTESTED_TARGETS})
 endif(NOTE_ARDUINO_COVERAGE)
