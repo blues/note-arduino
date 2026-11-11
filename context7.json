@@ -1,0 +1,31 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "url": "https://context7.com/blues/note-arduino",
+  "public_key": "pk_nVFOrz6sC1j4Aqx8A32xw",
+  "projectTitle": "note-arduino: Arduino library for Blues Notecard",
+  "description": "Arduino library for communicating with a Blues Notecard over I2C or Serial. Its Notecard class wraps the note-c library to build Notecard API requests, read JSON responses, and send Notes to Notehub. Example sketches cover periodic sync, inbound polling and interrupts, Note templates, power control, binary transfers, and Outboard Firmware Update.",
+  "excludeFolders": [
+    "src/note-c",
+    "test",
+    "scripts"
+  ],
+  "excludeFiles": [
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "keywords.txt",
+    "Example0_LibrarylessCommunication.ino"
+  ],
+  "includeExtensions": [
+    ".ino"
+  ],
+  "rules": [
+    "Declare one global `Notecard notecard;` and call notecard.begin() before any request: begin() with no arguments uses I2C on Wire; begin(Serial1, 9600) uses that serial port.",
+    "Create requests with notecard.newRequest(\"<request>\") and add arguments with JAddStringToObject(), JAddNumberToObject(), JAddBoolToObject() and JAddObjectToObject().",
+    "notecard.sendRequest() and notecard.requestAndResponse() free the request you pass in; never use or free req after the call.",
+    "Check each requestAndResponse() result for NULL and with notecard.responseError(rsp), then free every non-NULL response with notecard.deleteResponse(rsp).",
+    "Log Notecard JSON traffic with notecard.setDebugOutputStream(Serial); notecard.logDebug() and logDebugf() are deprecated.",
+    "Copy Notecard request and argument names exactly from the Notecard API reference; do not invent requests, arguments, or response fields.",
+    "Before expecting data in Notehub, set the Notehub project's ProductUID on the Notecard with the \"product\" argument of hub.set.",
+    "When the Blues Expert MCP server is connected, check generated Notecard JSON requests with its api_validate tool before using them."
+  ]
+}

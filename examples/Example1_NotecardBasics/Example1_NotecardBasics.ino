@@ -110,7 +110,7 @@ void setup()
     // service.
     // This results in a JSON message to Notecard formatted like:
     //     {
-    //       "req"     : "service.set",
+    //       "req"     : "hub.set",
     //       "product" : myProductID,
     //       "mode"    : "continuous"
     //     }
