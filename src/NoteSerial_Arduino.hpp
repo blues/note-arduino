@@ -32,10 +32,14 @@ public:
     char receive(void) override;
     bool reset(void) override;
     size_t transmit(uint8_t * buffer, size_t size, bool flush) override;
+    bool setBaudRate(size_t rate) override;
+    size_t getBaudRate(void) const override;
 
 private:
     T & _notecardSerial;
-    const int _notecardSerialSpeed;
+    // Not `const`: `setBaudRate()` mutates this so `reset()` restores to the
+    // currently-active rate rather than whatever was passed at construction.
+    int _notecardSerialSpeed;
 };
 
 #endif // NOTE_SERIAL_ARDUINO_HPP
